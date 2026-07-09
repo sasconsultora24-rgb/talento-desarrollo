@@ -20,13 +20,17 @@ export default function Vacantes() {
     return matchTexto && matchArea;
   });
 
-  function handlePostular(vacanteId) {
+  async function handlePostular(vacanteId) {
     if (session.role !== "candidato") {
       navigate("/registro");
       return;
     }
-    postular(session.userId, vacanteId);
-    setConfirmado(vacanteId);
+    try {
+      await postular(session.userId, vacanteId);
+      setConfirmado(vacanteId);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (

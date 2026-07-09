@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { Paperclip, X } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Select, Textarea, Button, Badge } from "../components/ui.jsx";
+
+const MAX_CV_MB = 5;
 
 export default function Registro() {
   const [params] = useSearchParams();
   const tipoInicial = params.get("tipo") === "empresa" ? "empresa" : "candidato";
   const [tipo, setTipo] = useState(tipoInicial);
-  const { registrarCandidato, registrarEmpresa } = useApp();
+  const { registrarCandidato, registrarEmpresa, subirCV } = useApp();
   const navigate = useNavigate();
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState("");
 
   const [candidato, setCandidato] = useState({
     nombre: "",
@@ -21,6 +26,8 @@ export default function Registro() {
     nivel: "Junior",
     disponibilidad: "Full time",
   });
+  const [cvFile, setCvFile] = useState(null);
+  const [referencias, setReferencias] = useState([{ nombre: "", contacto: "" }]);
 
   const [empresa, setEmpresa] = useState({
     nombre: "",
@@ -31,23 +38,79 @@ export default function Registro() {
     email: "",
   });
 
-  function submitCandidato(e) {
-    e.preventDefault();
-    const id = registrarCandidato({
-      ...candidato,
-      habilidades: candidato.habilidades
-        .split(",")
-        .map((h) => h.trim())
-        .filter(Boolean),
-      experiencia: [],
-    });
-    if (id) navigate("/candidato");
+  function actualizarReferencia(i, campo, valor) {
+    setReferencias((prev) => prev.map((r, idx) => (idx === i ? { ...r, [campo]: valor } : r)));
   }
 
-  function submitEmpresa(e) {
+  function agregarReferencia() {
+    if (referencias.length >= 3) return;
+    setReferencias((prev) => [...prev, { nombre: "", contacto: "" }]);
+  }
+
+  function quitarReferencia(i) {
+    setReferencias((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function handleCvChange(e) {
+    const file = e.target.files?.[0];
+    setError("");
+    if (!file) {
+      setCvFile(null);
+      return;
+    }
+    if (file.size > MAX_CV_MB * 1024 * 1024) {
+      setError(`El archivo supera los ${MAX_CV_MB}MB. Elegí uno más liviano.`);
+      e.target.value = "";
+      return;
+    }
+    setCvFile(file);
+  }
+
+  async function submitCandidato(e) {
     e.preventDefault();
-    const id = registrarEmpresa(empresa);
-    if (id) navigate("/empresa");
+    setError("");
+    setEnviando(true);
+    try {
+      let cvUrl = null;
+      let cvNombre = null;
+      if (cvFile) {
+        const subido = await subirCV(cvFile);
+        cvUrl = subido?.url || null;
+        cvNombre = subido?.nombre || null;
+      }
+      const referenciasLimpias = referencias.filter((r) => r.nombre.trim() || r.contacto.trim());
+      const id = await registrarCandidato({
+        ...candidato,
+        habilidades: candidato.habilidades
+          .split(",")
+          .map((h) => h.trim())
+          .filter(Boolean),
+        cvUrl,
+        cvNombre,
+        referencias: referenciasLimpias,
+      });
+      if (id) navigate("/candidato");
+    } catch (err) {
+      console.error(err);
+      setError("No pudimos crear tu perfil. Probá de nuevo en unos segundos.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function submitEmpresa(e) {
+    e.preventDefault();
+    setError("");
+    setEnviando(true);
+    try {
+      const id = await registrarEmpresa(empresa);
+      if (id) navigate("/empresa");
+    } catch (err) {
+      console.error(err);
+      setError("No pudimos registrar la PYME. Probá de nuevo en unos segundos.");
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
@@ -82,6 +145,11 @@ export default function Registro() {
       </div>
 
       <Card className="p-6 md:p-8">
+        {error && (
+          <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            {error}
+          </div>
+        )}
         {tipo === "candidato" ? (
           <form onSubmit={submitCandidato}>
             <Field label="Nombre completo">
@@ -125,7 +193,52 @@ export default function Registro() {
             <Field label="Habilidades" hint="Separadas por coma. Ej: Excel, Liderazgo, Ventas">
               <Input value={candidato.habilidades} onChange={(e) => setCandidato({ ...candidato, habilidades: e.target.value })} />
             </Field>
-            <Button type="submit" className="w-full mt-2">Crear mi perfil</Button>
+
+            <Field label="Adjuntar CV" hint={`PDF o Word, hasta ${MAX_CV_MB}MB (opcional)`}>
+              <label className="flex items-center gap-2 border border-dashed border-navy-300 rounded-lg px-3.5 py-2.5 text-sm text-navy-600 cursor-pointer hover:border-teal-400">
+                <Paperclip size={16} />
+                {cvFile ? cvFile.name : "Elegir archivo..."}
+                <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleCvChange} />
+              </label>
+            </Field>
+
+            <Field label="Referencias laborales" hint="Nombre y contacto de alguien que pueda dar referencias tuyas (opcional)">
+              <div className="space-y-2">
+                {referencias.map((r, i) => (
+                  <div key={i} className="flex gap-2">
+                    <Input
+                      placeholder="Nombre"
+                      value={r.nombre}
+                      onChange={(e) => actualizarReferencia(i, "nombre", e.target.value)}
+                    />
+                    <Input
+                      placeholder="Teléfono o email"
+                      value={r.contacto}
+                      onChange={(e) => actualizarReferencia(i, "contacto", e.target.value)}
+                    />
+                    {referencias.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => quitarReferencia(i)}
+                        className="text-navy-400 hover:text-red-500 px-1"
+                        aria-label="Quitar referencia"
+                      >
+                        <X size={18} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {referencias.length < 3 && (
+                  <button type="button" onClick={agregarReferencia} className="text-teal-600 text-sm font-semibold">
+                    + Agregar otra referencia
+                  </button>
+                )}
+              </div>
+            </Field>
+
+            <Button type="submit" disabled={enviando} className="w-full mt-2">
+              {enviando ? "Creando perfil..." : "Crear mi perfil"}
+            </Button>
           </form>
         ) : (
           <form onSubmit={submitEmpresa}>
@@ -155,7 +268,9 @@ export default function Registro() {
                 <Input type="email" required value={empresa.email} onChange={(e) => setEmpresa({ ...empresa, email: e.target.value })} />
               </Field>
             </div>
-            <Button type="submit" className="w-full mt-2">Registrar mi PYME</Button>
+            <Button type="submit" disabled={enviando} className="w-full mt-2">
+              {enviando ? "Registrando..." : "Registrar mi PYME"}
+            </Button>
           </form>
         )}
       </Card>

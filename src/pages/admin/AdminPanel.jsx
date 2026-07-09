@@ -23,10 +23,14 @@ export default function AdminPanel() {
 
   const pendientes = vacantes.filter((v) => v.estado === "pendiente");
 
-  function submitCapacitacion(e) {
+  async function submitCapacitacion(e) {
     e.preventDefault();
-    crearCapacitacion({ ...nuevaCap, cupos: Number(nuevaCap.cupos) });
-    setNuevaCap({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
+    try {
+      await crearCapacitacion({ ...nuevaCap, cupos: Number(nuevaCap.cupos) });
+      setNuevaCap({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (

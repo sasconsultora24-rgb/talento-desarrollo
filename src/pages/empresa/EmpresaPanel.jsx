@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Briefcase, Users2, Award, PlusCircle } from "lucide-react";
+import { Briefcase, Users2, Award, PlusCircle, FileText } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
@@ -48,14 +48,18 @@ export default function EmpresaPanel() {
   const idsMisVacantes = misVacantes.map((v) => v.id);
   const postulacionesRecibidas = postulaciones.filter((p) => idsMisVacantes.includes(p.vacanteId));
 
-  function crearVacante(e) {
+  async function crearVacante(e) {
     e.preventDefault();
-    publicarVacante(empresa.id, {
-      ...nueva,
-      requisitos: nueva.requisitos.split(",").map((r) => r.trim()).filter(Boolean),
-    });
-    setNueva({ titulo: "", area: "", modalidad: "Presencial", ubicacion: empresa.ubicacion, nivel: "Junior", descripcion: "", salario: "", requisitos: "" });
-    setFormOpen(false);
+    try {
+      await publicarVacante(empresa.id, {
+        ...nueva,
+        requisitos: nueva.requisitos.split(",").map((r) => r.trim()).filter(Boolean),
+      });
+      setNueva({ titulo: "", area: "", modalidad: "Presencial", ubicacion: empresa.ubicacion, nivel: "Junior", descripcion: "", salario: "", requisitos: "" });
+      setFormOpen(false);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
@@ -163,6 +167,18 @@ export default function EmpresaPanel() {
                             <span key={h} className="text-xs bg-navy-50 text-navy-600 px-2 py-0.5 rounded-full">{h}</span>
                           ))}
                         </div>
+                      )}
+                      <div className="flex flex-wrap gap-3 mt-2">
+                        {cand?.cvUrl && (
+                          <a href={cand.cvUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-teal-600 font-semibold">
+                            <FileText size={15} /> Ver CV
+                          </a>
+                        )}
+                      </div>
+                      {cand?.referencias?.length > 0 && (
+                        <p className="text-xs text-navy-400 mt-2">
+                          Referencias: {cand.referencias.map((r) => `${r.nombre}${r.contacto ? ` (${r.contacto})` : ""}`).join(" · ")}
+                        </p>
                       )}
                     </div>
                     <Select

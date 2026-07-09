@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { User, Briefcase, GraduationCap, UserRound } from "lucide-react";
+import { User, Briefcase, GraduationCap, UserRound, Paperclip, X, FileText } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState } from "../../components/ui.jsx";
 import { planesCandidatos } from "../../data/seed.js";
@@ -12,11 +12,20 @@ const TABS = [
   { id: "plan", label: "Mi plan", icon: UserRound },
 ];
 
+const MAX_CV_MB = 5;
+
 export default function CandidatoPanel() {
-  const { session, candidatos, vacantes, empresas, postulaciones, capacitaciones, mentorias, actualizarCandidato } = useApp();
+  const {
+    session, candidatos, vacantes, empresas, postulaciones, capacitaciones, mentorias,
+    actualizarCandidato, subirCV,
+  } = useApp();
   const [tab, setTab] = useState("perfil");
   const candidato = candidatos.find((c) => c.id === session.userId);
   const [form, setForm] = useState(candidato);
+  const [cvFile, setCvFile] = useState(null);
+  const [referencias, setReferencias] = useState(candidato?.referencias?.length ? candidato.referencias : [{ nombre: "", contacto: "" }]);
+  const [guardando, setGuardando] = useState(false);
+  const [mensaje, setMensaje] = useState("");
 
   if (!candidato) return null;
 
@@ -24,15 +33,47 @@ export default function CandidatoPanel() {
   const misCapacitaciones = capacitaciones.filter((c) => c.inscriptos.includes(candidato.id));
   const misMentorias = mentorias.filter((m) => m.reservas.includes(candidato.id));
 
-  function guardarPerfil(e) {
+  function actualizarReferencia(i, campo, valor) {
+    setReferencias((prev) => prev.map((r, idx) => (idx === i ? { ...r, [campo]: valor } : r)));
+  }
+  function agregarReferencia() {
+    if (referencias.length >= 3) return;
+    setReferencias((prev) => [...prev, { nombre: "", contacto: "" }]);
+  }
+  function quitarReferencia(i) {
+    setReferencias((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  async function guardarPerfil(e) {
     e.preventDefault();
-    actualizarCandidato(candidato.id, {
-      ...form,
-      habilidades:
-        typeof form.habilidades === "string"
-          ? form.habilidades.split(",").map((h) => h.trim()).filter(Boolean)
-          : form.habilidades,
-    });
+    setGuardando(true);
+    setMensaje("");
+    try {
+      let cvUrl = form.cvUrl;
+      let cvNombre = form.cvNombre;
+      if (cvFile) {
+        const subido = await subirCV(cvFile);
+        cvUrl = subido?.url || cvUrl;
+        cvNombre = subido?.nombre || cvNombre;
+      }
+      await actualizarCandidato(candidato.id, {
+        ...form,
+        habilidades:
+          typeof form.habilidades === "string"
+            ? form.habilidades.split(",").map((h) => h.trim()).filter(Boolean)
+            : form.habilidades,
+        cvUrl,
+        cvNombre,
+        referencias: referencias.filter((r) => r.nombre.trim() || r.contacto.trim()),
+      });
+      setCvFile(null);
+      setMensaje("Perfil actualizado.");
+    } catch (err) {
+      console.error(err);
+      setMensaje("No pudimos guardar los cambios. Probá de nuevo.");
+    } finally {
+      setGuardando(false);
+    }
   }
 
   const estadoTono = {
@@ -66,6 +107,7 @@ export default function CandidatoPanel() {
 
       {tab === "perfil" && (
         <Card className="p-6 max-w-2xl">
+          {mensaje && <p className="text-sm text-teal-600 mb-4">{mensaje}</p>}
           <form onSubmit={guardarPerfil}>
             <div className="grid sm:grid-cols-2 gap-x-4">
               <Field label="Nombre completo">
@@ -104,7 +146,52 @@ export default function CandidatoPanel() {
                 onChange={(e) => setForm({ ...form, habilidades: e.target.value })}
               />
             </Field>
-            <Button type="submit">Guardar cambios</Button>
+
+            <Field label="CV" hint={`PDF o Word, hasta ${MAX_CV_MB}MB`}>
+              {form.cvUrl && !cvFile && (
+                <a
+                  href={form.cvUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-teal-600 font-semibold mb-2"
+                >
+                  <FileText size={16} /> Ver CV actual ({form.cvNombre || "archivo"})
+                </a>
+              )}
+              <label className="flex items-center gap-2 border border-dashed border-navy-300 rounded-lg px-3.5 py-2.5 text-sm text-navy-600 cursor-pointer hover:border-teal-400">
+                <Paperclip size={16} />
+                {cvFile ? cvFile.name : form.cvUrl ? "Reemplazar archivo..." : "Elegir archivo..."}
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={(e) => setCvFile(e.target.files?.[0] || null)}
+                />
+              </label>
+            </Field>
+
+            <Field label="Referencias laborales">
+              <div className="space-y-2">
+                {referencias.map((r, i) => (
+                  <div key={i} className="flex gap-2">
+                    <Input placeholder="Nombre" value={r.nombre} onChange={(e) => actualizarReferencia(i, "nombre", e.target.value)} />
+                    <Input placeholder="Teléfono o email" value={r.contacto} onChange={(e) => actualizarReferencia(i, "contacto", e.target.value)} />
+                    {referencias.length > 1 && (
+                      <button type="button" onClick={() => quitarReferencia(i)} className="text-navy-400 hover:text-red-500 px-1">
+                        <X size={18} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {referencias.length < 3 && (
+                  <button type="button" onClick={agregarReferencia} className="text-teal-600 text-sm font-semibold">
+                    + Agregar otra referencia
+                  </button>
+                )}
+              </div>
+            </Field>
+
+            <Button type="submit" disabled={guardando}>{guardando ? "Guardando..." : "Guardar cambios"}</Button>
           </form>
         </Card>
       )}

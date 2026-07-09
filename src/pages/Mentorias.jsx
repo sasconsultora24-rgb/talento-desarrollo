@@ -7,12 +7,16 @@ export default function Mentorias() {
   const { mentorias, reservarMentoria, session } = useApp();
   const navigate = useNavigate();
 
-  function handleReservar(id) {
+  async function handleReservar(id) {
     if (session.role !== "candidato") {
       navigate("/registro");
       return;
     }
-    reservarMentoria(id, session.userId);
+    try {
+      await reservarMentoria(id, session.userId);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (

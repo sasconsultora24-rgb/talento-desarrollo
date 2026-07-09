@@ -7,12 +7,16 @@ export default function Capacitaciones() {
   const { capacitaciones, inscribirCapacitacion, session } = useApp();
   const navigate = useNavigate();
 
-  function handleInscribir(id) {
+  async function handleInscribir(id) {
     if (session.role !== "candidato") {
       navigate("/registro");
       return;
     }
-    inscribirCapacitacion(id, session.userId);
+    try {
+      await inscribirCapacitacion(id, session.userId);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   return (
