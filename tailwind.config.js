@@ -40,6 +40,18 @@ export default {
           800: "#8f3d0d",
           900: "#75330f",
         },
+        // Paleta de marca de SAS Consultora (logo real): usada en el badge/wordmark
+        // del logo de Talento & Desarrollo. Separada de navy/teal/amber a propósito,
+        // que siguen siendo los colores funcionales del resto de la UI.
+        forest: {
+          DEFAULT: "#1F4D3D",
+          600: "#1F4D3D",
+          700: "#173B2F",
+        },
+        gold: {
+          DEFAULT: "#C9A227",
+          500: "#C9A227",
+        },
       },
       fontFamily: {
         display: ["'Sora'", "sans-serif"],
