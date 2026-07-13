@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Briefcase, Users2, Award, PlusCircle, FileText } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
@@ -7,6 +7,7 @@ import { planesEmpresas } from "../../data/seed.js";
 const TABS = [
   { id: "vacantes", label: "Mis vacantes", icon: Briefcase },
   { id: "candidatos", label: "Candidatos postulados", icon: Users2 },
+  { id: "buscar", label: "Buscar candidatos", icon: Search },
   { id: "plan", label: "Mi plan", icon: Award },
 ];
 
@@ -41,6 +42,24 @@ export default function EmpresaPanel() {
     salario: "",
     requisitos: "",
   });
+
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroNivel, setFiltroNivel] = useState("");
+  const [filtroDisponibilidad, setFiltroDisponibilidad] = useState("");
+
+  const candidatosFiltrados = useMemo(() => {
+    const texto = busqueda.trim().toLowerCase();
+    return candidatos.filter((c) => {
+      if (filtroNivel && c.nivel !== filtroNivel) return false;
+      if (filtroDisponibilidad && c.disponibilidad !== filtroDisponibilidad) return false;
+      if (!texto) return true;
+      const enTexto = [c.nombre, c.titulo, c.ubicacion, c.resumen, ...(c.habilidades || [])]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return enTexto.includes(texto);
+    });
+  }, [candidatos, busqueda, filtroNivel, filtroDisponibilidad]);
 
   if (!empresa) return null;
 
@@ -196,6 +215,82 @@ export default function EmpresaPanel() {
                 </Card>
               );
             })
+          )}
+        </div>
+      )}
+
+      {tab === "buscar" && (
+        <div>
+          <Card className="p-4 mb-6">
+            <div className="grid sm:grid-cols-3 gap-3">
+              <Field label="Buscar">
+                <Input
+                  placeholder="Nombre, puesto, habilidad..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+              </Field>
+              <Field label="Nivel">
+                <Select value={filtroNivel} onChange={(e) => setFiltroNivel(e.target.value)}>
+                  <option value="">Todos</option>
+                  <option>Junior</option>
+                  <option>Semi Senior</option>
+                  <option>Senior</option>
+                </Select>
+              </Field>
+              <Field label="Disponibilidad">
+                <Select value={filtroDisponibilidad} onChange={(e) => setFiltroDisponibilidad(e.target.value)}>
+                  <option value="">Todas</option>
+                  <option>Full time</option>
+                  <option>Part time</option>
+                  <option>Freelance</option>
+                </Select>
+              </Field>
+            </div>
+          </Card>
+
+          <p className="text-sm text-navy-400 mb-3">
+            {candidatosFiltrados.length} candidato{candidatosFiltrados.length === 1 ? "" : "s"} encontrado{candidatosFiltrados.length === 1 ? "" : "s"}
+          </p>
+
+          {candidatosFiltrados.length === 0 ? (
+            <EmptyState text="No encontramos candidatos con esos filtros." />
+          ) : (
+            <div className="space-y-3">
+              {candidatosFiltrados.map((c) => (
+                <Card key={c.id} className="p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div>
+                      <h3 className="font-bold text-navy-900">{c.nombre}</h3>
+                      <p className="text-sm text-navy-500">
+                        {c.titulo} · {c.ubicacion} · {c.nivel} · {c.disponibilidad}
+                      </p>
+                      {c.resumen && <p className="text-sm text-navy-500 mt-2 max-w-xl">{c.resumen}</p>}
+                      {c.habilidades?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {c.habilidades.map((h) => (
+                            <span key={h} className="text-xs bg-navy-50 text-navy-600 px-2 py-0.5 rounded-full">{h}</span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-4 mt-2">
+                        {c.cvUrl && (
+                          <a href={c.cvUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-teal-600 font-semibold">
+                            <FileText size={15} /> Ver CV
+                          </a>
+                        )}
+                        {c.email && (
+                          <a href={`mailto:${c.email}`} className="inline-flex items-center gap-1.5 text-sm text-teal-600 font-semibold">
+                            <Mail size={15} /> Contactar
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                    {c.membresia === "premium" && <Badge tone="amber">Perfil premium</Badge>}
+                  </div>
+                </Card>
+              ))}
+            </div>
           )}
         </div>
       )}
