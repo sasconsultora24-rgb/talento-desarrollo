@@ -3,8 +3,9 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Paperclip, X } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Select, Textarea, Button, Badge } from "../components/ui.jsx";
+import { emailValido, telefonoValido, archivoValido, CV_MAX_MB } from "../utils/validacion";
 
-const MAX_CV_MB = 5;
+const MAX_CV_MB = CV_MAX_MB;
 
 export default function Registro() {
   const [params] = useSearchParams();
@@ -68,8 +69,9 @@ export default function Registro() {
       setCvFile(null);
       return;
     }
-    if (file.size > MAX_CV_MB * 1024 * 1024) {
-      setError(`El archivo supera los ${MAX_CV_MB}MB. Elegí uno más liviano.`);
+    const check = archivoValido(file);
+    if (!check.valido) {
+      setError(check.error);
       e.target.value = "";
       return;
     }
@@ -79,6 +81,14 @@ export default function Registro() {
   async function submitCandidato(e) {
     e.preventDefault();
     setError("");
+    if (!emailValido(candidato.email)) {
+      setError("Ingresá un email válido.");
+      return;
+    }
+    if (!telefonoValido(candidato.telefono)) {
+      setError("Ingresá un teléfono válido (solo números, espacios, + o -).");
+      return;
+    }
     setEnviando(true);
     try {
       let cvUrl = null;
@@ -118,6 +128,10 @@ export default function Registro() {
   async function submitEmpresa(e) {
     e.preventDefault();
     setError("");
+    if (!emailValido(empresa.email)) {
+      setError("Ingresá un email válido.");
+      return;
+    }
     setEnviando(true);
     try {
       const resultado = await registrarEmpresa(empresa, password);

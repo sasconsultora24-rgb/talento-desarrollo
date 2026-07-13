@@ -4,6 +4,7 @@ import { User, Briefcase, GraduationCap, UserRound, Paperclip, X, FileText } fro
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState } from "../../components/ui.jsx";
 import { planesCandidatos } from "../../data/seed.js";
+import { emailValido, telefonoValido, archivoValido, CV_MAX_MB } from "../../utils/validacion";
 
 const TABS = [
   { id: "perfil", label: "Mi perfil", icon: User },
@@ -12,7 +13,7 @@ const TABS = [
   { id: "plan", label: "Mi plan", icon: UserRound },
 ];
 
-const MAX_CV_MB = 5;
+const MAX_CV_MB = CV_MAX_MB;
 
 export default function CandidatoPanel() {
   const {
@@ -26,6 +27,7 @@ export default function CandidatoPanel() {
   const [referencias, setReferencias] = useState(candidato?.referencias?.length ? candidato.referencias : [{ nombre: "", contacto: "" }]);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
+  const [mensajeEsError, setMensajeEsError] = useState(false);
 
   if (!candidato) return null;
 
@@ -44,10 +46,35 @@ export default function CandidatoPanel() {
     setReferencias((prev) => prev.filter((_, idx) => idx !== i));
   }
 
+  function handleCvChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const check = archivoValido(file);
+    if (!check.valido) {
+      setMensajeEsError(true);
+      setMensaje(check.error);
+      e.target.value = "";
+      return;
+    }
+    setMensaje("");
+    setCvFile(file);
+  }
+
   async function guardarPerfil(e) {
     e.preventDefault();
-    setGuardando(true);
     setMensaje("");
+    setMensajeEsError(false);
+    if (!emailValido(form.email)) {
+      setMensajeEsError(true);
+      setMensaje("Ingresá un email válido.");
+      return;
+    }
+    if (!telefonoValido(form.telefono)) {
+      setMensajeEsError(true);
+      setMensaje("Ingresá un teléfono válido (solo números, espacios, + o -).");
+      return;
+    }
+    setGuardando(true);
     try {
       let cvUrl = form.cvUrl;
       let cvNombre = form.cvNombre;
@@ -70,6 +97,7 @@ export default function CandidatoPanel() {
       setMensaje("Perfil actualizado.");
     } catch (err) {
       console.error(err);
+      setMensajeEsError(true);
       setMensaje("No pudimos guardar los cambios. Probá de nuevo.");
     } finally {
       setGuardando(false);
@@ -107,7 +135,9 @@ export default function CandidatoPanel() {
 
       {tab === "perfil" && (
         <Card className="p-6 max-w-2xl">
-          {mensaje && <p className="text-sm text-teal-600 mb-4">{mensaje}</p>}
+          {mensaje && (
+            <p className={`text-sm mb-4 ${mensajeEsError ? "text-red-600" : "text-teal-600"}`}>{mensaje}</p>
+          )}
           <form onSubmit={guardarPerfil}>
             <div className="grid sm:grid-cols-2 gap-x-4">
               <Field label="Nombre completo">
@@ -165,7 +195,7 @@ export default function CandidatoPanel() {
                   type="file"
                   accept=".pdf,.doc,.docx"
                   className="hidden"
-                  onChange={(e) => setCvFile(e.target.files?.[0] || null)}
+                  onChange={handleCvChange}
                 />
               </label>
             </Field>
