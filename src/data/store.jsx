@@ -1,25 +1,14 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase, CV_BUCKET } from "./supabaseClient";
 
-const SESSION_KEY = "std_app_session_v1";
-
 const AppContext = createContext(null);
-
-function loadSession() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {
-    console.warn("No se pudo leer sesión", e);
-  }
-  return { role: null, userId: null };
-}
 
 // ---------- Mappers: filas de Supabase (snake_case) -> objetos de la app (camelCase) ----------
 
 function mapEmpresa(row) {
   return {
     id: row.id,
+    userId: row.user_id,
     nombre: row.nombre,
     rubro: row.rubro,
     tamano: row.tamano,
@@ -34,6 +23,7 @@ function mapEmpresa(row) {
 function mapCandidato(row) {
   return {
     id: row.id,
+    userId: row.user_id,
     nombre: row.nombre,
     email: row.email,
     telefono: row.telefono,
@@ -104,8 +94,11 @@ function mapMentoria(row, reservas) {
   };
 }
 
+const SESSION_VACIA = { role: null, userId: null, authUserId: null, email: null };
+
 export function AppProvider({ children }) {
   const [loading, setLoading] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
   const [error, setError] = useState(null);
   const [empresas, setEmpresas] = useState([]);
   const [candidatos, setCandidatos] = useState([]);
@@ -113,11 +106,8 @@ export function AppProvider({ children }) {
   const [postulaciones, setPostulaciones] = useState([]);
   const [capacitaciones, setCapacitaciones] = useState([]);
   const [mentorias, setMentorias] = useState([]);
-  const [session, setSession] = useState(loadSession);
-
-  useEffect(() => {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  }, [session]);
+  const [session, setSession] = useState(SESSION_VACIA);
+  const resolvingRef = useRef(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -173,9 +163,175 @@ export function AppProvider({ children }) {
     refresh();
   }, [refresh]);
 
-  // ---------- Sesión ----------
-  const login = useCallback((role, userId) => setSession({ role, userId }), []);
-  const logout = useCallback(() => setSession({ role: null, userId: null }), []);
+  // ---------- Sesión real (Supabase Auth) ----------
+
+  // Resuelve el rol de un usuario autenticado: admin > candidato > empresa.
+  // Si el usuario recién confirmó su email y todavía no tiene fila de perfil
+  // (quedó pendiente en user_metadata al registrarse), la crea ahora que ya
+  // hay una sesión válida.
+  const resolverSesion = useCallback(async (authUser) => {
+    if (!authUser) {
+      setSession(SESSION_VACIA);
+      return SESSION_VACIA;
+    }
+    if (resolvingRef.current) return session;
+    resolvingRef.current = true;
+    try {
+      const { data: adminRow } = await supabase
+        .from("admins")
+        .select("user_id")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (adminRow) {
+        const nueva = { role: "admin", userId: "admin", authUserId: authUser.id, email: authUser.email };
+        setSession(nueva);
+        return nueva;
+      }
+
+      const { data: candRow } = await supabase
+        .from("candidatos")
+        .select("id")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (candRow) {
+        const nueva = { role: "candidato", userId: candRow.id, authUserId: authUser.id, email: authUser.email };
+        setSession(nueva);
+        return nueva;
+      }
+
+      const { data: empRow } = await supabase
+        .from("empresas")
+        .select("id")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (empRow) {
+        const nueva = { role: "empresa", userId: empRow.id, authUserId: authUser.id, email: authUser.email };
+        setSession(nueva);
+        return nueva;
+      }
+
+      // Sin perfil todavía: ¿venía de un registro pendiente de confirmación de email?
+      const pendiente = authUser.user_metadata?.pending_profile;
+      if (pendiente?.tipo === "candidato") {
+        const { data: creado, error: insErr } = await supabase
+          .from("candidatos")
+          .insert({ ...pendiente.datos, user_id: authUser.id })
+          .select()
+          .single();
+        if (!insErr && creado) {
+          await refresh();
+          const nueva = { role: "candidato", userId: creado.id, authUserId: authUser.id, email: authUser.email };
+          setSession(nueva);
+          return nueva;
+        }
+      }
+      if (pendiente?.tipo === "empresa") {
+        const { data: creada, error: insErr } = await supabase
+          .from("empresas")
+          .insert({ ...pendiente.datos, user_id: authUser.id })
+          .select()
+          .single();
+        if (!insErr && creada) {
+          await refresh();
+          const nueva = { role: "empresa", userId: creada.id, authUserId: authUser.id, email: authUser.email };
+          setSession(nueva);
+          return nueva;
+        }
+      }
+
+      const nueva = { role: null, userId: null, authUserId: authUser.id, email: authUser.email };
+      setSession(nueva);
+      return nueva;
+    } finally {
+      resolvingRef.current = false;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refresh]);
+
+  useEffect(() => {
+    let activo = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!activo) return;
+      resolverSesion(data.session?.user || null).finally(() => setAuthReady(true));
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      resolverSesion(newSession?.user || null);
+    });
+    return () => {
+      activo = false;
+      sub.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    setSession(SESSION_VACIA);
+  }, []);
+
+  // Registro: crea el usuario de auth. Si Supabase requiere confirmar el
+  // email, el perfil (candidato/empresa) queda guardado en user_metadata y se
+  // crea recién cuando la sesión sea válida (ver resolverSesion).
+  const registrarCandidato = useCallback(async (perfil, password) => {
+    const datos = {
+      nombre: perfil.nombre,
+      email: perfil.email,
+      telefono: perfil.telefono,
+      ubicacion: perfil.ubicacion,
+      titulo: perfil.titulo,
+      resumen: perfil.resumen,
+      habilidades: perfil.habilidades || [],
+      nivel: perfil.nivel,
+      disponibilidad: perfil.disponibilidad,
+      membresia: "free",
+      cv_url: perfil.cvUrl || null,
+      cv_nombre: perfil.cvNombre || null,
+      referencias: perfil.referencias || [],
+    };
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: perfil.email,
+      password,
+      options: { data: { pending_profile: { tipo: "candidato", datos } } },
+    });
+    if (signUpError) throw signUpError;
+
+    if (data.session) {
+      // confirmación de email desactivada: ya podemos crear el perfil ahora mismo
+      const resuelta = await resolverSesion(data.session.user);
+      return { confirmado: true, userId: resuelta.userId };
+    }
+    return { confirmado: false, userId: null };
+  }, [resolverSesion]);
+
+  const registrarEmpresa = useCallback(async (perfil, password) => {
+    const datos = {
+      nombre: perfil.nombre,
+      rubro: perfil.rubro,
+      tamano: perfil.tamano,
+      ubicacion: perfil.ubicacion,
+      contacto: perfil.contacto,
+      email: perfil.email,
+      plan: "basico",
+    };
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: perfil.email,
+      password,
+      options: { data: { pending_profile: { tipo: "empresa", datos } } },
+    });
+    if (signUpError) throw signUpError;
+
+    if (data.session) {
+      const resuelta = await resolverSesion(data.session.user);
+      return { confirmado: true, userId: resuelta.userId };
+    }
+    return { confirmado: false, userId: null };
+  }, [resolverSesion]);
+
+  const iniciarSesion = useCallback(async (email, password) => {
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInError) throw signInError;
+    return resolverSesion(data.user);
+  }, [resolverSesion]);
 
   // ---------- Archivos (CV) ----------
   const subirCV = useCallback(async (file) => {
@@ -188,34 +344,6 @@ export function AppProvider({ children }) {
   }, []);
 
   // ---------- Candidatos ----------
-  const registrarCandidato = useCallback(async (perfil) => {
-    const payload = {
-      nombre: perfil.nombre,
-      email: perfil.email,
-      telefono: perfil.telefono,
-      ubicacion: perfil.ubicacion,
-      titulo: perfil.titulo,
-      resumen: perfil.resumen,
-      habilidades: perfil.habilidades || [],
-      nivel: perfil.nivel,
-      disponibilidad: perfil.disponibilidad,
-      membresia: perfil.membresia || "free",
-      cv_url: perfil.cvUrl || null,
-      cv_nombre: perfil.cvNombre || null,
-      referencias: perfil.referencias || [],
-    };
-    const { data, error: insertError } = await supabase
-      .from("candidatos")
-      .insert(payload)
-      .select()
-      .single();
-    if (insertError) throw insertError;
-    const nuevo = mapCandidato(data);
-    setCandidatos((prev) => [...prev, nuevo]);
-    setSession({ role: "candidato", userId: nuevo.id });
-    return nuevo.id;
-  }, []);
-
   const actualizarCandidato = useCallback(async (id, cambios) => {
     const payload = {};
     if ("nombre" in cambios) payload.nombre = cambios.nombre;
@@ -244,28 +372,6 @@ export function AppProvider({ children }) {
   }, []);
 
   // ---------- Empresas ----------
-  const registrarEmpresa = useCallback(async (perfil) => {
-    const payload = {
-      nombre: perfil.nombre,
-      rubro: perfil.rubro,
-      tamano: perfil.tamano,
-      ubicacion: perfil.ubicacion,
-      contacto: perfil.contacto,
-      email: perfil.email,
-      plan: perfil.plan || "basico",
-    };
-    const { data, error: insertError } = await supabase
-      .from("empresas")
-      .insert(payload)
-      .select()
-      .single();
-    if (insertError) throw insertError;
-    const nueva = mapEmpresa(data);
-    setEmpresas((prev) => [...prev, nueva]);
-    setSession({ role: "empresa", userId: nueva.id });
-    return nueva.id;
-  }, []);
-
   const actualizarEmpresa = useCallback(async (id, cambios) => {
     const payload = {};
     if ("nombre" in cambios) payload.nombre = cambios.nombre;
@@ -401,6 +507,7 @@ export function AppProvider({ children }) {
 
   const value = {
     loading,
+    authReady,
     error,
     empresas,
     candidatos,
@@ -409,8 +516,8 @@ export function AppProvider({ children }) {
     capacitaciones,
     mentorias,
     session,
-    login,
     logout,
+    iniciarSesion,
     refresh,
     subirCV,
     registrarCandidato,

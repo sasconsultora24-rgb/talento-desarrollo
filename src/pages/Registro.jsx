@@ -14,6 +14,8 @@ export default function Registro() {
   const navigate = useNavigate();
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
+  const [revisarEmail, setRevisarEmail] = useState(false);
+  const [password, setPassword] = useState("");
 
   const [candidato, setCandidato] = useState({
     nombre: "",
@@ -79,20 +81,27 @@ export default function Registro() {
         cvNombre = subido?.nombre || null;
       }
       const referenciasLimpias = referencias.filter((r) => r.nombre.trim() || r.contacto.trim());
-      const id = await registrarCandidato({
-        ...candidato,
-        habilidades: candidato.habilidades
-          .split(",")
-          .map((h) => h.trim())
-          .filter(Boolean),
-        cvUrl,
-        cvNombre,
-        referencias: referenciasLimpias,
-      });
-      if (id) navigate("/candidato");
+      const resultado = await registrarCandidato(
+        {
+          ...candidato,
+          habilidades: candidato.habilidades
+            .split(",")
+            .map((h) => h.trim())
+            .filter(Boolean),
+          cvUrl,
+          cvNombre,
+          referencias: referenciasLimpias,
+        },
+        password
+      );
+      if (resultado.confirmado) {
+        navigate("/candidato");
+      } else {
+        setRevisarEmail(true);
+      }
     } catch (err) {
       console.error(err);
-      setError("No pudimos crear tu perfil. Probá de nuevo en unos segundos.");
+      setError(err.message?.includes("already registered") ? "Ese email ya está registrado. Probá ingresar." : "No pudimos crear tu perfil. Probá de nuevo en unos segundos.");
     } finally {
       setEnviando(false);
     }
@@ -103,11 +112,15 @@ export default function Registro() {
     setError("");
     setEnviando(true);
     try {
-      const id = await registrarEmpresa(empresa);
-      if (id) navigate("/empresa");
+      const resultado = await registrarEmpresa(empresa, password);
+      if (resultado.confirmado) {
+        navigate("/empresa");
+      } else {
+        setRevisarEmail(true);
+      }
     } catch (err) {
       console.error(err);
-      setError("No pudimos registrar la PYME. Probá de nuevo en unos segundos.");
+      setError(err.message?.includes("already registered") ? "Ese email ya está registrado. Probá ingresar." : "No pudimos registrar la PYME. Probá de nuevo en unos segundos.");
     } finally {
       setEnviando(false);
     }
@@ -150,6 +163,12 @@ export default function Registro() {
             {error}
           </div>
         )}
+        {revisarEmail && (
+          <div className="mb-4 text-sm text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2">
+            Te enviamos un email para confirmar tu cuenta. Confirmalo y después ingresá desde{" "}
+            <Link to="/ingresar" className="font-semibold underline">Ingresar</Link>.
+          </div>
+        )}
         {tipo === "candidato" ? (
           <form onSubmit={submitCandidato}>
             <Field label="Nombre completo">
@@ -163,6 +182,9 @@ export default function Registro() {
                 <Input value={candidato.telefono} onChange={(e) => setCandidato({ ...candidato, telefono: e.target.value })} />
               </Field>
             </div>
+            <Field label="Contraseña" hint="Mínimo 6 caracteres">
+              <Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            </Field>
             <div className="grid sm:grid-cols-2 gap-x-4">
               <Field label="Ubicación">
                 <Input required value={candidato.ubicacion} onChange={(e) => setCandidato({ ...candidato, ubicacion: e.target.value })} />
@@ -268,6 +290,9 @@ export default function Registro() {
                 <Input type="email" required value={empresa.email} onChange={(e) => setEmpresa({ ...empresa, email: e.target.value })} />
               </Field>
             </div>
+            <Field label="Contraseña" hint="Mínimo 6 caracteres">
+              <Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            </Field>
             <Button type="submit" disabled={enviando} className="w-full mt-2">
               {enviando ? "Registrando..." : "Registrar mi PYME"}
             </Button>

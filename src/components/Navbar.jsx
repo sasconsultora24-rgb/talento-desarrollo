@@ -28,8 +28,8 @@ export default function Navbar() {
       ? "/admin"
       : null;
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     navigate("/");
     setOpen(false);
   }
