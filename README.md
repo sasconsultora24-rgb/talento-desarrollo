@@ -1,60 +1,84 @@
 # SAS Talento & Desarrollo
 
-Prototipo funcional de la plataforma de RRHH de SAS Consultora. Conecta PYMEs con
-profesionales: publicación y postulación a vacantes, capacitaciones, mentorías y un
-panel de administración interno.
+Plataforma de RRHH de SAS Consultora. Conecta PYMEs con profesionales: publicación y
+postulación a vacantes (con CV y referencias laborales), capacitaciones, mentorías y
+un panel de administración interno. Backend real en Supabase (Postgres + Auth + Storage).
 
-**Demo en vivo:** https://sas-talento-desarrollo.netlify.app
+**Sitio en vivo:** https://sasconsultora24-rgb.github.io/talento-desarrollo/
+**Repositorio:** https://github.com/sasconsultora24-rgb/talento-desarrollo
 
 ## Stack
 
-- React + Vite
+- React + Vite, `HashRouter` (necesario para que el routing funcione en GitHub Pages sin configuración de servidor)
 - React Router (rutas por rol: candidato / empresa / admin)
-- Tailwind CSS (identidad visual propia: navy + teal + amber)
-- Datos simulados en `localStorage` (sin backend todavía) — ver `src/data/`
+- Tailwind CSS
+- Supabase: Postgres (datos), Auth (email + contraseña, con confirmación por email), Storage (CVs de candidatos)
+- Hosting: GitHub Pages, rama `gh-pages` con el build estático
 
 ## Cómo correrlo localmente
 
 ```bash
 npm install
-npm run dev       # http://localhost:5173
-npm run build      # genera dist/ para producción
+cp .env.example .env   # completar con tu URL y anon key de Supabase
+npm run dev             # http://localhost:5173
+npm run build            # genera dist/ para producción
 ```
 
-## Ingresar al prototipo
+Variables de entorno necesarias en `.env`:
 
-En `/ingresar` podés simular el ingreso como:
-- **Profesional**: elegís uno de los perfiles de ejemplo.
-- **PYME**: elegís una de las empresas de ejemplo.
-- **Admin (equipo SAS)**: acceso interno para moderar vacantes, cargar capacitaciones y ver métricas.
+```
+VITE_SUPABASE_URL=https://<tu-proyecto>.supabase.co
+VITE_SUPABASE_ANON_KEY=<tu-anon-key-publica>
+```
 
-No hay contraseñas: es un prototipo para validar diseño y flujos antes de construir el backend real.
+## Ingresar a la app
+
+El login es real, con Supabase Auth (email + contraseña):
+
+- **Registrarse** (`/registro`): profesionales o PYMEs crean su cuenta con email y contraseña.
+  Supabase envía un email de confirmación; hasta que no se confirma, no se puede ingresar.
+- **Ingresar** (`/ingresar`): con el email y contraseña ya confirmados, redirige automáticamente
+  al panel según el rol (candidato, empresa o admin).
+- **Admin**: cuenta interna de SAS Consultora, creada directamente en la base (no hay
+  autoregistro de admins).
 
 ## Estructura
 
 ```
 src/
-  data/         # store.jsx (contexto + acciones) y seed.js (datos de ejemplo)
-  components/   # Navbar, Footer, Layout, componentes de UI reutilizables
-  pages/        # Landing, Vacantes, Capacitaciones, Mentorías, Para PYMEs, Registro, Ingresar
+  data/             # supabaseClient.js (cliente) y store.jsx (contexto, sesión y acciones)
+  components/       # Navbar, Footer, Layout, RequireRole, componentes de UI reutilizables
+  pages/            # Landing, Vacantes, Capacitaciones, Mentorías, Para PYMEs, Registro, Ingresar
   pages/candidato/  # Panel del profesional
   pages/empresa/    # Panel de la PYME
   pages/admin/      # Panel interno de SAS Consultora
 ```
 
-## Subir a GitHub
+## Base de datos
 
-El proyecto ya tiene un repositorio git local inicializado con el primer commit.
-Para subirlo:
+El esquema, las políticas de Row Level Security y los datos de ejemplo viven en el
+proyecto de Supabase (migraciones aplicadas vía MCP, no versionadas como archivos SQL
+en este repo todavía). Tablas principales: `empresas`, `candidatos`, `admins`, `vacantes`,
+`postulaciones`, `capacitaciones`, `capacitacion_inscriptos`, `mentorias`, `mentoria_reservas`.
+
+## Redesplegar a GitHub Pages
 
 ```bash
-git remote add origin <URL_DE_TU_REPO_EN_GITHUB>
-git branch -M main
-git push -u origin main
+npm run build --outDir build_deploy --emptyOutDir
+# copiar el contenido de build_deploy/ a la raíz de la rama gh-pages
+# (incluir un archivo .nojekyll vacío)
+# commitear y pushear la rama gh-pages
 ```
 
-## Próximos pasos sugeridos
+## Portabilidad a otro hosting
 
-- Reemplazar `localStorage` por un backend real (autenticación, base de datos).
-- Conectar el repositorio de GitHub a Netlify para que cada push despliegue automáticamente.
-- Sumar pagos para los planes de empresas y candidatos.
+La app no tiene dependencias específicas de GitHub Pages: usa `HashRouter` (sin necesidad
+de reglas de rewrite en el servidor) y todos los assets son relativos al `base` configurado
+en `vite.config.js`. Se puede desplegar el contenido de `dist/` en cualquier hosting estático
+(Netlify, Cloudflare Pages, un servidor propio en DonWeb, etc.) sin tocar el código de la app.
+
+## Checklist hacia la versión definitiva
+
+Ver `CHECKLIST-VERSION-DEFINITIVA.md` para el detalle de lo que falta antes de considerar
+esto un producto terminado (diseño/marca, responsive, buscador de candidatos, motor de pago,
+notificaciones por email, políticas de privacidad, etc.).
