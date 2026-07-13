@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Paperclip, X } from "lucide-react";
 import { useApp } from "../data/store.jsx";
@@ -10,12 +10,20 @@ export default function Registro() {
   const [params] = useSearchParams();
   const tipoInicial = params.get("tipo") === "empresa" ? "empresa" : "candidato";
   const [tipo, setTipo] = useState(tipoInicial);
-  const { registrarCandidato, registrarEmpresa, subirCV } = useApp();
+  const { registrarCandidato, registrarEmpresa, subirCV, session, resolviendo } = useApp();
   const navigate = useNavigate();
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   const [revisarEmail, setRevisarEmail] = useState(false);
   const [password, setPassword] = useState("");
+  const [intentado, setIntentado] = useState(false);
+
+  useEffect(() => {
+    if (!intentado || resolviendo) return;
+    if (session.role === "candidato") navigate("/candidato");
+    else if (session.role === "empresa") navigate("/empresa");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intentado, resolviendo, session]);
 
   const [candidato, setCandidato] = useState({
     nombre: "",
@@ -95,7 +103,7 @@ export default function Registro() {
         password
       );
       if (resultado.confirmado) {
-        navigate("/candidato");
+        setIntentado(true);
       } else {
         setRevisarEmail(true);
       }
@@ -114,7 +122,7 @@ export default function Registro() {
     try {
       const resultado = await registrarEmpresa(empresa, password);
       if (resultado.confirmado) {
-        navigate("/empresa");
+        setIntentado(true);
       } else {
         setRevisarEmail(true);
       }

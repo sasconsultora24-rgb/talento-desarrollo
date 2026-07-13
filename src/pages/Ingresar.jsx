@@ -1,26 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Button, Badge } from "../components/ui.jsx";
 
 export default function Ingresar() {
-  const { iniciarSesion } = useApp();
+  const { iniciarSesion, session, resolviendo } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
+  const [intentado, setIntentado] = useState(false);
+
+  useEffect(() => {
+    if (!intentado || resolviendo) return;
+    if (session.role === "candidato") navigate("/candidato");
+    else if (session.role === "empresa") navigate("/empresa");
+    else if (session.role === "admin") navigate("/admin");
+    else if (session.authUserId) {
+      setError("Tu cuenta no tiene un perfil asociado todavía. Contactanos si creés que es un error.");
+      setIntentado(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [intentado, resolviendo, session]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setEnviando(true);
     try {
-      const resuelta = await iniciarSesion(email, password);
-      if (resuelta.role === "candidato") navigate("/candidato");
-      else if (resuelta.role === "empresa") navigate("/empresa");
-      else if (resuelta.role === "admin") navigate("/admin");
-      else setError("Tu cuenta no tiene un perfil asociado todavía. Contactanos si creés que es un error.");
+      await iniciarSesion(email, password);
+      setIntentado(true);
     } catch (err) {
       console.error(err);
       setError(
@@ -58,8 +68,8 @@ export default function Ingresar() {
           <Field label="Contraseña">
             <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </Field>
-          <Button type="submit" disabled={enviando} className="w-full">
-            {enviando ? "Ingresando..." : "Ingresar"}
+          <Button type="submit" disabled={enviando || (intentado && resolviendo)} className="w-full">
+            {enviando || (intentado && resolviendo) ? "Ingresando..." : "Ingresar"}
           </Button>
         </form>
       </Card>
