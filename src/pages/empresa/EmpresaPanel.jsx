@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
@@ -37,7 +38,9 @@ const postulacionBadge = {
 
 export default function EmpresaPanel() {
   const { session, empresas, vacantes, candidatos, postulaciones, publicarVacante, cambiarEstadoPostulacion, iniciarPago } = useApp();
-  const [tab, setTab] = useState("vacantes");
+  const [searchParams] = useSearchParams();
+  const tabInicial = TABS.some((t) => t.id === searchParams.get("tab")) ? searchParams.get("tab") : "vacantes";
+  const [tab, setTab] = useState(tabInicial);
   const [formOpen, setFormOpen] = useState(false);
   const [pagando, setPagando] = useState(null);
   const [errorPago, setErrorPago] = useState("");

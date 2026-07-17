@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Briefcase, Users, GraduationCap, LineChart, Check } from "lucide-react";
 import { Card, Button, SectionTitle, Badge } from "../components/ui.jsx";
 import { planesEmpresas } from "../data/seed.js";
+import { useApp } from "../data/store.jsx";
 
 const areas = [
   {
@@ -45,6 +46,9 @@ const areas = [
 ];
 
 export default function ParaPymes() {
+  const { session } = useApp();
+  const esEmpresaLogueada = session.role === "empresa";
+
   return (
     <div>
       <section className="bg-gradient-to-br from-navy-900 to-navy-700 text-white">
@@ -57,8 +61,10 @@ export default function ParaPymes() {
             Reclutamos, retenemos y desarrollamos el talento de tu equipo con un servicio
             integral pensado para pequeñas y medianas empresas.
           </p>
-          <Link to="/registro?tipo=empresa">
-            <Button variant="amber" className="mt-6 px-6 py-3">Registrar mi PYME</Button>
+          <Link to={esEmpresaLogueada ? "/empresa?tab=plan" : "/registro?tipo=empresa"}>
+            <Button variant="amber" className="mt-6 px-6 py-3">
+              {esEmpresaLogueada ? "Ir a mi panel" : "Registrar mi PYME"}
+            </Button>
           </Link>
         </div>
       </section>
@@ -107,9 +113,9 @@ export default function ParaPymes() {
                     </li>
                   ))}
                 </ul>
-                <Link to="/registro?tipo=empresa" className="mt-6">
+                <Link to={esEmpresaLogueada ? "/empresa?tab=plan" : "/registro?tipo=empresa"} className="mt-6">
                   <Button variant={i === 1 ? "primary" : "outline"} className="w-full">
-                    Elegir {p.nombre}
+                    {esEmpresaLogueada ? `Pagar plan ${p.nombre}` : `Elegir ${p.nombre}`}
                   </Button>
                 </Link>
               </Card>
