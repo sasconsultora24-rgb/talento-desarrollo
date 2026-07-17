@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase, CV_BUCKET } from "./supabaseClient";
 
 const AppContext = createContext(null);
@@ -110,6 +111,7 @@ export function AppProvider({ children }) {
   const [mentorias, setMentorias] = useState([]);
   const [session, setSession] = useState(SESSION_VACIA);
   const [resolviendo, setResolviendo] = useState(false);
+  const navigate = useNavigate();
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -263,7 +265,12 @@ export function AppProvider({ children }) {
       if (!activo) return;
       resolverSesion(data.session?.user || null).finally(() => setAuthReady(true));
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === "PASSWORD_RECOVERY") {
+        // Vino de un link de "olvidé mi contraseña": llevar a la pantalla
+        // de elegir nueva contraseña en vez de resolver el rol normal.
+        navigate("/recuperar");
+      }
       resolverSesion(newSession?.user || null);
     });
     return () => {
@@ -329,6 +336,21 @@ export function AppProvider({ children }) {
   const iniciarSesion = useCallback(async (email, password) => {
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) throw signInError;
+  }, []);
+
+  // Envía el email de "olvidé mi contraseña". El link lleva de vuelta a la
+  // app con un evento PASSWORD_RECOVERY (manejado arriba, en onAuthStateChange).
+  const solicitarRecuperacion = useCallback(async (email) => {
+    const { error: recError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname,
+    });
+    if (recError) throw recError;
+  }, []);
+
+  // Se usa en /recuperar, ya con la sesión temporal de recuperación activa.
+  const actualizarPassword = useCallback(async (password) => {
+    const { error: updError } = await supabase.auth.updateUser({ password });
+    if (updError) throw updError;
   }, []);
 
   // ---------- Archivos (CV) ----------
@@ -540,6 +562,8 @@ export function AppProvider({ children }) {
     session,
     logout,
     iniciarSesion,
+    solicitarRecuperacion,
+    actualizarPassword,
     refresh,
     subirCV,
     iniciarPago,

@@ -204,8 +204,8 @@ export default function Registro() {
                 <Input value={candidato.telefono} onChange={(e) => setCandidato({ ...candidato, telefono: e.target.value })} />
               </Field>
             </div>
-            <Field label="Contraseña" hint="Mínimo 6 caracteres">
-              <Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Field label="Contraseña" hint="Mínimo 8 caracteres">
+              <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
             <div className="grid sm:grid-cols-2 gap-x-4">
               <Field label="Ubicación">
@@ -312,8 +312,8 @@ export default function Registro() {
                 <Input type="email" required value={empresa.email} onChange={(e) => setEmpresa({ ...empresa, email: e.target.value })} />
               </Field>
             </div>
-            <Field label="Contraseña" hint="Mínimo 6 caracteres">
-              <Input type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Field label="Contraseña" hint="Mínimo 8 caracteres">
+              <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
             <Button type="submit" disabled={enviando} className="w-full mt-2">
               {enviando ? "Registrando..." : "Registrar mi PYME"}

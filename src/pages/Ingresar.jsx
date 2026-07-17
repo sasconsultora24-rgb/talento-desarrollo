@@ -4,13 +4,16 @@ import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Button, Badge } from "../components/ui.jsx";
 
 export default function Ingresar() {
-  const { iniciarSesion, session, resolviendo } = useApp();
+  const { iniciarSesion, solicitarRecuperacion, session, resolviendo } = useApp();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   const [intentado, setIntentado] = useState(false);
+  const [modoRecuperar, setModoRecuperar] = useState(false);
+  const [recuperando, setRecuperando] = useState(false);
+  const [mensajeRecuperar, setMensajeRecuperar] = useState("");
 
   useEffect(() => {
     if (!intentado || resolviendo) return;
@@ -45,6 +48,21 @@ export default function Ingresar() {
     }
   }
 
+  async function handleRecuperar(e) {
+    e.preventDefault();
+    setMensajeRecuperar("");
+    setRecuperando(true);
+    try {
+      await solicitarRecuperacion(email);
+      setMensajeRecuperar("Si ese email está registrado, te enviamos un link para elegir una nueva contraseña. Revisá tu casilla.");
+    } catch (err) {
+      console.error(err);
+      setMensajeRecuperar("No pudimos enviar el email. Probá de nuevo en unos segundos.");
+    } finally {
+      setRecuperando(false);
+    }
+  }
+
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 py-16">
       <div className="text-center mb-8">
@@ -56,22 +74,59 @@ export default function Ingresar() {
       </div>
 
       <Card className="p-6">
-        {error && (
-          <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
-            {error}
-          </div>
+        {modoRecuperar ? (
+          <>
+            <p className="text-sm text-navy-500 mb-4">
+              Ingresá tu email y te mandamos un link para elegir una nueva contraseña.
+            </p>
+            {mensajeRecuperar && (
+              <div className="mb-4 text-sm text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2">
+                {mensajeRecuperar}
+              </div>
+            )}
+            <form onSubmit={handleRecuperar}>
+              <Field label="Email">
+                <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              </Field>
+              <Button type="submit" disabled={recuperando} className="w-full">
+                {recuperando ? "Enviando..." : "Enviar link de recuperación"}
+              </Button>
+            </form>
+            <button
+              type="button"
+              onClick={() => { setModoRecuperar(false); setMensajeRecuperar(""); }}
+              className="text-teal-600 text-sm font-semibold mt-4"
+            >
+              ← Volver a ingresar
+            </button>
+          </>
+        ) : (
+          <>
+            {error && (
+              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleSubmit}>
+              <Field label="Email">
+                <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              </Field>
+              <Field label="Contraseña">
+                <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              </Field>
+              <Button type="submit" disabled={enviando || (intentado && resolviendo)} className="w-full">
+                {enviando || (intentado && resolviendo) ? "Ingresando..." : "Ingresar"}
+              </Button>
+            </form>
+            <button
+              type="button"
+              onClick={() => setModoRecuperar(true)}
+              className="text-teal-600 text-sm font-semibold mt-4"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          </>
         )}
-        <form onSubmit={handleSubmit}>
-          <Field label="Email">
-            <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-          </Field>
-          <Field label="Contraseña">
-            <Input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-          </Field>
-          <Button type="submit" disabled={enviando || (intentado && resolviendo)} className="w-full">
-            {enviando || (intentado && resolviendo) ? "Ingresando..." : "Ingresar"}
-          </Button>
-        </form>
       </Card>
     </div>
   );
