@@ -15,10 +15,19 @@ const TABS = [
 
 const MAX_CV_MB = CV_MAX_MB;
 
+function estadoPlan(vencimientoISO) {
+  if (!vencimientoISO) return { texto: "Sin pagos registrados todavía", vencido: true };
+  const vence = new Date(vencimientoISO);
+  const hoy = new Date();
+  const fecha = vence.toLocaleDateString("es-AR");
+  if (vence < hoy) return { texto: `Venció el ${fecha}`, vencido: true };
+  return { texto: `Vigente hasta el ${fecha}`, vencido: false };
+}
+
 export default function CandidatoPanel() {
   const {
     session, candidatos, vacantes, empresas, postulaciones, capacitaciones, mentorias,
-    actualizarCandidato, subirCV,
+    actualizarCandidato, subirCV, iniciarPago,
   } = useApp();
   const [tab, setTab] = useState("perfil");
   const candidato = candidatos.find((c) => c.id === session.userId);
@@ -28,6 +37,8 @@ export default function CandidatoPanel() {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [mensajeEsError, setMensajeEsError] = useState(false);
+  const [pagando, setPagando] = useState(null);
+  const [errorPago, setErrorPago] = useState("");
 
   if (!candidato) return null;
 
@@ -101,6 +112,18 @@ export default function CandidatoPanel() {
       setMensaje("No pudimos guardar los cambios. Probá de nuevo.");
     } finally {
       setGuardando(false);
+    }
+  }
+
+  async function pagarPlan(planId) {
+    setErrorPago("");
+    setPagando(planId);
+    try {
+      const initPoint = await iniciarPago("membresia_candidato", planId);
+      window.location.href = initPoint;
+    } catch (err) {
+      setErrorPago(err.message || "No se pudo iniciar el pago.");
+      setPagando(null);
     }
   }
 
@@ -287,27 +310,55 @@ export default function CandidatoPanel() {
       )}
 
       {tab === "plan" && (
-        <div className="grid sm:grid-cols-2 gap-6 max-w-2xl">
-          {planesCandidatos.map((p) => (
-            <Card key={p.id} className={`p-5 ${candidato.membresia === p.id ? "border-2 border-teal-500" : ""}`}>
-              <h3 className="font-bold text-navy-900">{p.nombre}</h3>
-              <div className="text-xl font-extrabold text-navy-800 mt-1">{p.precio}</div>
-              <ul className="mt-3 space-y-1.5 text-sm text-navy-500">
-                {p.incluye.map((i) => <li key={i}>• {i}</li>)}
-              </ul>
-              {candidato.membresia === p.id ? (
-                <Badge tone="teal">Plan actual</Badge>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="w-full mt-4"
-                  onClick={() => actualizarCandidato(candidato.id, { membresia: p.id })}
-                >
-                  Elegir este plan
-                </Button>
-              )}
-            </Card>
-          ))}
+        <div className="max-w-2xl">
+          {errorPago && (
+            <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorPago}</div>
+          )}
+          <div className="grid sm:grid-cols-2 gap-6">
+            {planesCandidatos.map((p) => {
+              const esActual = candidato.membresia === p.id;
+              const esGratis = p.id === "free";
+              const estado = esActual && !esGratis ? estadoPlan(candidato.membresiaVencimiento) : null;
+              return (
+                <Card key={p.id} className={`p-5 flex flex-col ${esActual ? "border-2 border-teal-500" : ""}`}>
+                  <h3 className="font-bold text-navy-900">{p.nombre}</h3>
+                  <div className="text-xl font-extrabold text-navy-800 mt-1">{p.precio}</div>
+                  <ul className="mt-3 space-y-1.5 text-sm text-navy-500 flex-1">
+                    {p.incluye.map((i) => <li key={i}>• {i}</li>)}
+                  </ul>
+                  {esActual && (
+                    <div className="mt-3">
+                      <Badge tone="teal">Plan actual</Badge>
+                      {estado && <p className={`text-xs mt-1.5 ${estado.vencido ? "text-red-600" : "text-navy-400"}`}>{estado.texto}</p>}
+                    </div>
+                  )}
+                  {esGratis ? (
+                    !esActual && (
+                      <Button
+                        variant="outline"
+                        className="w-full mt-4"
+                        onClick={() => actualizarCandidato(candidato.id, { membresia: "free" })}
+                      >
+                        Volver al plan gratuito
+                      </Button>
+                    )
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full mt-4"
+                      disabled={pagando === p.id}
+                      onClick={() => pagarPlan(p.id)}
+                    >
+                      {pagando === p.id ? "Redirigiendo a Mercado Pago..." : esActual ? "Renovar" : "Elegir y pagar este plan"}
+                    </Button>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+          <p className="text-xs text-navy-400 mt-6">
+            El pago se procesa con Mercado Pago. Cada pago aprobado extiende la vigencia de la membresía 30 días desde hoy (o desde el vencimiento actual, si todavía está vigente).
+          </p>
         </div>
       )}
     </div>

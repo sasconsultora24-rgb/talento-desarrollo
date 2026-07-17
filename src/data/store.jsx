@@ -16,6 +16,7 @@ function mapEmpresa(row) {
     contacto: row.contacto,
     email: row.email,
     plan: row.plan,
+    planVencimiento: row.plan_vencimiento,
     fechaRegistro: row.created_at ? row.created_at.slice(0, 10) : "",
   };
 }
@@ -34,6 +35,7 @@ function mapCandidato(row) {
     nivel: row.nivel,
     disponibilidad: row.disponibilidad,
     membresia: row.membresia,
+    membresiaVencimiento: row.membresia_vencimiento,
     cvUrl: row.cv_url,
     cvNombre: row.cv_nombre,
     referencias: row.referencias || [],
@@ -389,6 +391,29 @@ export function AppProvider({ children }) {
     setEmpresas((prev) => prev.map((e) => (e.id === id ? actualizada : e)));
   }, []);
 
+  // ---------- Pagos (Mercado Pago) ----------
+  // Pide al backend que arme una preferencia de pago (Checkout Pro) para un
+  // plan de empresa o la membresía premium de candidato, y devuelve la URL
+  // de pago a la que hay que redirigir. El precio se calcula del lado del
+  // servidor, nunca se manda desde acá.
+  const iniciarPago = useCallback(async (tipo, planId) => {
+    const { data, error: fnError } = await supabase.functions.invoke("crear-preferencia-pago", {
+      body: { tipo, planId },
+    });
+    if (fnError) {
+      let mensaje = "No se pudo iniciar el pago.";
+      try {
+        const body = await fnError.context?.json?.();
+        if (body?.error) mensaje = body.error;
+      } catch {
+        // sin cuerpo de error legible, se usa el mensaje genérico
+      }
+      throw new Error(mensaje);
+    }
+    if (!data?.initPoint) throw new Error("No se pudo iniciar el pago.");
+    return data.initPoint;
+  }, []);
+
   // ---------- Vacantes ----------
   const publicarVacante = useCallback(async (empresaId, vacante) => {
     const payload = {
@@ -517,6 +542,7 @@ export function AppProvider({ children }) {
     iniciarSesion,
     refresh,
     subirCV,
+    iniciarPago,
     registrarCandidato,
     actualizarCandidato,
     registrarEmpresa,

@@ -4,6 +4,15 @@ import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
 
+function estadoPlan(vencimientoISO) {
+  if (!vencimientoISO) return { texto: "Sin pagos registrados todavía", vencido: true };
+  const vence = new Date(vencimientoISO);
+  const hoy = new Date();
+  const fecha = vence.toLocaleDateString("es-AR");
+  if (vence < hoy) return { texto: `Venció el ${fecha}`, vencido: true };
+  return { texto: `Vigente hasta el ${fecha}`, vencido: false };
+}
+
 const TABS = [
   { id: "vacantes", label: "Mis vacantes", icon: Briefcase },
   { id: "candidatos", label: "Candidatos postulados", icon: Users2 },
@@ -27,9 +36,11 @@ const postulacionBadge = {
 };
 
 export default function EmpresaPanel() {
-  const { session, empresas, vacantes, candidatos, postulaciones, publicarVacante, cambiarEstadoPostulacion, actualizarEmpresa } = useApp();
+  const { session, empresas, vacantes, candidatos, postulaciones, publicarVacante, cambiarEstadoPostulacion, iniciarPago } = useApp();
   const [tab, setTab] = useState("vacantes");
   const [formOpen, setFormOpen] = useState(false);
+  const [pagando, setPagando] = useState(null);
+  const [errorPago, setErrorPago] = useState("");
   const empresa = empresas.find((e) => e.id === session.userId);
 
   const [nueva, setNueva] = useState({
@@ -81,6 +92,18 @@ export default function EmpresaPanel() {
     }
   }
 
+  async function pagarPlan(planId) {
+    setErrorPago("");
+    setPagando(planId);
+    try {
+      const initPoint = await iniciarPago("plan_empresa", planId);
+      window.location.href = initPoint;
+    } catch (err) {
+      setErrorPago(err.message || "No se pudo iniciar el pago.");
+      setPagando(null);
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <div className="mb-8">
@@ -91,7 +114,7 @@ export default function EmpresaPanel() {
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <StatCard label="Vacantes publicadas" value={misVacantes.length} tone="navy" />
         <StatCard label="Postulaciones recibidas" value={postulacionesRecibidas.length} tone="teal" />
-        <StatCard label="Plan actual" value={empresa.plan} tone="amber" />
+        <StatCard label="Plan actual" value={planesEmpresas.find((p) => p.id === empresa.plan)?.nombre || empresa.plan} tone="amber" />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8 border-b border-navy-100 pb-1">
@@ -296,23 +319,42 @@ export default function EmpresaPanel() {
       )}
 
       {tab === "plan" && (
-        <div className="grid sm:grid-cols-3 gap-6">
-          {planesEmpresas.map((p) => (
-            <Card key={p.id} className={`p-5 ${empresa.plan === p.id ? "border-2 border-teal-500" : ""}`}>
-              <h3 className="font-bold text-navy-900">{p.nombre}</h3>
-              <div className="text-xl font-extrabold text-navy-800 mt-1">{p.precio}</div>
-              <ul className="mt-3 space-y-1.5 text-sm text-navy-500">
-                {p.incluye.map((i) => <li key={i}>• {i}</li>)}
-              </ul>
-              {empresa.plan === p.id ? (
-                <Badge tone="teal">Plan actual</Badge>
-              ) : (
-                <Button variant="outline" className="w-full mt-4" onClick={() => actualizarEmpresa(empresa.id, { plan: p.id })}>
-                  Elegir este plan
-                </Button>
-              )}
-            </Card>
-          ))}
+        <div>
+          {errorPago && (
+            <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorPago}</div>
+          )}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {planesEmpresas.map((p) => {
+              const esActual = empresa.plan === p.id;
+              const estado = esActual ? estadoPlan(empresa.planVencimiento) : null;
+              return (
+                <Card key={p.id} className={`p-5 flex flex-col ${esActual ? "border-2 border-teal-500" : ""}`}>
+                  <h3 className="font-bold text-navy-900">{p.nombre}</h3>
+                  <div className="text-xl font-extrabold text-navy-800 mt-1">{p.precio}</div>
+                  <ul className="mt-3 space-y-1.5 text-sm text-navy-500 flex-1">
+                    {p.incluye.map((i) => <li key={i}>• {i}</li>)}
+                  </ul>
+                  {esActual && (
+                    <div className="mt-3">
+                      <Badge tone="teal">Plan actual</Badge>
+                      <p className={`text-xs mt-1.5 ${estado.vencido ? "text-red-600" : "text-navy-400"}`}>{estado.texto}</p>
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="w-full mt-4"
+                    disabled={pagando === p.id}
+                    onClick={() => pagarPlan(p.id)}
+                  >
+                    {pagando === p.id ? "Redirigiendo a Mercado Pago..." : esActual ? "Renovar" : "Elegir y pagar este plan"}
+                  </Button>
+                </Card>
+              );
+            })}
+          </div>
+          <p className="text-xs text-navy-400 mt-6">
+            El pago se procesa con Mercado Pago. Cada pago aprobado extiende la vigencia del plan 30 días desde hoy (o desde el vencimiento actual, si todavía está vigente).
+          </p>
         </div>
       )}
     </div>

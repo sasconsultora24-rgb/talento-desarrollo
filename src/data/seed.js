@@ -209,23 +209,36 @@ export const planesEmpresas = [
   {
     id: "basico",
     nombre: "Básico",
-    precio: "$45.000/mes",
+    precio: "$50.000/mes",
     incluye: ["Publicación de 1 vacante activa", "Acceso a perfiles filtrados"],
   },
   {
     id: "avanzado",
     nombre: "Avanzado",
-    precio: "$95.000/mes",
+    precio: "$110.000/mes",
     incluye: ["Hasta 5 vacantes activas", "Entrevistas y shortlisting", "Soporte prioritario"],
   },
   {
     id: "premium",
     nombre: "Premium",
-    precio: "$180.000/mes",
+    precio: "$200.000/mes",
     incluye: [
       "Vacantes ilimitadas",
       "Selección + inducción + mentoría de acompañamiento",
       "Diagnóstico de clima laboral",
+    ],
+  },
+  {
+    id: "platino",
+    nombre: "Platino",
+    precio: "$380.000/mes",
+    incluye: [
+      "Todo lo del plan Premium",
+      "Selección a medida, diagnóstico de clima e inducción con mayor frecuencia/alcance",
+      "30% de descuento adicional en servicios a la carta",
+      "Soporte prioritario con tiempos de respuesta acotados",
+      "Reporte trimestral de benchmarking salarial",
+      "Una vacante destacada por mes",
     ],
   },
 ];
@@ -240,7 +253,7 @@ export const planesCandidatos = [
   {
     id: "premium",
     nombre: "Desarrollo Profesional",
-    precio: "$8.000/mes",
+    precio: "$10.000/mes",
     incluye: [
       "Prioridad en postulaciones",
       "Mentorías con descuento",

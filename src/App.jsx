@@ -7,6 +7,7 @@ import Mentorias from "./pages/Mentorias.jsx";
 import ParaPymes from "./pages/ParaPymes.jsx";
 import Registro from "./pages/Registro.jsx";
 import Ingresar from "./pages/Ingresar.jsx";
+import PagoResultado from "./pages/PagoResultado.jsx";
 import CandidatoPanel from "./pages/candidato/CandidatoPanel.jsx";
 import EmpresaPanel from "./pages/empresa/EmpresaPanel.jsx";
 import AdminPanel from "./pages/admin/AdminPanel.jsx";
@@ -24,6 +25,7 @@ function App() {
         <Route path="/pymes" element={<ParaPymes />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/ingresar" element={<Ingresar />} />
+        <Route path="/pago/resultado" element={<PagoResultado />} />
         <Route
           path="/candidato"
           element={
