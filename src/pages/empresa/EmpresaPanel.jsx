@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail } from "lucide-react";
+import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
+
+const DIAS_PRUEBA = 14;
 
 function estadoPlan(vencimientoISO) {
   if (!vencimientoISO) return { texto: "Sin pagos registrados todavía", vencido: true };
@@ -12,6 +14,39 @@ function estadoPlan(vencimientoISO) {
   const fecha = vence.toLocaleDateString("es-AR");
   if (vence < hoy) return { texto: `Venció el ${fecha}`, vencido: true };
   return { texto: `Vigente hasta el ${fecha}`, vencido: false };
+}
+
+// Determina si la empresa tiene acceso activo a los servicios de la plataforma:
+// plan pagado vigente, o (si nunca pagó) todavía dentro del período de prueba
+// gratis de 14 días desde el registro. Coincide con la lógica de RLS del lado
+// del servidor (función `empresa_tiene_acceso` en Supabase) — esto es solo la
+// versión de UI para mostrar el mensaje correcto; el bloqueo real ya está en la base.
+function estadoAcceso(empresa) {
+  const ahora = new Date();
+  if (empresa.planVencimiento) {
+    const vence = new Date(empresa.planVencimiento);
+    if (vence >= ahora) return { activo: true, texto: `Plan vigente hasta el ${vence.toLocaleDateString("es-AR")}.` };
+    return {
+      activo: false,
+      texto: `Tu plan venció el ${vence.toLocaleDateString("es-AR")}. Elegí un plan para volver a acceder.`,
+    };
+  }
+  if (empresa.fechaRegistro) {
+    const finPrueba = new Date(empresa.fechaRegistro);
+    finPrueba.setDate(finPrueba.getDate() + DIAS_PRUEBA);
+    if (finPrueba >= ahora) {
+      const diasRestantes = Math.max(1, Math.ceil((finPrueba - ahora) / (1000 * 60 * 60 * 24)));
+      return {
+        activo: true,
+        texto: `Estás en período de prueba: ${diasRestantes} día${diasRestantes === 1 ? "" : "s"} restante${diasRestantes === 1 ? "" : "s"}.`,
+      };
+    }
+    return {
+      activo: false,
+      texto: "Tu período de prueba de 14 días terminó. Elegí un plan para seguir usando la plataforma.",
+    };
+  }
+  return { activo: false, texto: "No pudimos verificar tu plan." };
 }
 
 const TABS = [
@@ -77,6 +112,7 @@ export default function EmpresaPanel() {
 
   if (!empresa) return null;
 
+  const acceso = estadoAcceso(empresa);
   const misVacantes = vacantes.filter((v) => v.empresaId === empresa.id);
   const idsMisVacantes = misVacantes.map((v) => v.id);
   const postulacionesRecibidas = postulaciones.filter((p) => idsMisVacantes.includes(p.vacanteId));
@@ -107,12 +143,34 @@ export default function EmpresaPanel() {
     }
   }
 
+  function Paywall() {
+    return (
+      <Card className="p-8 text-center">
+        <Lock className="mx-auto text-navy-300" size={32} />
+        <h3 className="font-bold text-navy-900 mt-3">Esta sección requiere un plan activo</h3>
+        <p className="text-sm text-navy-500 mt-1 max-w-md mx-auto">{acceso.texto}</p>
+        <Button className="mt-4" onClick={() => setTab("plan")}>Ver planes</Button>
+      </Card>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <div className="mb-8">
         <Badge tone="teal">Panel de empresa</Badge>
         <h1 className="text-2xl md:text-3xl font-extrabold text-navy-900 mt-2">{empresa.nombre}</h1>
       </div>
+
+      {acceso.activo && acceso.texto.startsWith("Estás en período de prueba") && (
+        <div className="mb-6 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-4 py-2">
+          {acceso.texto}
+        </div>
+      )}
+      {!acceso.activo && (
+        <div className="mb-6 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">
+          {acceso.texto}
+        </div>
+      )}
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <StatCard label="Vacantes publicadas" value={misVacantes.length} tone="navy" />
@@ -134,7 +192,8 @@ export default function EmpresaPanel() {
         ))}
       </div>
 
-      {tab === "vacantes" && (
+      {tab === "vacantes" && !acceso.activo && <Paywall />}
+      {tab === "vacantes" && acceso.activo && (
         <div>
           <div className="flex justify-end mb-4">
             <Button onClick={() => setFormOpen((o) => !o)}>
@@ -191,7 +250,8 @@ export default function EmpresaPanel() {
         </div>
       )}
 
-      {tab === "candidatos" && (
+      {tab === "candidatos" && !acceso.activo && <Paywall />}
+      {tab === "candidatos" && acceso.activo && (
         <div className="space-y-4">
           {postulacionesRecibidas.length === 0 ? (
             <EmptyState text="Todavía no recibiste postulaciones." />
@@ -245,7 +305,8 @@ export default function EmpresaPanel() {
         </div>
       )}
 
-      {tab === "buscar" && (
+      {tab === "buscar" && !acceso.activo && <Paywall />}
+      {tab === "buscar" && acceso.activo && (
         <div>
           <Card className="p-4 mb-6">
             <div className="grid sm:grid-cols-3 gap-3">
@@ -329,7 +390,7 @@ export default function EmpresaPanel() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {planesEmpresas.map((p) => {
               const esActual = empresa.plan === p.id;
-              const estado = esActual ? estadoPlan(empresa.planVencimiento) : null;
+              const estado = esActual && empresa.planVencimiento ? estadoPlan(empresa.planVencimiento) : null;
               return (
                 <Card key={p.id} className={`p-5 flex flex-col ${esActual ? "border-2 border-teal-500" : ""}`}>
                   <h3 className="font-bold text-navy-900">{p.nombre}</h3>
@@ -340,7 +401,9 @@ export default function EmpresaPanel() {
                   {esActual && (
                     <div className="mt-3">
                       <Badge tone="teal">Plan actual</Badge>
-                      <p className={`text-xs mt-1.5 ${estado.vencido ? "text-red-600" : "text-navy-400"}`}>{estado.texto}</p>
+                      <p className={`text-xs mt-1.5 ${estado ? (estado.vencido ? "text-red-600" : "text-navy-400") : acceso.activo ? "text-amber-600" : "text-red-600"}`}>
+                        {estado ? estado.texto : acceso.texto}
+                      </p>
                     </div>
                   )}
                   <Button
