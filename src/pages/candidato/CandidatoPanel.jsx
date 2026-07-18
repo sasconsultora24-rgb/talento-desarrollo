@@ -45,7 +45,7 @@ export default function CandidatoPanel() {
 
   const misPostulaciones = postulaciones.filter((p) => p.candidatoId === candidato.id);
   const misCapacitaciones = capacitaciones.filter((c) => c.inscriptos.includes(candidato.id));
-  const misMentorias = mentorias.filter((m) => m.reservas.includes(candidato.id));
+  const misMentorias = mentorias.filter((m) => m.reservasCandidatos.includes(candidato.id));
 
   function actualizarReferencia(i, campo, valor) {
     setReferencias((prev) => prev.map((r, idx) => (idx === i ? { ...r, [campo]: valor } : r)));

@@ -92,8 +92,10 @@ function mapMentoria(row, reservas) {
     mentor: row.mentor,
     especialidad: row.especialidad,
     modalidad: row.modalidad,
+    publico: row.publico || "candidato",
     cuposDisponibles: row.cupos_disponibles,
-    reservas: reservas || [],
+    reservasCandidatos: reservas?.candidatos || [],
+    reservasEmpresas: reservas?.empresas || [],
   };
 }
 
@@ -146,7 +148,9 @@ export function AppProvider({ children }) {
       });
       const reservasPorMentoria = {};
       (reservasRows || []).forEach((r) => {
-        (reservasPorMentoria[r.mentoria_id] ||= []).push(r.candidato_id);
+        const bucket = (reservasPorMentoria[r.mentoria_id] ||= { candidatos: [], empresas: [] });
+        if (r.candidato_id) bucket.candidatos.push(r.candidato_id);
+        if (r.empresa_id) bucket.empresas.push(r.empresa_id);
       });
 
       setEmpresas((empresasRows || []).map(mapEmpresa));
@@ -537,17 +541,22 @@ export function AppProvider({ children }) {
   }, []);
 
   // ---------- Mentorías ----------
-  const reservarMentoria = useCallback(async (mentoriaId, candidatoId) => {
-    const { error: insertError } = await supabase
-      .from("mentoria_reservas")
-      .insert({ mentoria_id: mentoriaId, candidato_id: candidatoId });
+  // tipo: "candidato" (default) o "empresa" — según quién reserva la sesión.
+  const reservarMentoria = useCallback(async (mentoriaId, id, tipo = "candidato") => {
+    const payload =
+      tipo === "empresa"
+        ? { mentoria_id: mentoriaId, empresa_id: id }
+        : { mentoria_id: mentoriaId, candidato_id: id };
+    const { error: insertError } = await supabase.from("mentoria_reservas").insert(payload);
     if (insertError && insertError.code !== "23505") throw insertError;
     setMentorias((prev) =>
-      prev.map((m) =>
-        m.id === mentoriaId && !m.reservas.includes(candidatoId)
-          ? { ...m, reservas: [...m.reservas, candidatoId] }
-          : m
-      )
+      prev.map((m) => {
+        if (m.id !== mentoriaId) return m;
+        if (tipo === "empresa") {
+          return m.reservasEmpresas.includes(id) ? m : { ...m, reservasEmpresas: [...m.reservasEmpresas, id] };
+        }
+        return m.reservasCandidatos.includes(id) ? m : { ...m, reservasCandidatos: [...m.reservasCandidatos, id] };
+      })
     );
   }, []);
 
