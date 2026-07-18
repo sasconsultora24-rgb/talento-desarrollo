@@ -5,6 +5,7 @@ import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState } from "../../components/ui.jsx";
 import { planesCandidatos } from "../../data/seed.js";
 import { emailValido, telefonoValido, archivoValido, CV_MAX_MB } from "../../utils/validacion";
+import { candidatoPremiumActivo } from "../../utils/planes.js";
 
 const TABS = [
   { id: "perfil", label: "Mi perfil", icon: User },
@@ -313,6 +314,16 @@ export default function CandidatoPanel() {
         <div className="max-w-2xl">
           {errorPago && (
             <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorPago}</div>
+          )}
+          {candidato.membresia === "premium" && !candidatoPremiumActivo(candidato) && (
+            <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">
+              Tu membresía premium venció, así que ya no tenés prioridad en el buscador de las empresas. Renová para recuperarla.
+            </div>
+          )}
+          {candidatoPremiumActivo(candidato) && (
+            <div className="mb-4 text-sm text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-4 py-2">
+              Con tu membresía activa, tu perfil aparece primero en el buscador de las empresas y tus postulaciones se muestran primero en su bandeja.
+            </div>
           )}
           <div className="grid sm:grid-cols-2 gap-6">
             {planesCandidatos.map((p) => {

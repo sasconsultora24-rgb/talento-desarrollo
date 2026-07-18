@@ -4,6 +4,7 @@ import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock } fr
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
+import { candidatoPremiumActivo } from "../../utils/planes.js";
 
 const DIAS_PRUEBA = 14;
 
@@ -98,16 +99,19 @@ export default function EmpresaPanel() {
 
   const candidatosFiltrados = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
-    return candidatos.filter((c) => {
-      if (filtroNivel && c.nivel !== filtroNivel) return false;
-      if (filtroDisponibilidad && c.disponibilidad !== filtroDisponibilidad) return false;
-      if (!texto) return true;
-      const enTexto = [c.nombre, c.titulo, c.ubicacion, c.resumen, ...(c.habilidades || [])]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return enTexto.includes(texto);
-    });
+    return candidatos
+      .filter((c) => {
+        if (filtroNivel && c.nivel !== filtroNivel) return false;
+        if (filtroDisponibilidad && c.disponibilidad !== filtroDisponibilidad) return false;
+        if (!texto) return true;
+        const enTexto = [c.nombre, c.titulo, c.ubicacion, c.resumen, ...(c.habilidades || [])]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return enTexto.includes(texto);
+      })
+      // Beneficio real del plan premium de candidato: aparece primero en el buscador.
+      .sort((a, b) => Number(candidatoPremiumActivo(b)) - Number(candidatoPremiumActivo(a)));
   }, [candidatos, busqueda, filtroNivel, filtroDisponibilidad]);
 
   if (!empresa) return null;
@@ -115,7 +119,14 @@ export default function EmpresaPanel() {
   const acceso = estadoAcceso(empresa);
   const misVacantes = vacantes.filter((v) => v.empresaId === empresa.id);
   const idsMisVacantes = misVacantes.map((v) => v.id);
-  const postulacionesRecibidas = postulaciones.filter((p) => idsMisVacantes.includes(p.vacanteId));
+  // Beneficio real del plan premium de candidato: sus postulaciones aparecen primero.
+  const postulacionesRecibidas = postulaciones
+    .filter((p) => idsMisVacantes.includes(p.vacanteId))
+    .sort((a, b) => {
+      const premA = candidatoPremiumActivo(candidatos.find((c) => c.id === a.candidatoId));
+      const premB = candidatoPremiumActivo(candidatos.find((c) => c.id === b.candidatoId));
+      return Number(premB) - Number(premA);
+    });
 
   async function crearVacante(e) {
     e.preventDefault();
@@ -263,7 +274,10 @@ export default function EmpresaPanel() {
                 <Card key={p.id} className="p-5">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
-                      <h3 className="font-bold text-navy-900">{cand?.nombre}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-navy-900">{cand?.nombre}</h3>
+                        {candidatoPremiumActivo(cand) && <Badge tone="amber">Perfil premium</Badge>}
+                      </div>
                       <p className="text-sm text-navy-500">{cand?.titulo} · {cand?.ubicacion}</p>
                       <p className="text-sm text-navy-400 mt-1">Postulado a: <strong>{vac?.titulo}</strong></p>
                       {cand?.habilidades?.length > 0 && (
@@ -373,7 +387,7 @@ export default function EmpresaPanel() {
                         )}
                       </div>
                     </div>
-                    {c.membresia === "premium" && <Badge tone="amber">Perfil premium</Badge>}
+                    {candidatoPremiumActivo(c) && <Badge tone="amber">Perfil premium</Badge>}
                   </div>
                 </Card>
               ))}
