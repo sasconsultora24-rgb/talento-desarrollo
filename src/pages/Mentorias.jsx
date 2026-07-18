@@ -1,19 +1,23 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserRound, CheckCircle2 } from "lucide-react";
 import { useApp } from "../data/store.jsx";
-import { Card, Badge, Button, SectionTitle } from "../components/ui.jsx";
+import { Card, Badge, Button, SectionTitle, EmptyState, Input } from "../components/ui.jsx";
 
 export default function Mentorias() {
   const { mentorias, reservarMentoria, session } = useApp();
   const navigate = useNavigate();
+  const [busqueda, setBusqueda] = useState("");
 
   // A un usuario no logueado le mostramos todo; a un candidato o empresa
   // logueados, solo lo que corresponde a su rol (o "ambos").
-  const mentoriasVisibles = mentorias.filter((m) => {
-    if (session.role === "candidato") return m.publico === "candidato" || m.publico === "ambos";
-    if (session.role === "empresa") return m.publico === "empresa" || m.publico === "ambos";
-    return true;
-  });
+  const mentoriasVisibles = mentorias
+    .filter((m) => {
+      if (session.role === "candidato") return m.publico === "candidato" || m.publico === "ambos";
+      if (session.role === "empresa") return m.publico === "empresa" || m.publico === "ambos";
+      return true;
+    })
+    .filter((m) => (m.mentor + " " + m.especialidad).toLowerCase().includes(busqueda.toLowerCase()));
 
   async function handleReservar(id) {
     if (session.role !== "candidato" && session.role !== "empresa") {
@@ -34,6 +38,18 @@ export default function Mentorias() {
         title="Mentorías individuales"
         subtitle="Sesiones personalizadas de coaching y desarrollo profesional con mentores de nuestra red, para profesionales y para equipos de PYMEs."
       />
+
+      <div className="mb-8">
+        <Input
+          placeholder="Buscar por mentor o especialidad..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
+      </div>
+
+      {mentoriasVisibles.length === 0 ? (
+        <EmptyState text="No encontramos mentorías con esa búsqueda." />
+      ) : (
       <div className="grid md:grid-cols-2 gap-5">
         {mentoriasVisibles.map((m) => {
           const reservas = [...m.reservasCandidatos, ...m.reservasEmpresas];
@@ -76,6 +92,7 @@ export default function Mentorias() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }

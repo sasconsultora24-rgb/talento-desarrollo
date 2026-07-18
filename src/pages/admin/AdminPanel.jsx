@@ -7,7 +7,7 @@ import { descargarCSV } from "../../utils/exportarCsv.js";
 const TABS = [
   { id: "metricas", label: "Métricas", icon: LayoutDashboard },
   { id: "vacantes", label: "Moderar vacantes", icon: Briefcase },
-  { id: "formacion", label: "Capacitaciones", icon: GraduationCap },
+  { id: "formacion", label: "Capacitaciones y mentorías", icon: GraduationCap },
   { id: "empresas", label: "PYMEs", icon: Building2 },
   { id: "candidatos", label: "Candidatos", icon: Users },
 ];
@@ -17,10 +17,12 @@ const estadoBadge = { pendiente: "amber", aprobada: "teal", rechazada: "gray", c
 export default function AdminPanel() {
   const {
     vacantes, empresas, candidatos, postulaciones, capacitaciones, mentorias,
-    cambiarEstadoVacante, crearCapacitacion,
+    cambiarEstadoVacante, crearCapacitacion, crearMentoria,
   } = useApp();
   const [tab, setTab] = useState("metricas");
   const [nuevaCap, setNuevaCap] = useState({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
+  const [capExpandida, setCapExpandida] = useState(null);
+  const [nuevaMentoria, setNuevaMentoria] = useState({ mentor: "", especialidad: "", modalidad: "Online, sesiones de 45 min", cuposDisponibles: 5, publico: "candidato" });
 
   const pendientes = vacantes.filter((v) => v.estado === "pendiente");
   const fechaHoy = new Date().toISOString().slice(0, 10);
@@ -107,6 +109,16 @@ export default function AdminPanel() {
     try {
       await crearCapacitacion({ ...nuevaCap, cupos: Number(nuevaCap.cupos) });
       setNuevaCap({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function submitMentoria(e) {
+    e.preventDefault();
+    try {
+      await crearMentoria({ ...nuevaMentoria, cuposDisponibles: Number(nuevaMentoria.cuposDisponibles) });
+      setNuevaMentoria({ mentor: "", especialidad: "", modalidad: "Online, sesiones de 45 min", cuposDisponibles: 5, publico: "candidato" });
     } catch (err) {
       console.error(err);
     }
@@ -232,10 +244,86 @@ export default function AdminPanel() {
           </Card>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            {capacitaciones.map((c) => (
-              <Card key={c.id} className="p-4">
-                <p className="font-semibold text-navy-900">{c.titulo}</p>
-                <p className="text-sm text-navy-500">{c.fecha} · {c.inscriptos.length}/{c.cupos} inscriptos</p>
+            {capacitaciones.map((c) => {
+              const expandida = capExpandida === c.id;
+              const inscriptosCap = c.inscriptos
+                .map((id) => candidatos.find((cand) => cand.id === id))
+                .filter(Boolean);
+              return (
+                <Card key={c.id} className="p-4">
+                  <p className="font-semibold text-navy-900">{c.titulo}</p>
+                  <p className="text-sm text-navy-500">{c.fecha} · {c.inscriptos.length}/{c.cupos} inscriptos</p>
+                  {c.inscriptos.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setCapExpandida(expandida ? null : c.id)}
+                      className="text-teal-600 text-sm font-semibold mt-2"
+                    >
+                      {expandida ? "Ocultar inscriptos" : "Ver inscriptos"}
+                    </button>
+                  )}
+                  {expandida && (
+                    <div className="mt-3 space-y-2 border-t border-navy-100 pt-3">
+                      {inscriptosCap.map((cand) => (
+                        <div key={cand.id} className="text-sm">
+                          <p className="font-medium text-navy-800">{cand.nombre}</p>
+                          <p className="text-navy-400">
+                            {cand.email}
+                            {cand.telefono ? ` · ${cand.telefono}` : ""}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+
+          <h3 className="font-bold text-navy-900 mt-10 mb-3">Mentorías</h3>
+          <Card className="p-6 mb-6 max-w-2xl">
+            <h4 className="font-bold text-navy-900 mb-3">Nueva mentoría</h4>
+            <form onSubmit={submitMentoria}>
+              <div className="grid sm:grid-cols-2 gap-x-4">
+                <Field label="Mentor/a">
+                  <Input required value={nuevaMentoria.mentor} onChange={(e) => setNuevaMentoria({ ...nuevaMentoria, mentor: e.target.value })} />
+                </Field>
+                <Field label="Especialidad">
+                  <Input required value={nuevaMentoria.especialidad} onChange={(e) => setNuevaMentoria({ ...nuevaMentoria, especialidad: e.target.value })} />
+                </Field>
+              </div>
+              <div className="grid sm:grid-cols-3 gap-x-4">
+                <Field label="Modalidad">
+                  <Input value={nuevaMentoria.modalidad} onChange={(e) => setNuevaMentoria({ ...nuevaMentoria, modalidad: e.target.value })} />
+                </Field>
+                <Field label="Cupos"><Input type="number" min="1" value={nuevaMentoria.cuposDisponibles} onChange={(e) => setNuevaMentoria({ ...nuevaMentoria, cuposDisponibles: e.target.value })} /></Field>
+                <Field label="Para quién es" hint="Quién puede verla y reservarla">
+                  <Select value={nuevaMentoria.publico} onChange={(e) => setNuevaMentoria({ ...nuevaMentoria, publico: e.target.value })}>
+                    <option value="candidato">Candidatos</option>
+                    <option value="empresa">Empresas (PYMEs)</option>
+                    <option value="ambos">Ambos</option>
+                  </Select>
+                </Field>
+              </div>
+              <Button type="submit">Crear mentoría</Button>
+            </form>
+          </Card>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            {mentorias.map((m) => (
+              <Card key={m.id} className="p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-navy-900">{m.mentor}</p>
+                    <p className="text-sm text-navy-500">{m.especialidad}</p>
+                  </div>
+                  <Badge tone="teal">
+                    {m.publico === "empresa" ? "Empresas" : m.publico === "ambos" ? "Ambos" : "Candidatos"}
+                  </Badge>
+                </div>
+                <p className="text-sm text-navy-400 mt-2">
+                  {m.reservasCandidatos.length + m.reservasEmpresas.length}/{m.cuposDisponibles} reservas
+                </p>
               </Card>
             ))}
           </div>

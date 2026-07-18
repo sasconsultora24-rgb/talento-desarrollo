@@ -541,6 +541,19 @@ export function AppProvider({ children }) {
   }, []);
 
   // ---------- Mentorías ----------
+  const crearMentoria = useCallback(async (mentoria) => {
+    const payload = {
+      mentor: mentoria.mentor,
+      especialidad: mentoria.especialidad,
+      modalidad: mentoria.modalidad,
+      cupos_disponibles: mentoria.cuposDisponibles,
+      publico: mentoria.publico || "candidato",
+    };
+    const { data, error: insertError } = await supabase.from("mentorias").insert(payload).select().single();
+    if (insertError) throw insertError;
+    setMentorias((prev) => [...prev, mapMentoria(data, { candidatos: [], empresas: [] })]);
+  }, []);
+
   // tipo: "candidato" (default) o "empresa" — según quién reserva la sesión.
   const reservarMentoria = useCallback(async (mentoriaId, id, tipo = "candidato") => {
     const payload =
@@ -590,6 +603,7 @@ export function AppProvider({ children }) {
     inscribirCapacitacion,
     crearCapacitacion,
     reservarMentoria,
+    crearMentoria,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

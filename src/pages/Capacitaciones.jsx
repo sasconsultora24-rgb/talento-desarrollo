@@ -1,11 +1,22 @@
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Users2, CheckCircle2 } from "lucide-react";
 import { useApp } from "../data/store.jsx";
-import { Card, Badge, Button, SectionTitle } from "../components/ui.jsx";
+import { Card, Badge, Button, SectionTitle, EmptyState, Input, Select } from "../components/ui.jsx";
 
 export default function Capacitaciones() {
   const { capacitaciones, inscribirCapacitacion, session } = useApp();
   const navigate = useNavigate();
+  const [busqueda, setBusqueda] = useState("");
+  const [categoria, setCategoria] = useState("todas");
+
+  const categorias = useMemo(() => ["todas", ...new Set(capacitaciones.map((c) => c.categoria).filter(Boolean))], [capacitaciones]);
+
+  const filtradas = capacitaciones.filter((c) => {
+    const matchTexto = (c.titulo + " " + (c.descripcion || "")).toLowerCase().includes(busqueda.toLowerCase());
+    const matchCategoria = categoria === "todas" || c.categoria === categoria;
+    return matchTexto && matchCategoria;
+  });
 
   async function handleInscribir(id) {
     if (session.role !== "candidato") {
@@ -26,8 +37,27 @@ export default function Capacitaciones() {
         title="Capacitaciones y talleres"
         subtitle="Programas de liderazgo, comunicación, trabajo en equipo y formación técnica para PYMEs y profesionales."
       />
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-8">
+        <Input
+          placeholder="Buscar por título o descripción..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
+        <div className="sm:w-56">
+          <Select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+            {categorias.map((c) => (
+              <option key={c} value={c}>{c === "todas" ? "Todas las categorías" : c}</option>
+            ))}
+          </Select>
+        </div>
+      </div>
+
+      {filtradas.length === 0 ? (
+        <EmptyState text="No encontramos capacitaciones con esos filtros." />
+      ) : (
       <div className="grid md:grid-cols-2 gap-5">
-        {capacitaciones.map((c) => {
+        {filtradas.map((c) => {
           const inscripto = session.role === "candidato" && c.inscriptos.includes(session.userId);
           const cuposLibres = c.cupos - c.inscriptos.length;
           return (
@@ -62,6 +92,7 @@ export default function Capacitaciones() {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
