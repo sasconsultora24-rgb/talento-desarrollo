@@ -304,6 +304,8 @@ export function AppProvider({ children }) {
       cv_url: perfil.cvUrl || null,
       cv_nombre: perfil.cvNombre || null,
       referencias: perfil.referencias || [],
+      terminos_aceptados_at: new Date().toISOString(),
+      visibilidad_autorizada_at: new Date().toISOString(),
     };
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: perfil.email,
@@ -323,6 +325,7 @@ export function AppProvider({ children }) {
       contacto: perfil.contacto,
       email: perfil.email,
       plan: "basico",
+      terminos_aceptados_at: new Date().toISOString(),
     };
     const { data, error: signUpError } = await supabase.auth.signUp({
       email: perfil.email,

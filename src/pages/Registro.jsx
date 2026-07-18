@@ -18,6 +18,8 @@ export default function Registro() {
   const [revisarEmail, setRevisarEmail] = useState(false);
   const [password, setPassword] = useState("");
   const [intentado, setIntentado] = useState(false);
+  const [aceptaTerminos, setAceptaTerminos] = useState(false);
+  const [aceptaVisibilidad, setAceptaVisibilidad] = useState(false);
 
   useEffect(() => {
     if (!intentado || resolviendo) return;
@@ -89,6 +91,10 @@ export default function Registro() {
       setError("Ingresá un teléfono válido (solo números, espacios, + o -).");
       return;
     }
+    if (!aceptaTerminos || !aceptaVisibilidad) {
+      setError("Para crear tu perfil tenés que aceptar la Política de Privacidad y autorizar que las empresas vean tu perfil.");
+      return;
+    }
     setEnviando(true);
     try {
       let cvUrl = null;
@@ -130,6 +136,10 @@ export default function Registro() {
     setError("");
     if (!emailValido(empresa.email)) {
       setError("Ingresá un email válido.");
+      return;
+    }
+    if (!aceptaTerminos) {
+      setError("Para registrar tu PYME tenés que aceptar la Política de Privacidad y los Términos y Condiciones.");
       return;
     }
     setEnviando(true);
@@ -280,6 +290,31 @@ export default function Registro() {
               </div>
             </Field>
 
+            <div className="space-y-2 mt-3 mb-4">
+              <label className="flex items-start gap-2 text-sm text-navy-600">
+                <input
+                  type="checkbox"
+                  required
+                  checked={aceptaTerminos}
+                  onChange={(e) => setAceptaTerminos(e.target.checked)}
+                  className="mt-0.5"
+                />
+                Leí y acepto la{" "}
+                <Link to="/privacidad" target="_blank" className="text-teal-600 font-semibold">Política de Privacidad</Link>{" "}
+                y los{" "}
+                <Link to="/terminos" target="_blank" className="text-teal-600 font-semibold">Términos y Condiciones</Link>.
+              </label>
+              <label className="flex items-start gap-2 text-sm text-navy-600">
+                <input
+                  type="checkbox"
+                  required
+                  checked={aceptaVisibilidad}
+                  onChange={(e) => setAceptaVisibilidad(e.target.checked)}
+                  className="mt-0.5"
+                />
+                Autorizo que mi perfil y mi CV sean visibles para las empresas registradas en la Plataforma.
+              </label>
+            </div>
             <Button type="submit" disabled={enviando} className="w-full mt-2">
               {enviando ? "Creando perfil..." : "Crear mi perfil"}
             </Button>
@@ -315,6 +350,19 @@ export default function Registro() {
             <Field label="Contraseña" hint="Mínimo 8 caracteres">
               <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
+            <label className="flex items-start gap-2 text-sm text-navy-600 mt-3 mb-4">
+              <input
+                type="checkbox"
+                required
+                checked={aceptaTerminos}
+                onChange={(e) => setAceptaTerminos(e.target.checked)}
+                className="mt-0.5"
+              />
+              Leí y acepto la{" "}
+              <Link to="/privacidad" target="_blank" className="text-teal-600 font-semibold">Política de Privacidad</Link>{" "}
+              y los{" "}
+              <Link to="/terminos" target="_blank" className="text-teal-600 font-semibold">Términos y Condiciones</Link>.
+            </label>
             <Button type="submit" disabled={enviando} className="w-full mt-2">
               {enviando ? "Registrando..." : "Registrar mi PYME"}
             </Button>

@@ -9,6 +9,8 @@ import Registro from "./pages/Registro.jsx";
 import Ingresar from "./pages/Ingresar.jsx";
 import PagoResultado from "./pages/PagoResultado.jsx";
 import Recuperar from "./pages/Recuperar.jsx";
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad.jsx";
+import TerminosCondiciones from "./pages/TerminosCondiciones.jsx";
 import CandidatoPanel from "./pages/candidato/CandidatoPanel.jsx";
 import EmpresaPanel from "./pages/empresa/EmpresaPanel.jsx";
 import AdminPanel from "./pages/admin/AdminPanel.jsx";
@@ -28,6 +30,8 @@ function App() {
         <Route path="/ingresar" element={<Ingresar />} />
         <Route path="/pago/resultado" element={<PagoResultado />} />
         <Route path="/recuperar" element={<Recuperar />} />
+        <Route path="/privacidad" element={<PoliticaPrivacidad />} />
+        <Route path="/terminos" element={<TerminosCondiciones />} />
         <Route
           path="/candidato"
           element={

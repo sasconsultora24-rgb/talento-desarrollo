@@ -33,6 +33,8 @@ export default function Footer() {
           <ul className="space-y-2 text-sm text-navy-400">
             <li>Unidad de negocios de RRHH</li>
             <li>sasconsultora24@gmail.com</li>
+            <li><Link to="/privacidad" className="hover:text-teal-300">Política de Privacidad</Link></li>
+            <li><Link to="/terminos" className="hover:text-teal-300">Términos y Condiciones</Link></li>
           </ul>
         </div>
       </div>
