@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users } from "lucide-react";
+import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, StatCard, EmptyState, Field, Input, Select, Textarea } from "../../components/ui.jsx";
+import { descargarCSV } from "../../utils/exportarCsv.js";
 
 const TABS = [
   { id: "metricas", label: "Métricas", icon: LayoutDashboard },
@@ -22,6 +23,84 @@ export default function AdminPanel() {
   const [nuevaCap, setNuevaCap] = useState({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
 
   const pendientes = vacantes.filter((v) => v.estado === "pendiente");
+  const fechaHoy = new Date().toISOString().slice(0, 10);
+
+  function exportarCandidatos() {
+    descargarCSV(
+      `candidatos-${fechaHoy}.csv`,
+      [
+        { titulo: "Nombre", valor: (c) => c.nombre },
+        { titulo: "Email", valor: (c) => c.email },
+        { titulo: "Teléfono", valor: (c) => c.telefono },
+        { titulo: "Ubicación", valor: (c) => c.ubicacion },
+        { titulo: "Título", valor: (c) => c.titulo },
+        { titulo: "Nivel", valor: (c) => c.nivel },
+        { titulo: "Disponibilidad", valor: (c) => c.disponibilidad },
+        { titulo: "Habilidades", valor: (c) => (c.habilidades || []).join("; ") },
+        { titulo: "Membresía", valor: (c) => c.membresia },
+        { titulo: "Membresía vence", valor: (c) => (c.membresiaVencimiento ? c.membresiaVencimiento.slice(0, 10) : "") },
+        { titulo: "Registrado el", valor: (c) => c.fechaRegistro },
+      ],
+      candidatos
+    );
+  }
+
+  function exportarEmpresas() {
+    descargarCSV(
+      `pymes-${fechaHoy}.csv`,
+      [
+        { titulo: "Nombre", valor: (e) => e.nombre },
+        { titulo: "Rubro", valor: (e) => e.rubro },
+        { titulo: "Tamaño", valor: (e) => e.tamano },
+        { titulo: "Ubicación", valor: (e) => e.ubicacion },
+        { titulo: "Contacto", valor: (e) => e.contacto },
+        { titulo: "Email", valor: (e) => e.email },
+        { titulo: "Plan", valor: (e) => e.plan },
+        { titulo: "Plan vence", valor: (e) => (e.planVencimiento ? e.planVencimiento.slice(0, 10) : "") },
+        { titulo: "Registrada el", valor: (e) => e.fechaRegistro },
+      ],
+      empresas
+    );
+  }
+
+  function exportarVacantes() {
+    descargarCSV(
+      `vacantes-${fechaHoy}.csv`,
+      [
+        { titulo: "Título", valor: (v) => v.titulo },
+        { titulo: "Empresa", valor: (v) => empresas.find((e) => e.id === v.empresaId)?.nombre || "" },
+        { titulo: "Área", valor: (v) => v.area },
+        { titulo: "Modalidad", valor: (v) => v.modalidad },
+        { titulo: "Ubicación", valor: (v) => v.ubicacion },
+        { titulo: "Nivel", valor: (v) => v.nivel },
+        { titulo: "Salario", valor: (v) => v.salario },
+        { titulo: "Estado", valor: (v) => v.estado },
+        { titulo: "Publicada el", valor: (v) => v.fechaPublicacion },
+      ],
+      vacantes
+    );
+  }
+
+  function exportarPostulaciones() {
+    descargarCSV(
+      `postulaciones-${fechaHoy}.csv`,
+      [
+        { titulo: "Candidato", valor: (p) => candidatos.find((c) => c.id === p.candidatoId)?.nombre || "" },
+        { titulo: "Vacante", valor: (p) => vacantes.find((v) => v.id === p.vacanteId)?.titulo || "" },
+        {
+          titulo: "Empresa",
+          valor: (p) => {
+            const vac = vacantes.find((v) => v.id === p.vacanteId);
+            return empresas.find((e) => e.id === vac?.empresaId)?.nombre || "";
+          },
+        },
+        { titulo: "Estado", valor: (p) => p.estado },
+        { titulo: "Fecha", valor: (p) => p.fecha },
+        { titulo: "Mensaje", valor: (p) => p.mensaje || "" },
+      ],
+      postulaciones
+    );
+  }
 
   async function submitCapacitacion(e) {
     e.preventDefault();
@@ -55,16 +134,37 @@ export default function AdminPanel() {
       </div>
 
       {tab === "metricas" && (
-        <div className="grid sm:grid-cols-3 gap-4">
-          <StatCard label="PYMEs registradas" value={empresas.length} tone="navy" />
-          <StatCard label="Candidatos en la base" value={candidatos.length} tone="teal" />
-          <StatCard label="Vacantes totales" value={vacantes.length} tone="amber" />
-          <StatCard label="Vacantes pendientes de aprobar" value={pendientes.length} tone="amber" />
-          <StatCard label="Postulaciones totales" value={postulaciones.length} tone="teal" />
-          <StatCard label="Capacitaciones activas" value={capacitaciones.length} tone="navy" />
-          <StatCard label="Mentorías disponibles" value={mentorias.length} tone="teal" />
-          <StatCard label="Candidatos premium" value={candidatos.filter((c) => c.membresia === "premium").length} tone="amber" />
-          <StatCard label="PYMEs plan premium" value={empresas.filter((e) => e.plan === "premium").length} tone="navy" />
+        <div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <StatCard label="PYMEs registradas" value={empresas.length} tone="navy" />
+            <StatCard label="Candidatos en la base" value={candidatos.length} tone="teal" />
+            <StatCard label="Vacantes totales" value={vacantes.length} tone="amber" />
+            <StatCard label="Vacantes pendientes de aprobar" value={pendientes.length} tone="amber" />
+            <StatCard label="Postulaciones totales" value={postulaciones.length} tone="teal" />
+            <StatCard label="Capacitaciones activas" value={capacitaciones.length} tone="navy" />
+            <StatCard label="Mentorías disponibles" value={mentorias.length} tone="teal" />
+            <StatCard label="Candidatos premium" value={candidatos.filter((c) => c.membresia === "premium").length} tone="amber" />
+            <StatCard label="PYMEs plan premium" value={empresas.filter((e) => e.plan === "premium").length} tone="navy" />
+          </div>
+
+          <Card className="p-5 mt-6">
+            <h3 className="font-bold text-navy-900 mb-1">Exportar datos</h3>
+            <p className="text-sm text-navy-500 mb-4">Descarga en CSV, se abre directo en Excel o Google Sheets.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={exportarCandidatos}>
+                <Download size={15} /> Candidatos
+              </Button>
+              <Button variant="outline" onClick={exportarEmpresas}>
+                <Download size={15} /> PYMEs
+              </Button>
+              <Button variant="outline" onClick={exportarVacantes}>
+                <Download size={15} /> Vacantes
+              </Button>
+              <Button variant="outline" onClick={exportarPostulaciones}>
+                <Download size={15} /> Postulaciones
+              </Button>
+            </div>
+          </Card>
         </div>
       )}
 
