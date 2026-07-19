@@ -3,6 +3,7 @@ import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download }
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, StatCard, EmptyState, Field, Input, Select, Textarea } from "../../components/ui.jsx";
 import { descargarCSV } from "../../utils/exportarCsv.js";
+import SasConsultoraLogo from "../../components/SasConsultoraLogo.jsx";
 
 const TABS = [
   { id: "metricas", label: "Métricas", icon: LayoutDashboard },
@@ -126,9 +127,12 @@ export default function AdminPanel() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-      <div className="mb-8">
-        <Badge tone="navy">Panel interno SAS Consultora</Badge>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-navy-900 mt-2">Administración</h1>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <Badge tone="navy">Panel interno</Badge>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-navy-900 mt-2">Administración</h1>
+        </div>
+        <SasConsultoraLogo />
       </div>
 
       <div className="flex flex-wrap gap-2 mb-8 border-b border-navy-100 pb-1">

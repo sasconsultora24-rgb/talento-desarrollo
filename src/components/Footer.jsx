@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Logo from "./Logo";
+import SasConsultoraLogo from "./SasConsultoraLogo";
 
 export default function Footer() {
   return (
@@ -29,7 +30,7 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <h4 className="text-white font-semibold text-sm mb-3">SAS Consultora</h4>
+          <SasConsultoraLogo dark className="mb-3" />
           <ul className="space-y-2 text-sm text-navy-400">
             <li>Unidad de negocios de RRHH</li>
             <li>sasconsultora24@gmail.com</li>
