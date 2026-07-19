@@ -64,20 +64,20 @@ export default function Capacitaciones() {
             <Card key={c.id} className="p-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  {c.destacada && <Badge tone="amber">Destacada</Badge>}
-                  <h3 className="text-lg font-bold text-navy-900 mt-2">{c.titulo}</h3>
-                  <Badge tone="teal">{c.categoria}</Badge>
+                  {c.destacada && <Badge tone="terracotta">Destacada</Badge>}
+                  <h3 className="text-lg font-bold text-forest-900 mt-2">{c.titulo}</h3>
+                  <Badge tone="gold">{c.categoria}</Badge>
                 </div>
               </div>
-              <p className="text-sm text-navy-500 mt-3 leading-relaxed">{c.descripcion}</p>
-              <div className="flex flex-wrap gap-4 text-sm text-navy-500 mt-4">
+              <p className="text-sm text-forest-500 mt-3 leading-relaxed">{c.descripcion}</p>
+              <div className="flex flex-wrap gap-4 text-sm text-forest-500 mt-4">
                 <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
                 <span className="inline-flex items-center gap-1"><Users2 size={14} />{cuposLibres} cupos disponibles</span>
                 <span>{c.modalidad}</span>
               </div>
               <div className="mt-5">
                 {inscripto ? (
-                  <span className="inline-flex items-center gap-1.5 text-teal-600 text-sm font-semibold">
+                  <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
                     <CheckCircle2 size={18} /> Ya estás inscripto/a
                   </span>
                 ) : cuposLibres <= 0 ? (

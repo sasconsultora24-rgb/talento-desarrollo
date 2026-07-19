@@ -6,7 +6,7 @@ export default function RequireRole({ role, children }) {
 
   if (!authReady) {
     return (
-      <div className="flex items-center justify-center py-32 text-navy-400 text-sm">
+      <div className="flex items-center justify-center py-32 text-forest-400 text-sm">
         Verificando sesión...
       </div>
     );

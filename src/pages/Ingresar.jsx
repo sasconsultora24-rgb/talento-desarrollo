@@ -66,21 +66,21 @@ export default function Ingresar() {
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 py-16">
       <div className="text-center mb-8">
-        <Badge tone="teal">Ingresar</Badge>
-        <h1 className="text-2xl font-extrabold text-navy-900 mt-3">Iniciá sesión</h1>
-        <p className="text-navy-500 mt-2 text-sm">
-          ¿Sos nuevo? <Link to="/registro" className="text-teal-600 font-semibold">Registrate</Link>
+        <Badge tone="gold">Ingresar</Badge>
+        <h1 className="text-2xl font-extrabold text-forest-900 mt-3">Iniciá sesión</h1>
+        <p className="text-forest-500 mt-2 text-sm">
+          ¿Sos nuevo? <Link to="/registro" className="text-gold-600 font-semibold">Registrate</Link>
         </p>
       </div>
 
       <Card className="p-6">
         {modoRecuperar ? (
           <>
-            <p className="text-sm text-navy-500 mb-4">
+            <p className="text-sm text-forest-500 mb-4">
               Ingresá tu email y te mandamos un link para elegir una nueva contraseña.
             </p>
             {mensajeRecuperar && (
-              <div className="mb-4 text-sm text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2">
+              <div className="mb-4 text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-3 py-2">
                 {mensajeRecuperar}
               </div>
             )}
@@ -95,7 +95,7 @@ export default function Ingresar() {
             <button
               type="button"
               onClick={() => { setModoRecuperar(false); setMensajeRecuperar(""); }}
-              className="text-teal-600 text-sm font-semibold mt-4"
+              className="text-gold-600 text-sm font-semibold mt-4"
             >
               ← Volver a ingresar
             </button>
@@ -121,7 +121,7 @@ export default function Ingresar() {
             <button
               type="button"
               onClick={() => setModoRecuperar(true)}
-              className="text-teal-600 text-sm font-semibold mt-4"
+              className="text-gold-600 text-sm font-semibold mt-4"
             >
               ¿Olvidaste tu contraseña?
             </button>

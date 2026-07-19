@@ -1,16 +1,16 @@
 export function Card({ children, className = "" }) {
   return (
-    <div className={`bg-white rounded-2xl shadow-card border border-navy-100/60 ${className}`}>
+    <div className={`bg-white rounded-2xl shadow-card border border-forest-100/60 ${className}`}>
       {children}
     </div>
   );
 }
 
-export function Badge({ children, tone = "navy" }) {
+export function Badge({ children, tone = "forest" }) {
   const tones = {
-    navy: "bg-navy-50 text-navy-700",
-    teal: "bg-teal-50 text-teal-700",
-    amber: "bg-amber-50 text-amber-700",
+    forest: "bg-forest-50 text-forest-700",
+    gold: "bg-gold-50 text-gold-700",
+    terracotta: "bg-terracotta-50 text-terracotta-700",
     gray: "bg-gray-100 text-gray-600",
   };
   return (
@@ -22,11 +22,11 @@ export function Badge({ children, tone = "navy" }) {
 
 export function Button({ children, variant = "primary", className = "", ...props }) {
   const variants = {
-    primary: "bg-teal-600 hover:bg-teal-700 text-white shadow-sm",
-    secondary: "bg-navy-700 hover:bg-navy-800 text-white shadow-sm",
-    outline: "border-2 border-navy-200 text-navy-700 hover:border-teal-500 hover:text-teal-700",
-    ghost: "text-navy-600 hover:bg-navy-50",
-    amber: "bg-amber-400 hover:bg-amber-500 text-navy-900 shadow-sm",
+    primary: "bg-gold-500 hover:bg-gold-600 text-forest-900 shadow-sm",
+    secondary: "bg-forest-700 hover:bg-forest-800 text-white shadow-sm",
+    outline: "border-2 border-forest-200 text-forest-700 hover:border-gold-500 hover:text-gold-700",
+    ghost: "text-forest-600 hover:bg-forest-50",
+    terracotta: "bg-terracotta-400 hover:bg-terracotta-500 text-forest-900 shadow-sm",
   };
   return (
     <button
@@ -41,9 +41,9 @@ export function Button({ children, variant = "primary", className = "", ...props
 export function Field({ label, children, hint }) {
   return (
     <label className="block mb-4">
-      <span className="block text-sm font-semibold text-navy-800 mb-1.5">{label}</span>
+      <span className="block text-sm font-semibold text-forest-800 mb-1.5">{label}</span>
       {children}
-      {hint && <span className="block text-xs text-navy-400 mt-1">{hint}</span>}
+      {hint && <span className="block text-xs text-forest-400 mt-1">{hint}</span>}
     </label>
   );
 }
@@ -52,7 +52,7 @@ export function Input({ className = "", ...props }) {
   return (
     <input
       {...props}
-      className={`w-full px-3.5 py-2.5 rounded-lg border border-navy-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm ${className}`}
+      className={`w-full px-3.5 py-2.5 rounded-lg border border-forest-200 bg-white focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm ${className}`}
     />
   );
 }
@@ -61,7 +61,7 @@ export function Textarea({ className = "", ...props }) {
   return (
     <textarea
       {...props}
-      className={`w-full px-3.5 py-2.5 rounded-lg border border-navy-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm ${className}`}
+      className={`w-full px-3.5 py-2.5 rounded-lg border border-forest-200 bg-white focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm ${className}`}
     />
   );
 }
@@ -70,7 +70,7 @@ export function Select({ children, className = "", ...props }) {
   return (
     <select
       {...props}
-      className={`w-full px-3.5 py-2.5 rounded-lg border border-navy-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-teal-400 text-sm ${className}`}
+      className={`w-full px-3.5 py-2.5 rounded-lg border border-forest-200 bg-white focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-gold-400 text-sm ${className}`}
     >
       {children}
     </select>
@@ -81,33 +81,33 @@ export function SectionTitle({ eyebrow, title, subtitle, center = false }) {
   return (
     <div className={`mb-8 ${center ? "text-center" : ""}`}>
       {eyebrow && (
-        <div className="text-teal-600 font-bold text-xs uppercase tracking-wider mb-2">
+        <div className="text-gold-600 font-bold text-xs uppercase tracking-wider mb-2">
           {eyebrow}
         </div>
       )}
-      <h2 className="text-2xl md:text-3xl font-extrabold text-navy-900">{title}</h2>
-      {subtitle && <p className="text-navy-500 mt-2 max-w-2xl leading-relaxed">{subtitle}</p>}
+      <h2 className="text-2xl md:text-3xl font-extrabold text-forest-900">{title}</h2>
+      {subtitle && <p className="text-forest-500 mt-2 max-w-2xl leading-relaxed">{subtitle}</p>}
     </div>
   );
 }
 
-export function StatCard({ label, value, tone = "navy" }) {
+export function StatCard({ label, value, tone = "forest" }) {
   const tones = {
-    navy: "text-navy-800",
-    teal: "text-teal-600",
-    amber: "text-amber-500",
+    forest: "text-forest-800",
+    gold: "text-gold-600",
+    terracotta: "text-terracotta-500",
   };
   return (
     <Card className="p-5">
       <div className={`text-3xl font-extrabold ${tones[tone]}`}>{value}</div>
-      <div className="text-navy-500 text-sm mt-1">{label}</div>
+      <div className="text-forest-500 text-sm mt-1">{label}</div>
     </Card>
   );
 }
 
 export function EmptyState({ text }) {
   return (
-    <div className="text-center py-12 text-navy-400 text-sm border border-dashed border-navy-200 rounded-xl">
+    <div className="text-center py-12 text-forest-400 text-sm border border-dashed border-forest-200 rounded-xl">
       {text}
     </div>
   );

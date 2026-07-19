@@ -60,24 +60,24 @@ export default function Mentorias() {
           return (
             <Card key={m.id} className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                <div className="w-11 h-11 rounded-full bg-gold-50 flex items-center justify-center text-gold-600">
                   <UserRound size={22} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-navy-900">{m.mentor}</h3>
-                  <p className="text-sm text-navy-500">{m.especialidad}</p>
+                  <h3 className="font-bold text-forest-900">{m.mentor}</h3>
+                  <p className="text-sm text-forest-500">{m.especialidad}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3 mt-4 text-sm text-navy-500">
+              <div className="flex flex-wrap gap-3 mt-4 text-sm text-forest-500">
                 <Badge tone="gray">{m.modalidad}</Badge>
                 {m.publico !== "ambos" && (
-                  <Badge tone="teal">{m.publico === "empresa" ? "Para empresas" : "Para profesionales"}</Badge>
+                  <Badge tone="gold">{m.publico === "empresa" ? "Para empresas" : "Para profesionales"}</Badge>
                 )}
                 <span>{cuposLibres} cupos disponibles</span>
               </div>
               <div className="mt-5">
                 {reservado ? (
-                  <span className="inline-flex items-center gap-1.5 text-teal-600 text-sm font-semibold">
+                  <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
                     <CheckCircle2 size={18} /> Sesión reservada
                   </span>
                 ) : cuposLibres <= 0 ? (

@@ -130,26 +130,26 @@ export default function CandidatoPanel() {
 
   const estadoTono = {
     nueva: "gray",
-    "en revisión": "amber",
-    entrevista: "teal",
-    contratado: "teal",
+    "en revisión": "terracotta",
+    entrevista: "gold",
+    contratado: "gold",
     descartado: "gray",
   };
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <div className="mb-8">
-        <Badge tone="teal">Panel del profesional</Badge>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-navy-900 mt-2">Hola, {candidato.nombre.split(" ")[0]}</h1>
+        <Badge tone="gold">Panel del profesional</Badge>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-forest-900 mt-2">Hola, {candidato.nombre.split(" ")[0]}</h1>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-8 border-b border-navy-100 pb-1">
+      <div className="flex flex-wrap gap-2 mb-8 border-b border-forest-100 pb-1">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-sm font-semibold ${
-              tab === t.id ? "bg-white border border-b-0 border-navy-100 text-teal-600" : "text-navy-400 hover:text-navy-600"
+              tab === t.id ? "bg-white border border-b-0 border-forest-100 text-gold-600" : "text-forest-400 hover:text-forest-600"
             }`}
           >
             <t.icon size={15} /> {t.label}
@@ -160,7 +160,7 @@ export default function CandidatoPanel() {
       {tab === "perfil" && (
         <Card className="p-6 max-w-2xl">
           {mensaje && (
-            <p className={`text-sm mb-4 ${mensajeEsError ? "text-red-600" : "text-teal-600"}`}>{mensaje}</p>
+            <p className={`text-sm mb-4 ${mensajeEsError ? "text-red-600" : "text-gold-600"}`}>{mensaje}</p>
           )}
           <form onSubmit={guardarPerfil}>
             <div className="grid sm:grid-cols-2 gap-x-4">
@@ -207,12 +207,12 @@ export default function CandidatoPanel() {
                   href={form.cvUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-sm text-teal-600 font-semibold mb-2"
+                  className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold mb-2"
                 >
                   <FileText size={16} /> Ver CV actual ({form.cvNombre || "archivo"})
                 </a>
               )}
-              <label className="flex items-center gap-2 border border-dashed border-navy-300 rounded-lg px-3.5 py-2.5 text-sm text-navy-600 cursor-pointer hover:border-teal-400">
+              <label className="flex items-center gap-2 border border-dashed border-forest-300 rounded-lg px-3.5 py-2.5 text-sm text-forest-600 cursor-pointer hover:border-gold-400">
                 <Paperclip size={16} />
                 {cvFile ? cvFile.name : form.cvUrl ? "Reemplazar archivo..." : "Elegir archivo..."}
                 <input
@@ -231,14 +231,14 @@ export default function CandidatoPanel() {
                     <Input placeholder="Nombre" value={r.nombre} onChange={(e) => actualizarReferencia(i, "nombre", e.target.value)} />
                     <Input placeholder="Teléfono o email" value={r.contacto} onChange={(e) => actualizarReferencia(i, "contacto", e.target.value)} />
                     {referencias.length > 1 && (
-                      <button type="button" onClick={() => quitarReferencia(i)} className="text-navy-400 hover:text-red-500 px-1">
+                      <button type="button" onClick={() => quitarReferencia(i)} className="text-forest-400 hover:text-red-500 px-1">
                         <X size={18} />
                       </button>
                     )}
                   </div>
                 ))}
                 {referencias.length < 3 && (
-                  <button type="button" onClick={agregarReferencia} className="text-teal-600 text-sm font-semibold">
+                  <button type="button" onClick={agregarReferencia} className="text-gold-600 text-sm font-semibold">
                     + Agregar otra referencia
                   </button>
                 )}
@@ -261,8 +261,8 @@ export default function CandidatoPanel() {
               return (
                 <Card key={p.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h3 className="font-bold text-navy-900">{vac?.titulo}</h3>
-                    <p className="text-sm text-navy-500">{emp?.nombre} · Postulado el {p.fecha}</p>
+                    <h3 className="font-bold text-forest-900">{vac?.titulo}</h3>
+                    <p className="text-sm text-forest-500">{emp?.nombre} · Postulado el {p.fecha}</p>
                   </div>
                   <Badge tone={estadoTono[p.estado] || "gray"}>{p.estado}</Badge>
                 </Card>
@@ -276,36 +276,36 @@ export default function CandidatoPanel() {
       {tab === "formacion" && (
         <div className="space-y-8">
           <div>
-            <h3 className="font-bold text-navy-900 mb-3">Capacitaciones inscriptas</h3>
+            <h3 className="font-bold text-forest-900 mb-3">Capacitaciones inscriptas</h3>
             {misCapacitaciones.length === 0 ? (
               <EmptyState text="Sin capacitaciones inscriptas." />
             ) : (
               <div className="grid sm:grid-cols-2 gap-4">
                 {misCapacitaciones.map((c) => (
                   <Card key={c.id} className="p-4">
-                    <p className="font-semibold text-navy-900">{c.titulo}</p>
-                    <p className="text-sm text-navy-500">{c.fecha} · {c.modalidad}</p>
+                    <p className="font-semibold text-forest-900">{c.titulo}</p>
+                    <p className="text-sm text-forest-500">{c.fecha} · {c.modalidad}</p>
                   </Card>
                 ))}
               </div>
             )}
-            <Link to="/capacitaciones" className="text-teal-600 text-sm font-semibold inline-block mt-3">Ver más capacitaciones</Link>
+            <Link to="/capacitaciones" className="text-gold-600 text-sm font-semibold inline-block mt-3">Ver más capacitaciones</Link>
           </div>
           <div>
-            <h3 className="font-bold text-navy-900 mb-3">Mentorías reservadas</h3>
+            <h3 className="font-bold text-forest-900 mb-3">Mentorías reservadas</h3>
             {misMentorias.length === 0 ? (
               <EmptyState text="Sin mentorías reservadas." />
             ) : (
               <div className="grid sm:grid-cols-2 gap-4">
                 {misMentorias.map((m) => (
                   <Card key={m.id} className="p-4">
-                    <p className="font-semibold text-navy-900">{m.mentor}</p>
-                    <p className="text-sm text-navy-500">{m.especialidad}</p>
+                    <p className="font-semibold text-forest-900">{m.mentor}</p>
+                    <p className="text-sm text-forest-500">{m.especialidad}</p>
                   </Card>
                 ))}
               </div>
             )}
-            <Link to="/mentorias" className="text-teal-600 text-sm font-semibold inline-block mt-3">Ver más mentorías</Link>
+            <Link to="/mentorias" className="text-gold-600 text-sm font-semibold inline-block mt-3">Ver más mentorías</Link>
           </div>
         </div>
       )}
@@ -321,7 +321,7 @@ export default function CandidatoPanel() {
             </div>
           )}
           {candidatoPremiumActivo(candidato) && (
-            <div className="mb-4 text-sm text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-4 py-2">
+            <div className="mb-4 text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-4 py-2">
               Con tu membresía activa, tu perfil aparece primero en el buscador de las empresas y tus postulaciones se muestran primero en su bandeja.
             </div>
           )}
@@ -331,16 +331,16 @@ export default function CandidatoPanel() {
               const esGratis = p.id === "free";
               const estado = esActual && !esGratis ? estadoPlan(candidato.membresiaVencimiento) : null;
               return (
-                <Card key={p.id} className={`p-5 flex flex-col ${esActual ? "border-2 border-teal-500" : ""}`}>
-                  <h3 className="font-bold text-navy-900">{p.nombre}</h3>
-                  <div className="text-xl font-extrabold text-navy-800 mt-1">{p.precio}</div>
-                  <ul className="mt-3 space-y-1.5 text-sm text-navy-500 flex-1">
+                <Card key={p.id} className={`p-5 flex flex-col ${esActual ? "border-2 border-gold-500" : ""}`}>
+                  <h3 className="font-bold text-forest-900">{p.nombre}</h3>
+                  <div className="text-xl font-extrabold text-forest-800 mt-1">{p.precio}</div>
+                  <ul className="mt-3 space-y-1.5 text-sm text-forest-500 flex-1">
                     {p.incluye.map((i) => <li key={i}>• {i}</li>)}
                   </ul>
                   {esActual && (
                     <div className="mt-3">
-                      <Badge tone="teal">Plan actual</Badge>
-                      {estado && <p className={`text-xs mt-1.5 ${estado.vencido ? "text-red-600" : "text-navy-400"}`}>{estado.texto}</p>}
+                      <Badge tone="gold">Plan actual</Badge>
+                      {estado && <p className={`text-xs mt-1.5 ${estado.vencido ? "text-red-600" : "text-forest-400"}`}>{estado.texto}</p>}
                     </div>
                   )}
                   {esGratis ? (
@@ -367,7 +367,7 @@ export default function CandidatoPanel() {
               );
             })}
           </div>
-          <p className="text-xs text-navy-400 mt-6">
+          <p className="text-xs text-forest-400 mt-6">
             El pago se procesa con Mercado Pago. Cada pago aprobado extiende la vigencia de la membresía 30 días desde hoy (o desde el vencimiento actual, si todavía está vigente).
           </p>
         </div>

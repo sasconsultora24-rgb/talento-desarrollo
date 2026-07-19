@@ -2,21 +2,21 @@ import { Link } from "react-router-dom";
 import { Badge } from "../components/ui.jsx";
 
 function H2({ children }) {
-  return <h2 className="text-xl font-extrabold text-navy-900 mt-10 mb-3">{children}</h2>;
+  return <h2 className="text-xl font-extrabold text-forest-900 mt-10 mb-3">{children}</h2>;
 }
 function P({ children }) {
-  return <p className="text-navy-600 leading-relaxed mb-4">{children}</p>;
+  return <p className="text-forest-600 leading-relaxed mb-4">{children}</p>;
 }
 function Li({ children }) {
-  return <li className="text-navy-600 leading-relaxed mb-2">{children}</li>;
+  return <li className="text-forest-600 leading-relaxed mb-2">{children}</li>;
 }
 
 export default function TerminosCondiciones() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
-      <Badge tone="teal">Legal</Badge>
-      <h1 className="text-3xl font-extrabold text-navy-900 mt-3 mb-2">Términos y Condiciones</h1>
-      <p className="text-sm text-navy-400 mb-8">Última actualización: 18 de julio de 2026.</p>
+      <Badge tone="gold">Legal</Badge>
+      <h1 className="text-3xl font-extrabold text-forest-900 mt-3 mb-2">Términos y Condiciones</h1>
+      <p className="text-sm text-forest-400 mb-8">Última actualización: 18 de julio de 2026.</p>
 
       <P>
         Estos Términos y Condiciones regulan el uso de SAS Talento &amp; Desarrollo (la
@@ -82,7 +82,7 @@ export default function TerminosCondiciones() {
         </Li>
         <Li>
           Ante cualquier problema con un pago o una duda sobre reembolsos, escribinos a{" "}
-          <a href="mailto:sasconsultora24@gmail.com" className="text-teal-600 font-semibold">
+          <a href="mailto:sasconsultora24@gmail.com" className="text-gold-600 font-semibold">
             sasconsultora24@gmail.com
           </a>{" "}
           y lo vemos caso por caso.
@@ -139,7 +139,7 @@ export default function TerminosCondiciones() {
 
       <P>
         Ver también nuestra{" "}
-        <Link to="/privacidad" className="text-teal-600 font-semibold">
+        <Link to="/privacidad" className="text-gold-600 font-semibold">
           Política de Privacidad
         </Link>
         .

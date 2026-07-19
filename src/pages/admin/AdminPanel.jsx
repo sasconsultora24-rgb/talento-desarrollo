@@ -13,7 +13,7 @@ const TABS = [
   { id: "candidatos", label: "Candidatos", icon: Users },
 ];
 
-const estadoBadge = { pendiente: "amber", aprobada: "teal", rechazada: "gray", cerrada: "gray" };
+const estadoBadge = { pendiente: "terracotta", aprobada: "gold", rechazada: "gray", cerrada: "gray" };
 
 export default function AdminPanel() {
   const {
@@ -129,19 +129,19 @@ export default function AdminPanel() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <Badge tone="navy">Panel interno</Badge>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-navy-900 mt-2">Administración</h1>
+          <Badge tone="forest">Panel interno</Badge>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-forest-900 mt-2">Administración</h1>
         </div>
         <SasConsultoraLogo />
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-8 border-b border-navy-100 pb-1">
+      <div className="flex flex-wrap gap-2 mb-8 border-b border-forest-100 pb-1">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-sm font-semibold ${
-              tab === t.id ? "bg-white border border-b-0 border-navy-100 text-teal-600" : "text-navy-400 hover:text-navy-600"
+              tab === t.id ? "bg-white border border-b-0 border-forest-100 text-gold-600" : "text-forest-400 hover:text-forest-600"
             }`}
           >
             <t.icon size={15} /> {t.label}
@@ -152,20 +152,20 @@ export default function AdminPanel() {
       {tab === "metricas" && (
         <div>
           <div className="grid sm:grid-cols-3 gap-4">
-            <StatCard label="PYMEs registradas" value={empresas.length} tone="navy" />
-            <StatCard label="Candidatos en la base" value={candidatos.length} tone="teal" />
-            <StatCard label="Vacantes totales" value={vacantes.length} tone="amber" />
-            <StatCard label="Vacantes pendientes de aprobar" value={pendientes.length} tone="amber" />
-            <StatCard label="Postulaciones totales" value={postulaciones.length} tone="teal" />
-            <StatCard label="Capacitaciones activas" value={capacitaciones.length} tone="navy" />
-            <StatCard label="Mentorías disponibles" value={mentorias.length} tone="teal" />
-            <StatCard label="Candidatos premium" value={candidatos.filter((c) => c.membresia === "premium").length} tone="amber" />
-            <StatCard label="PYMEs plan premium" value={empresas.filter((e) => e.plan === "premium").length} tone="navy" />
+            <StatCard label="PYMEs registradas" value={empresas.length} tone="forest" />
+            <StatCard label="Candidatos en la base" value={candidatos.length} tone="gold" />
+            <StatCard label="Vacantes totales" value={vacantes.length} tone="terracotta" />
+            <StatCard label="Vacantes pendientes de aprobar" value={pendientes.length} tone="terracotta" />
+            <StatCard label="Postulaciones totales" value={postulaciones.length} tone="gold" />
+            <StatCard label="Capacitaciones activas" value={capacitaciones.length} tone="forest" />
+            <StatCard label="Mentorías disponibles" value={mentorias.length} tone="gold" />
+            <StatCard label="Candidatos premium" value={candidatos.filter((c) => c.membresia === "premium").length} tone="terracotta" />
+            <StatCard label="PYMEs plan premium" value={empresas.filter((e) => e.plan === "premium").length} tone="forest" />
           </div>
 
           <Card className="p-5 mt-6">
-            <h3 className="font-bold text-navy-900 mb-1">Exportar datos</h3>
-            <p className="text-sm text-navy-500 mb-4">Descarga en CSV, se abre directo en Excel o Google Sheets.</p>
+            <h3 className="font-bold text-forest-900 mb-1">Exportar datos</h3>
+            <p className="text-sm text-forest-500 mb-4">Descarga en CSV, se abre directo en Excel o Google Sheets.</p>
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={exportarCandidatos}>
                 <Download size={15} /> Candidatos
@@ -195,10 +195,10 @@ export default function AdminPanel() {
                 <Card key={v.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-navy-900">{v.titulo}</h3>
+                      <h3 className="font-bold text-forest-900">{v.titulo}</h3>
                       <Badge tone={estadoBadge[v.estado]}>{v.estado}</Badge>
                     </div>
-                    <p className="text-sm text-navy-500">{empresa?.nombre} · {v.ubicacion} · {v.fechaPublicacion}</p>
+                    <p className="text-sm text-forest-500">{empresa?.nombre} · {v.ubicacion} · {v.fechaPublicacion}</p>
                   </div>
                   <div className="flex gap-2">
                     {v.estado !== "aprobada" && (
@@ -221,7 +221,7 @@ export default function AdminPanel() {
       {tab === "formacion" && (
         <div>
           <Card className="p-6 mb-6 max-w-2xl">
-            <h3 className="font-bold text-navy-900 mb-3">Nueva capacitación</h3>
+            <h3 className="font-bold text-forest-900 mb-3">Nueva capacitación</h3>
             <form onSubmit={submitCapacitacion}>
               <Field label="Título">
                 <Input required value={nuevaCap.titulo} onChange={(e) => setNuevaCap({ ...nuevaCap, titulo: e.target.value })} />
@@ -255,23 +255,23 @@ export default function AdminPanel() {
                 .filter(Boolean);
               return (
                 <Card key={c.id} className="p-4">
-                  <p className="font-semibold text-navy-900">{c.titulo}</p>
-                  <p className="text-sm text-navy-500">{c.fecha} · {c.inscriptos.length}/{c.cupos} inscriptos</p>
+                  <p className="font-semibold text-forest-900">{c.titulo}</p>
+                  <p className="text-sm text-forest-500">{c.fecha} · {c.inscriptos.length}/{c.cupos} inscriptos</p>
                   {c.inscriptos.length > 0 && (
                     <button
                       type="button"
                       onClick={() => setCapExpandida(expandida ? null : c.id)}
-                      className="text-teal-600 text-sm font-semibold mt-2"
+                      className="text-gold-600 text-sm font-semibold mt-2"
                     >
                       {expandida ? "Ocultar inscriptos" : "Ver inscriptos"}
                     </button>
                   )}
                   {expandida && (
-                    <div className="mt-3 space-y-2 border-t border-navy-100 pt-3">
+                    <div className="mt-3 space-y-2 border-t border-forest-100 pt-3">
                       {inscriptosCap.map((cand) => (
                         <div key={cand.id} className="text-sm">
-                          <p className="font-medium text-navy-800">{cand.nombre}</p>
-                          <p className="text-navy-400">
+                          <p className="font-medium text-forest-800">{cand.nombre}</p>
+                          <p className="text-forest-400">
                             {cand.email}
                             {cand.telefono ? ` · ${cand.telefono}` : ""}
                           </p>
@@ -284,9 +284,9 @@ export default function AdminPanel() {
             })}
           </div>
 
-          <h3 className="font-bold text-navy-900 mt-10 mb-3">Mentorías</h3>
+          <h3 className="font-bold text-forest-900 mt-10 mb-3">Mentorías</h3>
           <Card className="p-6 mb-6 max-w-2xl">
-            <h4 className="font-bold text-navy-900 mb-3">Nueva mentoría</h4>
+            <h4 className="font-bold text-forest-900 mb-3">Nueva mentoría</h4>
             <form onSubmit={submitMentoria}>
               <div className="grid sm:grid-cols-2 gap-x-4">
                 <Field label="Mentor/a">
@@ -318,14 +318,14 @@ export default function AdminPanel() {
               <Card key={m.id} className="p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-semibold text-navy-900">{m.mentor}</p>
-                    <p className="text-sm text-navy-500">{m.especialidad}</p>
+                    <p className="font-semibold text-forest-900">{m.mentor}</p>
+                    <p className="text-sm text-forest-500">{m.especialidad}</p>
                   </div>
-                  <Badge tone="teal">
+                  <Badge tone="gold">
                     {m.publico === "empresa" ? "Empresas" : m.publico === "ambos" ? "Ambos" : "Candidatos"}
                   </Badge>
                 </div>
-                <p className="text-sm text-navy-400 mt-2">
+                <p className="text-sm text-forest-400 mt-2">
                   {m.reservasCandidatos.length + m.reservasEmpresas.length}/{m.cuposDisponibles} reservas
                 </p>
               </Card>
@@ -339,10 +339,10 @@ export default function AdminPanel() {
           {empresas.map((e) => (
             <Card key={e.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h3 className="font-bold text-navy-900">{e.nombre}</h3>
-                <p className="text-sm text-navy-500">{e.rubro} · {e.ubicacion} · Desde {e.fechaRegistro}</p>
+                <h3 className="font-bold text-forest-900">{e.nombre}</h3>
+                <p className="text-sm text-forest-500">{e.rubro} · {e.ubicacion} · Desde {e.fechaRegistro}</p>
               </div>
-              <Badge tone="teal">Plan {e.plan}</Badge>
+              <Badge tone="gold">Plan {e.plan}</Badge>
             </Card>
           ))}
         </div>
@@ -353,10 +353,10 @@ export default function AdminPanel() {
           {candidatos.map((c) => (
             <Card key={c.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <h3 className="font-bold text-navy-900">{c.nombre}</h3>
-                <p className="text-sm text-navy-500">{c.titulo} · {c.ubicacion} · Desde {c.fechaRegistro}</p>
+                <h3 className="font-bold text-forest-900">{c.nombre}</h3>
+                <p className="text-sm text-forest-500">{c.titulo} · {c.ubicacion} · Desde {c.fechaRegistro}</p>
               </div>
-              <Badge tone={c.membresia === "premium" ? "amber" : "gray"}>{c.membresia}</Badge>
+              <Badge tone={c.membresia === "premium" ? "terracotta" : "gray"}>{c.membresia}</Badge>
             </Card>
           ))}
         </div>

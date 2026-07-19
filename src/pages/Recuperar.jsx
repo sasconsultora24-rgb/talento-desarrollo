@@ -45,14 +45,14 @@ export default function Recuperar() {
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 py-16">
       <div className="text-center mb-8">
-        <Badge tone="teal">Recuperar contraseña</Badge>
-        <h1 className="text-2xl font-extrabold text-navy-900 mt-3">Elegí una nueva contraseña</h1>
+        <Badge tone="gold">Recuperar contraseña</Badge>
+        <h1 className="text-2xl font-extrabold text-forest-900 mt-3">Elegí una nueva contraseña</h1>
       </div>
 
       <Card className="p-6">
         {listo ? (
           <>
-            <p className="text-sm text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2 mb-4">
+            <p className="text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-3 py-2 mb-4">
               Contraseña actualizada. Ya podés seguir usando tu cuenta.
             </p>
             <Button onClick={irAlPanel} className="w-full">Ir a mi panel</Button>

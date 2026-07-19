@@ -59,17 +59,17 @@ const TABS = [
 ];
 
 const estadoBadge = {
-  pendiente: "amber",
-  aprobada: "teal",
+  pendiente: "terracotta",
+  aprobada: "gold",
   rechazada: "gray",
   cerrada: "gray",
 };
 
 const postulacionBadge = {
   nueva: "gray",
-  "en revisión": "amber",
-  entrevista: "teal",
-  contratado: "teal",
+  "en revisión": "terracotta",
+  entrevista: "gold",
+  contratado: "gold",
   descartado: "gray",
 };
 
@@ -172,9 +172,9 @@ export default function EmpresaPanel() {
   function Paywall() {
     return (
       <Card className="p-8 text-center">
-        <Lock className="mx-auto text-navy-300" size={32} />
-        <h3 className="font-bold text-navy-900 mt-3">Esta sección requiere un plan activo</h3>
-        <p className="text-sm text-navy-500 mt-1 max-w-md mx-auto">{acceso.texto}</p>
+        <Lock className="mx-auto text-forest-300" size={32} />
+        <h3 className="font-bold text-forest-900 mt-3">Esta sección requiere un plan activo</h3>
+        <p className="text-sm text-forest-500 mt-1 max-w-md mx-auto">{acceso.texto}</p>
         <Button className="mt-4" onClick={() => setTab("plan")}>Ver planes</Button>
       </Card>
     );
@@ -183,12 +183,12 @@ export default function EmpresaPanel() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <div className="mb-8">
-        <Badge tone="teal">Panel de empresa</Badge>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-navy-900 mt-2">{empresa.nombre}</h1>
+        <Badge tone="gold">Panel de empresa</Badge>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-forest-900 mt-2">{empresa.nombre}</h1>
       </div>
 
       {acceso.activo && acceso.texto.startsWith("Estás en período de prueba") && (
-        <div className="mb-6 text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-4 py-2">
+        <div className="mb-6 text-sm text-terracotta-700 bg-terracotta-50 border border-terracotta-100 rounded-lg px-4 py-2">
           {acceso.texto}
         </div>
       )}
@@ -199,18 +199,18 @@ export default function EmpresaPanel() {
       )}
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Vacantes publicadas" value={misVacantes.length} tone="navy" />
-        <StatCard label="Postulaciones recibidas" value={postulacionesRecibidas.length} tone="teal" />
-        <StatCard label="Plan actual" value={planesEmpresas.find((p) => p.id === empresa.plan)?.nombre || empresa.plan} tone="amber" />
+        <StatCard label="Vacantes publicadas" value={misVacantes.length} tone="forest" />
+        <StatCard label="Postulaciones recibidas" value={postulacionesRecibidas.length} tone="gold" />
+        <StatCard label="Plan actual" value={planesEmpresas.find((p) => p.id === empresa.plan)?.nombre || empresa.plan} tone="terracotta" />
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-8 border-b border-navy-100 pb-1">
+      <div className="flex flex-wrap gap-2 mb-8 border-b border-forest-100 pb-1">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-sm font-semibold ${
-              tab === t.id ? "bg-white border border-b-0 border-navy-100 text-teal-600" : "text-navy-400 hover:text-navy-600"
+              tab === t.id ? "bg-white border border-b-0 border-forest-100 text-gold-600" : "text-forest-400 hover:text-forest-600"
             }`}
           >
             <t.icon size={15} /> {t.label}
@@ -252,7 +252,7 @@ export default function EmpresaPanel() {
                   <Field label="Rango salarial"><Input value={nueva.salario} onChange={(e) => setNueva({ ...nueva, salario: e.target.value })} /></Field>
                   <Field label="Requisitos" hint="Separados por coma"><Input value={nueva.requisitos} onChange={(e) => setNueva({ ...nueva, requisitos: e.target.value })} /></Field>
                 </div>
-                <p className="text-xs text-navy-400 mb-4">La vacante quedará en estado "pendiente" hasta que nuestro equipo la revise y apruebe.</p>
+                <p className="text-xs text-forest-400 mb-4">La vacante quedará en estado "pendiente" hasta que nuestro equipo la revise y apruebe.</p>
                 <Button type="submit">Publicar</Button>
               </form>
             </Card>
@@ -265,8 +265,8 @@ export default function EmpresaPanel() {
               {misVacantes.map((v) => (
                 <Card key={v.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h3 className="font-bold text-navy-900">{v.titulo}</h3>
-                    <p className="text-sm text-navy-500">{v.area} · {v.ubicacion} · Publicada el {v.fechaPublicacion}</p>
+                    <h3 className="font-bold text-forest-900">{v.titulo}</h3>
+                    <p className="text-sm text-forest-500">{v.area} · {v.ubicacion} · Publicada el {v.fechaPublicacion}</p>
                   </div>
                   <Badge tone={estadoBadge[v.estado]}>{v.estado}</Badge>
                 </Card>
@@ -290,27 +290,27 @@ export default function EmpresaPanel() {
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-navy-900">{cand?.nombre}</h3>
-                        {candidatoPremiumActivo(cand) && <Badge tone="amber">Perfil premium</Badge>}
+                        <h3 className="font-bold text-forest-900">{cand?.nombre}</h3>
+                        {candidatoPremiumActivo(cand) && <Badge tone="terracotta">Perfil premium</Badge>}
                       </div>
-                      <p className="text-sm text-navy-500">{cand?.titulo} · {cand?.ubicacion}</p>
-                      <p className="text-sm text-navy-400 mt-1">Postulado a: <strong>{vac?.titulo}</strong></p>
+                      <p className="text-sm text-forest-500">{cand?.titulo} · {cand?.ubicacion}</p>
+                      <p className="text-sm text-forest-400 mt-1">Postulado a: <strong>{vac?.titulo}</strong></p>
                       {cand?.habilidades?.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {cand.habilidades.map((h) => (
-                            <span key={h} className="text-xs bg-navy-50 text-navy-600 px-2 py-0.5 rounded-full">{h}</span>
+                            <span key={h} className="text-xs bg-forest-50 text-forest-600 px-2 py-0.5 rounded-full">{h}</span>
                           ))}
                         </div>
                       )}
                       <div className="flex flex-wrap gap-3 mt-2">
                         {cand?.cvUrl && (
-                          <a href={cand.cvUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-teal-600 font-semibold">
+                          <a href={cand.cvUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold">
                             <FileText size={15} /> Ver CV
                           </a>
                         )}
                       </div>
                       {cand?.referencias?.length > 0 && (
-                        <p className="text-xs text-navy-400 mt-2">
+                        <p className="text-xs text-forest-400 mt-2">
                           Referencias: {cand.referencias.map((r) => `${r.nombre}${r.contacto ? ` (${r.contacto})` : ""}`).join(" · ")}
                         </p>
                       )}
@@ -365,7 +365,7 @@ export default function EmpresaPanel() {
             </div>
           </Card>
 
-          <p className="text-sm text-navy-400 mb-3">
+          <p className="text-sm text-forest-400 mb-3">
             {candidatosFiltrados.length} candidato{candidatosFiltrados.length === 1 ? "" : "s"} encontrado{candidatosFiltrados.length === 1 ? "" : "s"}
           </p>
 
@@ -377,32 +377,32 @@ export default function EmpresaPanel() {
                 <Card key={c.id} className="p-5">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
-                      <h3 className="font-bold text-navy-900">{c.nombre}</h3>
-                      <p className="text-sm text-navy-500">
+                      <h3 className="font-bold text-forest-900">{c.nombre}</h3>
+                      <p className="text-sm text-forest-500">
                         {c.titulo} · {c.ubicacion} · {c.nivel} · {c.disponibilidad}
                       </p>
-                      {c.resumen && <p className="text-sm text-navy-500 mt-2 max-w-xl">{c.resumen}</p>}
+                      {c.resumen && <p className="text-sm text-forest-500 mt-2 max-w-xl">{c.resumen}</p>}
                       {c.habilidades?.length > 0 && (
                         <div className="flex flex-wrap gap-1.5 mt-2">
                           {c.habilidades.map((h) => (
-                            <span key={h} className="text-xs bg-navy-50 text-navy-600 px-2 py-0.5 rounded-full">{h}</span>
+                            <span key={h} className="text-xs bg-forest-50 text-forest-600 px-2 py-0.5 rounded-full">{h}</span>
                           ))}
                         </div>
                       )}
                       <div className="flex flex-wrap gap-4 mt-2">
                         {c.cvUrl && (
-                          <a href={c.cvUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-teal-600 font-semibold">
+                          <a href={c.cvUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold">
                             <FileText size={15} /> Ver CV
                           </a>
                         )}
                         {c.email && (
-                          <a href={`mailto:${c.email}`} className="inline-flex items-center gap-1.5 text-sm text-teal-600 font-semibold">
+                          <a href={`mailto:${c.email}`} className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold">
                             <Mail size={15} /> Contactar
                           </a>
                         )}
                       </div>
                     </div>
-                    {candidatoPremiumActivo(c) && <Badge tone="amber">Perfil premium</Badge>}
+                    {candidatoPremiumActivo(c) && <Badge tone="terracotta">Perfil premium</Badge>}
                   </div>
                 </Card>
               ))}
@@ -414,7 +414,7 @@ export default function EmpresaPanel() {
       {tab === "mentorias" && !acceso.activo && <Paywall />}
       {tab === "mentorias" && acceso.activo && (
         <div>
-          <p className="text-sm text-navy-400 mb-4">
+          <p className="text-sm text-forest-400 mb-4">
             Sesiones de mentoría para tu equipo o para vos como dueño/responsable de la PYME.
           </p>
           {mentoriasVisibles.length === 0 ? (
@@ -428,21 +428,21 @@ export default function EmpresaPanel() {
                 return (
                   <Card key={m.id} className="p-6">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                      <div className="w-11 h-11 rounded-full bg-gold-50 flex items-center justify-center text-gold-600">
                         <UserRound size={22} />
                       </div>
                       <div>
-                        <h3 className="font-bold text-navy-900">{m.mentor}</h3>
-                        <p className="text-sm text-navy-500">{m.especialidad}</p>
+                        <h3 className="font-bold text-forest-900">{m.mentor}</h3>
+                        <p className="text-sm text-forest-500">{m.especialidad}</p>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-3 mt-4 text-sm text-navy-500">
+                    <div className="flex flex-wrap gap-3 mt-4 text-sm text-forest-500">
                       <Badge tone="gray">{m.modalidad}</Badge>
                       <span>{cuposLibres} cupos disponibles</span>
                     </div>
                     <div className="mt-5">
                       {reservado ? (
-                        <span className="inline-flex items-center gap-1.5 text-teal-600 text-sm font-semibold">
+                        <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
                           <CheckCircle2 size={18} /> Sesión reservada
                         </span>
                       ) : cuposLibres <= 0 ? (
@@ -475,16 +475,16 @@ export default function EmpresaPanel() {
               const esActual = empresa.plan === p.id;
               const estado = esActual && empresa.planVencimiento ? estadoPlan(empresa.planVencimiento) : null;
               return (
-                <Card key={p.id} className={`p-5 flex flex-col ${esActual ? "border-2 border-teal-500" : ""}`}>
-                  <h3 className="font-bold text-navy-900">{p.nombre}</h3>
-                  <div className="text-xl font-extrabold text-navy-800 mt-1">{p.precio}</div>
-                  <ul className="mt-3 space-y-1.5 text-sm text-navy-500 flex-1">
+                <Card key={p.id} className={`p-5 flex flex-col ${esActual ? "border-2 border-gold-500" : ""}`}>
+                  <h3 className="font-bold text-forest-900">{p.nombre}</h3>
+                  <div className="text-xl font-extrabold text-forest-800 mt-1">{p.precio}</div>
+                  <ul className="mt-3 space-y-1.5 text-sm text-forest-500 flex-1">
                     {p.incluye.map((i) => <li key={i}>• {i}</li>)}
                   </ul>
                   {esActual && (
                     <div className="mt-3">
-                      <Badge tone="teal">Plan actual</Badge>
-                      <p className={`text-xs mt-1.5 ${estado ? (estado.vencido ? "text-red-600" : "text-navy-400") : acceso.activo ? "text-amber-600" : "text-red-600"}`}>
+                      <Badge tone="gold">Plan actual</Badge>
+                      <p className={`text-xs mt-1.5 ${estado ? (estado.vencido ? "text-red-600" : "text-forest-400") : acceso.activo ? "text-terracotta-600" : "text-red-600"}`}>
                         {estado ? estado.texto : acceso.texto}
                       </p>
                     </div>
@@ -501,7 +501,7 @@ export default function EmpresaPanel() {
               );
             })}
           </div>
-          <p className="text-xs text-navy-400 mt-6">
+          <p className="text-xs text-forest-400 mt-6">
             El pago se procesa con Mercado Pago. Cada pago aprobado extiende la vigencia del plan 30 días desde hoy (o desde el vencimiento actual, si todavía está vigente).
           </p>
         </div>

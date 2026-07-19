@@ -7,13 +7,13 @@ import { useApp } from "../data/store.jsx";
 const CONTENIDO = {
   success: {
     icon: CheckCircle2,
-    color: "text-teal-600",
+    color: "text-gold-600",
     titulo: "¡Pago recibido!",
     texto: "Estamos confirmando el pago con Mercado Pago. Tu plan se actualiza automáticamente en cuanto se confirme, normalmente en unos segundos.",
   },
   pending: {
     icon: Clock,
-    color: "text-amber-500",
+    color: "text-terracotta-500",
     titulo: "Pago pendiente",
     texto: "Tu pago está pendiente de confirmación (por ejemplo, si pagaste con efectivo o transferencia). En cuanto se acredite, tu plan se actualiza solo.",
   },
@@ -51,9 +51,9 @@ export default function PagoResultado() {
   return (
     <div className="max-w-lg mx-auto px-4 py-24 text-center">
       <Icon size={56} className={`mx-auto ${info.color}`} />
-      <h1 className="text-2xl font-extrabold text-navy-900 mt-4">{info.titulo}</h1>
-      <p className="text-navy-500 mt-3">{info.texto}</p>
-      {refrescando && <p className="text-sm text-navy-400 mt-3">Actualizando tu plan...</p>}
+      <h1 className="text-2xl font-extrabold text-forest-900 mt-4">{info.titulo}</h1>
+      <p className="text-forest-500 mt-3">{info.texto}</p>
+      {refrescando && <p className="text-sm text-forest-400 mt-3">Actualizando tu plan...</p>}
       <Link to={volverA} className="inline-block mt-6">
         <Button>Volver a mi panel</Button>
       </Link>

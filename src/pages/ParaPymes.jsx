@@ -51,18 +51,18 @@ export default function ParaPymes() {
 
   return (
     <div>
-      <section className="bg-gradient-to-br from-navy-900 to-navy-700 text-white">
+      <section className="bg-gradient-to-br from-forest-900 to-forest-700 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-          <Badge tone="teal">Servicio para PYMEs</Badge>
+          <Badge tone="gold">Servicio para PYMEs</Badge>
           <h1 className="text-3xl md:text-4xl font-extrabold font-display mt-4 max-w-2xl">
             Todo el respaldo de un área de RRHH, sin montar una estructura interna.
           </h1>
-          <p className="mt-4 text-navy-200 max-w-2xl leading-relaxed">
+          <p className="mt-4 text-forest-200 max-w-2xl leading-relaxed">
             Reclutamos, retenemos y desarrollamos el talento de tu equipo con un servicio
             integral pensado para pequeñas y medianas empresas.
           </p>
           <Link to={esEmpresaLogueada ? "/empresa?tab=plan" : "/registro?tipo=empresa"}>
-            <Button variant="amber" className="mt-6 px-6 py-3">
+            <Button variant="terracotta" className="mt-6 px-6 py-3">
               {esEmpresaLogueada ? "Ir a mi panel" : "Registrar mi PYME"}
             </Button>
           </Link>
@@ -74,14 +74,14 @@ export default function ParaPymes() {
         <div className="grid md:grid-cols-2 gap-6">
           {areas.map((a) => (
             <Card key={a.title} className="p-6">
-              <div className="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 mb-3">
+              <div className="w-11 h-11 rounded-xl bg-gold-50 flex items-center justify-center text-gold-600 mb-3">
                 <a.icon size={22} />
               </div>
-              <h3 className="font-bold text-navy-900 mb-3">{a.title}</h3>
+              <h3 className="font-bold text-forest-900 mb-3">{a.title}</h3>
               <ul className="space-y-2">
                 {a.items.map((i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-navy-500">
-                    <Check size={16} className="text-teal-500 mt-0.5 shrink-0" />
+                  <li key={i} className="flex items-start gap-2 text-sm text-forest-500">
+                    <Check size={16} className="text-gold-500 mt-0.5 shrink-0" />
                     {i}
                   </li>
                 ))}
@@ -91,7 +91,7 @@ export default function ParaPymes() {
         </div>
       </section>
 
-      <section id="planes" className="bg-white border-t border-navy-100">
+      <section id="planes" className="bg-white border-t border-forest-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
           <SectionTitle
             eyebrow="Precios"
@@ -101,14 +101,14 @@ export default function ParaPymes() {
           />
           <div className="grid md:grid-cols-3 gap-6">
             {planesEmpresas.map((p, i) => (
-              <Card key={p.id} className={`p-6 flex flex-col ${i === 1 ? "border-2 border-teal-500 shadow-soft" : ""}`}>
-                {i === 1 && <Badge tone="teal">Más elegido</Badge>}
-                <h3 className="text-xl font-bold text-navy-900 mt-3">{p.nombre}</h3>
-                <div className="text-2xl font-extrabold text-navy-800 mt-1">{p.precio}</div>
+              <Card key={p.id} className={`p-6 flex flex-col ${i === 1 ? "border-2 border-gold-500 shadow-soft" : ""}`}>
+                {i === 1 && <Badge tone="gold">Más elegido</Badge>}
+                <h3 className="text-xl font-bold text-forest-900 mt-3">{p.nombre}</h3>
+                <div className="text-2xl font-extrabold text-forest-800 mt-1">{p.precio}</div>
                 <ul className="mt-4 space-y-2 flex-1">
                   {p.incluye.map((inc) => (
-                    <li key={inc} className="flex items-start gap-2 text-sm text-navy-500">
-                      <Check size={16} className="text-teal-500 mt-0.5 shrink-0" />
+                    <li key={inc} className="flex items-start gap-2 text-sm text-forest-500">
+                      <Check size={16} className="text-gold-500 mt-0.5 shrink-0" />
                       {inc}
                     </li>
                   ))}

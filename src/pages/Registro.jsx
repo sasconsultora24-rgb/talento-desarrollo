@@ -161,20 +161,20 @@ export default function Registro() {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
       <div className="text-center mb-8">
-        <Badge tone="teal">Registro gratuito</Badge>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-navy-900 mt-3">
+        <Badge tone="gold">Registro gratuito</Badge>
+        <h1 className="text-2xl md:text-3xl font-extrabold text-forest-900 mt-3">
           Creá tu cuenta en SAS Talento & Desarrollo
         </h1>
-        <p className="text-navy-500 mt-2">
-          ¿Ya tenés cuenta? <Link to="/ingresar" className="text-teal-600 font-semibold">Ingresá acá</Link>
+        <p className="text-forest-500 mt-2">
+          ¿Ya tenés cuenta? <Link to="/ingresar" className="text-gold-600 font-semibold">Ingresá acá</Link>
         </p>
       </div>
 
-      <div className="flex gap-2 mb-6 bg-navy-50 rounded-xl p-1 max-w-sm mx-auto">
+      <div className="flex gap-2 mb-6 bg-forest-50 rounded-xl p-1 max-w-sm mx-auto">
         <button
           onClick={() => setTipo("candidato")}
           className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-            tipo === "candidato" ? "bg-white shadow-sm text-navy-900" : "text-navy-500"
+            tipo === "candidato" ? "bg-white shadow-sm text-forest-900" : "text-forest-500"
           }`}
         >
           Soy profesional
@@ -182,7 +182,7 @@ export default function Registro() {
         <button
           onClick={() => setTipo("empresa")}
           className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
-            tipo === "empresa" ? "bg-white shadow-sm text-navy-900" : "text-navy-500"
+            tipo === "empresa" ? "bg-white shadow-sm text-forest-900" : "text-forest-500"
           }`}
         >
           Soy una PYME
@@ -196,7 +196,7 @@ export default function Registro() {
           </div>
         )}
         {revisarEmail && (
-          <div className="mb-4 text-sm text-teal-700 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2">
+          <div className="mb-4 text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-3 py-2">
             Te enviamos un email para confirmar tu cuenta. Confirmalo y después ingresá desde{" "}
             <Link to="/ingresar" className="font-semibold underline">Ingresar</Link>.
           </div>
@@ -249,7 +249,7 @@ export default function Registro() {
             </Field>
 
             <Field label="Adjuntar CV" hint={`PDF o Word, hasta ${MAX_CV_MB}MB (opcional)`}>
-              <label className="flex items-center gap-2 border border-dashed border-navy-300 rounded-lg px-3.5 py-2.5 text-sm text-navy-600 cursor-pointer hover:border-teal-400">
+              <label className="flex items-center gap-2 border border-dashed border-forest-300 rounded-lg px-3.5 py-2.5 text-sm text-forest-600 cursor-pointer hover:border-gold-400">
                 <Paperclip size={16} />
                 {cvFile ? cvFile.name : "Elegir archivo..."}
                 <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={handleCvChange} />
@@ -274,7 +274,7 @@ export default function Registro() {
                       <button
                         type="button"
                         onClick={() => quitarReferencia(i)}
-                        className="text-navy-400 hover:text-red-500 px-1"
+                        className="text-forest-400 hover:text-red-500 px-1"
                         aria-label="Quitar referencia"
                       >
                         <X size={18} />
@@ -283,7 +283,7 @@ export default function Registro() {
                   </div>
                 ))}
                 {referencias.length < 3 && (
-                  <button type="button" onClick={agregarReferencia} className="text-teal-600 text-sm font-semibold">
+                  <button type="button" onClick={agregarReferencia} className="text-gold-600 text-sm font-semibold">
                     + Agregar otra referencia
                   </button>
                 )}
@@ -291,7 +291,7 @@ export default function Registro() {
             </Field>
 
             <div className="space-y-2 mt-3 mb-4">
-              <label className="flex items-start gap-2 text-sm text-navy-600">
+              <label className="flex items-start gap-2 text-sm text-forest-600">
                 <input
                   type="checkbox"
                   required
@@ -300,11 +300,11 @@ export default function Registro() {
                   className="mt-0.5"
                 />
                 Leí y acepto la{" "}
-                <Link to="/privacidad" target="_blank" className="text-teal-600 font-semibold">Política de Privacidad</Link>{" "}
+                <Link to="/privacidad" target="_blank" className="text-gold-600 font-semibold">Política de Privacidad</Link>{" "}
                 y los{" "}
-                <Link to="/terminos" target="_blank" className="text-teal-600 font-semibold">Términos y Condiciones</Link>.
+                <Link to="/terminos" target="_blank" className="text-gold-600 font-semibold">Términos y Condiciones</Link>.
               </label>
-              <label className="flex items-start gap-2 text-sm text-navy-600">
+              <label className="flex items-start gap-2 text-sm text-forest-600">
                 <input
                   type="checkbox"
                   required
@@ -350,7 +350,7 @@ export default function Registro() {
             <Field label="Contraseña" hint="Mínimo 8 caracteres">
               <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
-            <label className="flex items-start gap-2 text-sm text-navy-600 mt-3 mb-4">
+            <label className="flex items-start gap-2 text-sm text-forest-600 mt-3 mb-4">
               <input
                 type="checkbox"
                 required
@@ -359,9 +359,9 @@ export default function Registro() {
                 className="mt-0.5"
               />
               Leí y acepto la{" "}
-              <Link to="/privacidad" target="_blank" className="text-teal-600 font-semibold">Política de Privacidad</Link>{" "}
+              <Link to="/privacidad" target="_blank" className="text-gold-600 font-semibold">Política de Privacidad</Link>{" "}
               y los{" "}
-              <Link to="/terminos" target="_blank" className="text-teal-600 font-semibold">Términos y Condiciones</Link>.
+              <Link to="/terminos" target="_blank" className="text-gold-600 font-semibold">Términos y Condiciones</Link>.
             </label>
             <Button type="submit" disabled={enviando} className="w-full mt-2">
               {enviando ? "Registrando..." : "Registrar mi PYME"}

@@ -70,30 +70,30 @@ export default function Vacantes() {
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <Badge tone="teal">{v.area}</Badge>
+                      <Badge tone="gold">{v.area}</Badge>
                       <Badge tone="gray">{v.modalidad}</Badge>
-                      <Badge tone="amber">{v.nivel}</Badge>
+                      <Badge tone="terracotta">{v.nivel}</Badge>
                     </div>
-                    <h3 className="text-lg font-bold text-navy-900">{v.titulo}</h3>
-                    <div className="flex flex-wrap gap-4 text-sm text-navy-500 mt-1.5">
+                    <h3 className="text-lg font-bold text-forest-900">{v.titulo}</h3>
+                    <div className="flex flex-wrap gap-4 text-sm text-forest-500 mt-1.5">
                       <span className="inline-flex items-center gap-1"><Building2 size={14} />{empresa?.nombre}</span>
                       <span className="inline-flex items-center gap-1"><MapPin size={14} />{v.ubicacion}</span>
                     </div>
-                    <p className="text-sm text-navy-500 mt-3 leading-relaxed">{v.descripcion}</p>
+                    <p className="text-sm text-forest-500 mt-3 leading-relaxed">{v.descripcion}</p>
                     {v.requisitos?.length > 0 && (
                       <ul className="mt-3 flex flex-wrap gap-2">
                         {v.requisitos.map((r) => (
-                          <li key={r} className="text-xs bg-navy-50 text-navy-600 px-2.5 py-1 rounded-full">
+                          <li key={r} className="text-xs bg-forest-50 text-forest-600 px-2.5 py-1 rounded-full">
                             {r}
                           </li>
                         ))}
                       </ul>
                     )}
-                    <p className="text-sm font-semibold text-navy-700 mt-3">{v.salario}</p>
+                    <p className="text-sm font-semibold text-forest-700 mt-3">{v.salario}</p>
                   </div>
                   <div className="md:w-44 flex md:flex-col gap-2">
                     {yaPostulado || confirmado === v.id ? (
-                      <span className="inline-flex items-center gap-1.5 text-teal-600 text-sm font-semibold">
+                      <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
                         <CheckCircle2 size={18} /> Postulación enviada
                       </span>
                     ) : (

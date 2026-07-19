@@ -18,35 +18,35 @@ export default function Landing() {
   return (
     <div>
       {/* HERO */}
-      <section className="bg-gradient-to-br from-navy-900 via-navy-800 to-navy-700 text-white">
+      <section className="bg-gradient-to-br from-forest-900 via-forest-800 to-forest-700 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-20 md:py-28 grid md:grid-cols-2 gap-10 items-center">
           <div>
-            <Badge tone="teal">Unidad de RRHH de SAS Consultora</Badge>
+            <Badge tone="gold">Unidad de RRHH de SAS Consultora</Badge>
             <h1 className="mt-4 text-4xl md:text-5xl font-extrabold font-display leading-tight">
-              Impulsamos tu talento,<br /> transformamos <span className="text-teal-300">PYMEs</span>.
+              Impulsamos tu talento,<br /> transformamos <span className="text-gold-300">PYMEs</span>.
             </h1>
-            <p className="mt-5 text-navy-200 text-lg leading-relaxed max-w-lg">
+            <p className="mt-5 text-forest-200 text-lg leading-relaxed max-w-lg">
               Conectamos pequeñas y medianas empresas con profesionales listos para crecer,
               y acompañamos ese crecimiento con capacitación y mentorías reales.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/registro">
-                <Button variant="amber" className="text-base px-6 py-3">
+                <Button variant="terracotta" className="text-base px-6 py-3">
                   Soy profesional <ArrowRight size={18} />
                 </Button>
               </Link>
               <Link to="/registro?tipo=empresa">
-                <Button variant="outline" className="!text-white !border-white/30 hover:!border-teal-300 hover:!text-teal-300 text-base px-6 py-3">
+                <Button variant="outline" className="!text-white !border-white/30 hover:!border-gold-300 hover:!text-gold-300 text-base px-6 py-3">
                   Soy una PYME
                 </Button>
               </Link>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <StatCard label="Vacantes activas" value={vacantesAbiertas.length} tone="teal" />
-            <StatCard label="PYMEs registradas" value={empresas.length} tone="amber" />
-            <StatCard label="Profesionales en la base" value={candidatos.length} tone="navy" />
-            <StatCard label="Capacitaciones disponibles" value={capacitaciones.length} tone="teal" />
+            <StatCard label="Vacantes activas" value={vacantesAbiertas.length} tone="gold" />
+            <StatCard label="PYMEs registradas" value={empresas.length} tone="terracotta" />
+            <StatCard label="Profesionales en la base" value={candidatos.length} tone="forest" />
+            <StatCard label="Capacitaciones disponibles" value={capacitaciones.length} tone="gold" />
           </div>
         </div>
       </section>
@@ -77,23 +77,23 @@ export default function Landing() {
             },
           ].map((s) => (
             <Card key={s.title} className="p-6">
-              <div className="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 mb-4">
+              <div className="w-11 h-11 rounded-xl bg-gold-50 flex items-center justify-center text-gold-600 mb-4">
                 <s.icon size={22} />
               </div>
-              <h3 className="font-bold text-navy-900 mb-1.5">{s.title}</h3>
-              <p className="text-sm text-navy-500 leading-relaxed">{s.text}</p>
+              <h3 className="font-bold text-forest-900 mb-1.5">{s.title}</h3>
+              <p className="text-sm text-forest-500 leading-relaxed">{s.text}</p>
             </Card>
           ))}
         </div>
         <div className="mt-6">
-          <Link to="/pymes" className="text-teal-600 font-semibold text-sm inline-flex items-center gap-1 hover:gap-2 transition-all">
+          <Link to="/pymes" className="text-gold-600 font-semibold text-sm inline-flex items-center gap-1 hover:gap-2 transition-all">
             Ver todos los servicios para PYMEs <ArrowRight size={16} />
           </Link>
         </div>
       </section>
 
       {/* SERVICIOS PARA PROFESIONALES */}
-      <section className="bg-white border-y border-navy-100">
+      <section className="bg-white border-y border-forest-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
           <SectionTitle
             eyebrow="Para profesionales"
@@ -119,11 +119,11 @@ export default function Landing() {
               },
             ].map((s) => (
               <Card key={s.title} className="p-6">
-                <div className="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 mb-4">
+                <div className="w-11 h-11 rounded-xl bg-terracotta-50 flex items-center justify-center text-terracotta-500 mb-4">
                   <s.icon size={22} />
                 </div>
-                <h3 className="font-bold text-navy-900 mb-1.5">{s.title}</h3>
-                <p className="text-sm text-navy-500 leading-relaxed">{s.text}</p>
+                <h3 className="font-bold text-forest-900 mb-1.5">{s.title}</h3>
+                <p className="text-sm text-forest-500 leading-relaxed">{s.text}</p>
               </Card>
             ))}
           </div>
@@ -138,10 +138,10 @@ export default function Landing() {
             const empresa = empresas.find((e) => e.id === v.empresaId);
             return (
               <Card key={v.id} className="p-5 flex flex-col">
-                <Badge tone="teal">{v.area}</Badge>
-                <h3 className="font-bold text-navy-900 mt-3">{v.titulo}</h3>
-                <p className="text-sm text-navy-500 mt-1">{empresa?.nombre} · {v.ubicacion}</p>
-                <p className="text-sm text-navy-400 mt-3 flex-1 line-clamp-3">{v.descripcion}</p>
+                <Badge tone="gold">{v.area}</Badge>
+                <h3 className="font-bold text-forest-900 mt-3">{v.titulo}</h3>
+                <p className="text-sm text-forest-500 mt-1">{empresa?.nombre} · {v.ubicacion}</p>
+                <p className="text-sm text-forest-400 mt-3 flex-1 line-clamp-3">{v.descripcion}</p>
                 <Link to="/vacantes" className="mt-4">
                   <Button variant="outline" className="w-full">Ver detalle</Button>
                 </Link>
@@ -152,14 +152,14 @@ export default function Landing() {
       </section>
 
       {/* DIFERENCIACION */}
-      <section className="bg-navy-900 text-white">
+      <section className="bg-forest-900 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 grid md:grid-cols-2 gap-10 items-center">
           <div>
-            <ShieldCheck className="text-teal-300" size={36} />
+            <ShieldCheck className="text-gold-300" size={36} />
             <h2 className="text-2xl md:text-3xl font-extrabold font-display mt-4">
               No solo conectamos. Acompañamos.
             </h2>
-            <p className="mt-4 text-navy-300 leading-relaxed">
+            <p className="mt-4 text-forest-300 leading-relaxed">
               Cada contratación incluye acompañamiento: mentorías de adaptación para quien
               se suma a un nuevo equipo, y asesoría estratégica para la PYME que lo incorpora.
               Así construimos relaciones de largo plazo, no solo búsquedas puntuales.
@@ -182,10 +182,10 @@ export default function Landing() {
 
       {/* CTA FINAL */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 text-center">
-        <h2 className="text-2xl md:text-3xl font-extrabold text-navy-900">
+        <h2 className="text-2xl md:text-3xl font-extrabold text-forest-900">
           ¿Listo para empezar?
         </h2>
-        <p className="text-navy-500 mt-2">Registrate gratis como profesional o publicá tu primera vacante como PYME.</p>
+        <p className="text-forest-500 mt-2">Registrate gratis como profesional o publicá tu primera vacante como PYME.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link to="/registro"><Button variant="primary" className="px-6 py-3">Crear mi perfil</Button></Link>
           <Link to="/registro?tipo=empresa"><Button variant="secondary" className="px-6 py-3">Registrar mi PYME</Button></Link>

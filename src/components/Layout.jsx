@@ -7,7 +7,7 @@ export default function Layout() {
   const { loading, error } = useApp();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f7f8fb]">
+    <div className="min-h-screen flex flex-col bg-sand-50">
       <Navbar />
       {error && (
         <div className="bg-red-50 text-red-600 text-sm text-center py-2 px-4">
@@ -16,7 +16,7 @@ export default function Layout() {
       )}
       <main className="flex-1">
         {loading ? (
-          <div className="flex items-center justify-center py-32 text-navy-400 text-sm">
+          <div className="flex items-center justify-center py-32 text-forest-400 text-sm">
             Cargando datos...
           </div>
         ) : (

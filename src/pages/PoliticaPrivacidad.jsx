@@ -2,21 +2,21 @@ import { Link } from "react-router-dom";
 import { Badge } from "../components/ui.jsx";
 
 function H2({ children }) {
-  return <h2 className="text-xl font-extrabold text-navy-900 mt-10 mb-3">{children}</h2>;
+  return <h2 className="text-xl font-extrabold text-forest-900 mt-10 mb-3">{children}</h2>;
 }
 function P({ children }) {
-  return <p className="text-navy-600 leading-relaxed mb-4">{children}</p>;
+  return <p className="text-forest-600 leading-relaxed mb-4">{children}</p>;
 }
 function Li({ children }) {
-  return <li className="text-navy-600 leading-relaxed mb-2">{children}</li>;
+  return <li className="text-forest-600 leading-relaxed mb-2">{children}</li>;
 }
 
 export default function PoliticaPrivacidad() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16">
-      <Badge tone="teal">Legal</Badge>
-      <h1 className="text-3xl font-extrabold text-navy-900 mt-3 mb-2">Política de Privacidad</h1>
-      <p className="text-sm text-navy-400 mb-8">Última actualización: 18 de julio de 2026.</p>
+      <Badge tone="gold">Legal</Badge>
+      <h1 className="text-3xl font-extrabold text-forest-900 mt-3 mb-2">Política de Privacidad</h1>
+      <p className="text-sm text-forest-400 mb-8">Última actualización: 18 de julio de 2026.</p>
 
       <P>
         Esta Política de Privacidad describe cómo SAS Consultora ("SAS Consultora", "nosotros")
@@ -30,11 +30,11 @@ export default function PoliticaPrivacidad() {
         El responsable del tratamiento de los datos personales recolectados a través de la
         Plataforma es SAS Consultora, unidad de negocios de RRHH. Podés contactarnos por
         cualquier consulta relacionada con tus datos personales escribiendo a{" "}
-        <a href="mailto:sasconsultora24@gmail.com" className="text-teal-600 font-semibold">
+        <a href="mailto:sasconsultora24@gmail.com" className="text-gold-600 font-semibold">
           sasconsultora24@gmail.com
         </a>{" "}
         o a{" "}
-        <a href="mailto:rrhh@sasconsultora.com" className="text-teal-600 font-semibold">
+        <a href="mailto:rrhh@sasconsultora.com" className="text-gold-600 font-semibold">
           rrhh@sasconsultora.com
         </a>
         .
@@ -145,7 +145,7 @@ export default function PoliticaPrivacidad() {
         corresponda. También podés editar la mayoría de tus datos vos mismo desde tu panel
         ("Mi perfil"). Para cualquier otro pedido relacionado con tus datos, incluyendo la baja
         completa de tu cuenta, escribinos a{" "}
-        <a href="mailto:sasconsultora24@gmail.com" className="text-teal-600 font-semibold">
+        <a href="mailto:sasconsultora24@gmail.com" className="text-gold-600 font-semibold">
           sasconsultora24@gmail.com
         </a>
         .
@@ -178,7 +178,7 @@ export default function PoliticaPrivacidad() {
 
       <P>
         Ver también nuestros{" "}
-        <Link to="/terminos" className="text-teal-600 font-semibold">
+        <Link to="/terminos" className="text-gold-600 font-semibold">
           Términos y Condiciones
         </Link>
         .
