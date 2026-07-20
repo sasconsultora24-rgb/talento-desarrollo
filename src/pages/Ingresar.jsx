@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Button, Badge } from "../components/ui.jsx";
+import { mensajeError } from "../utils/errores";
 
 export default function Ingresar() {
   const { iniciarSesion, solicitarRecuperacion, session, resolviendo } = useApp();
@@ -36,13 +37,7 @@ export default function Ingresar() {
       setIntentado(true);
     } catch (err) {
       console.error(err);
-      setError(
-        err.message?.includes("Invalid login")
-          ? "Email o contraseña incorrectos."
-          : err.message?.includes("Email not confirmed")
-          ? "Todavía no confirmaste tu email. Revisá tu casilla de correo."
-          : "No pudimos iniciar sesión. Probá de nuevo en unos segundos."
-      );
+      setError(mensajeError(err, "No pudimos iniciar sesión. Probá de nuevo en unos segundos."));
     } finally {
       setEnviando(false);
     }
@@ -57,7 +52,7 @@ export default function Ingresar() {
       setMensajeRecuperar("Si ese email está registrado, te enviamos un link para elegir una nueva contraseña. Revisá tu casilla.");
     } catch (err) {
       console.error(err);
-      setMensajeRecuperar("No pudimos enviar el email. Probá de nuevo en unos segundos.");
+      setMensajeRecuperar(mensajeError(err, "No pudimos enviar el email. Probá de nuevo en unos segundos."));
     } finally {
       setRecuperando(false);
     }

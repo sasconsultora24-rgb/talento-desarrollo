@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, UserRound } from "lucide-react";
+import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, GraduationCap, Calendar, CheckCircle2 } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
 import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
+import { mensajeError } from "../../utils/errores";
 
 const DIAS_PRUEBA = 14;
 
@@ -55,7 +56,7 @@ const TABS = [
   { id: "vacantes", label: "Mis vacantes", icon: Briefcase },
   { id: "candidatos", label: "Candidatos postulados", icon: Users2 },
   { id: "buscar", label: "Buscar candidatos", icon: Search },
-  { id: "mentorias", label: "Mentorías", icon: UserRound },
+  { id: "formacion", label: "Capacitaciones y mentorías", icon: GraduationCap },
   { id: "plan", label: "Mi plan", icon: Award },
 ];
 
@@ -75,7 +76,9 @@ const postulacionBadge = {
 };
 
 export default function EmpresaPanel() {
-  const { session, empresas, vacantes, candidatos, postulaciones, publicarVacante, cambiarEstadoPostulacion, iniciarPago } = useApp();
+  const { session, empresas, vacantes, candidatos, postulaciones, capacitaciones, publicarVacante, cambiarEstadoPostulacion, iniciarPago, inscribirCapacitacion } = useApp();
+  const [errorCap, setErrorCap] = useState("");
+  const [errorVacante, setErrorVacante] = useState("");
   const [searchParams] = useSearchParams();
   const tabInicial = TABS.some((t) => t.id === searchParams.get("tab")) ? searchParams.get("tab") : "vacantes";
   const [tab, setTab] = useState(tabInicial);
@@ -132,6 +135,7 @@ export default function EmpresaPanel() {
 
   async function crearVacante(e) {
     e.preventDefault();
+    setErrorVacante("");
     try {
       await publicarVacante(empresa.id, {
         ...nueva,
@@ -141,6 +145,17 @@ export default function EmpresaPanel() {
       setFormOpen(false);
     } catch (err) {
       console.error(err);
+      setErrorVacante(mensajeError(err, "No pudimos publicar la vacante. Probá de nuevo en unos segundos."));
+    }
+  }
+
+  async function handleInscribirCap(id) {
+    setErrorCap("");
+    try {
+      await inscribirCapacitacion(id, empresa.id, "empresa");
+    } catch (err) {
+      console.error(err);
+      setErrorCap("No pudimos completar la inscripción. Probá de nuevo en unos segundos.");
     }
   }
 
@@ -216,6 +231,9 @@ export default function EmpresaPanel() {
 
           {formOpen && (
             <Card className="p-6 mb-6">
+              {errorVacante && (
+                <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorVacante}</div>
+              )}
               <form onSubmit={crearVacante}>
                 <div className="grid sm:grid-cols-2 gap-x-4">
                   <Field label="Puesto"><Input required value={nueva.titulo} onChange={(e) => setNueva({ ...nueva, titulo: e.target.value })} /></Field>
@@ -398,9 +416,53 @@ export default function EmpresaPanel() {
         </div>
       )}
 
-      {tab === "mentorias" && !acceso.activo && <Paywall />}
-      {tab === "mentorias" && acceso.activo && (
-        <MentoriasPaquetes titulo="Mentorías para tu PYME" />
+      {tab === "formacion" && !acceso.activo && <Paywall />}
+      {tab === "formacion" && acceso.activo && (
+        <div className="space-y-12">
+          <div>
+            <h3 className="font-bold text-forest-900 mb-1">Capacitaciones para tu equipo</h3>
+            <p className="text-sm text-forest-400 mb-4">Inscribí a tu PYME en talleres de liderazgo, comunicación y formación técnica.</p>
+            {errorCap && (
+              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorCap}</div>
+            )}
+            {capacitaciones.length === 0 ? (
+              <EmptyState text="Todavía no hay capacitaciones disponibles." />
+            ) : (
+              <div className="grid md:grid-cols-2 gap-5">
+                {capacitaciones.map((c) => {
+                  const inscripto = c.inscriptosEmpresas.includes(empresa.id);
+                  const totalInscriptos = c.inscriptosCandidatos.length + c.inscriptosEmpresas.length;
+                  const cuposLibres = c.cupos - totalInscriptos;
+                  return (
+                    <Card key={c.id} className="p-5">
+                      <h4 className="font-bold text-forest-900">{c.titulo}</h4>
+                      <p className="text-sm text-forest-500 mt-1">{c.categoria}</p>
+                      <p className="text-sm text-forest-400 mt-3 leading-relaxed">{c.descripcion}</p>
+                      <div className="flex flex-wrap gap-4 text-sm text-forest-500 mt-3">
+                        <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
+                        <span>{cuposLibres} cupos disponibles</span>
+                      </div>
+                      <div className="mt-4">
+                        {inscripto ? (
+                          <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
+                            <CheckCircle2 size={18} /> Ya está inscripta
+                          </span>
+                        ) : cuposLibres <= 0 ? (
+                          <Button disabled className="w-full sm:w-auto">Sin cupos</Button>
+                        ) : (
+                          <Button onClick={() => handleInscribirCap(c.id)} className="w-full sm:w-auto">
+                            Inscribir a mi PYME
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <MentoriasPaquetes titulo="Mentorías para tu PYME" />
+        </div>
       )}
 
       {tab === "plan" && (

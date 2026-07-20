@@ -4,6 +4,7 @@ import { Paperclip, X } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Select, Textarea, Button, Badge } from "../components/ui.jsx";
 import { emailValido, telefonoValido, archivoValido, CV_MAX_MB } from "../utils/validacion";
+import { mensajeError } from "../utils/errores";
 
 const MAX_CV_MB = CV_MAX_MB;
 
@@ -125,7 +126,7 @@ export default function Registro() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.message?.includes("already registered") ? "Ese email ya está registrado. Probá ingresar." : "No pudimos crear tu perfil. Probá de nuevo en unos segundos.");
+      setError(mensajeError(err, "No pudimos crear tu perfil. Probá de nuevo en unos segundos."));
     } finally {
       setEnviando(false);
     }
@@ -152,7 +153,7 @@ export default function Registro() {
       }
     } catch (err) {
       console.error(err);
-      setError(err.message?.includes("already registered") ? "Ese email ya está registrado. Probá ingresar." : "No pudimos registrar la PYME. Probá de nuevo en unos segundos.");
+      setError(mensajeError(err, "No pudimos registrar la PYME. Probá de nuevo en unos segundos."));
     } finally {
       setEnviando(false);
     }

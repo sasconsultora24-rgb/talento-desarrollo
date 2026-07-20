@@ -7,6 +7,7 @@ import { planesCandidatos } from "../../data/seed.js";
 import { emailValido, telefonoValido, archivoValido, CV_MAX_MB } from "../../utils/validacion";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
 import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
+import { mensajeError } from "../../utils/errores";
 
 const TABS = [
   { id: "perfil", label: "Mi perfil", icon: User },
@@ -110,7 +111,7 @@ export default function CandidatoPanel() {
     } catch (err) {
       console.error(err);
       setMensajeEsError(true);
-      setMensaje("No pudimos guardar los cambios. Probá de nuevo.");
+      setMensaje(mensajeError(err, "No pudimos guardar los cambios. Probá de nuevo."));
     } finally {
       setGuardando(false);
     }

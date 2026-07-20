@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Button, Badge } from "../components/ui.jsx";
+import { mensajeError } from "../utils/errores";
 
 export default function Recuperar() {
   const { actualizarPassword, session } = useApp();
@@ -29,7 +30,7 @@ export default function Recuperar() {
       setListo(true);
     } catch (err) {
       console.error(err);
-      setError("No pudimos actualizar la contraseña. Puede que el link haya expirado — pedí uno nuevo desde Ingresar.");
+      setError(mensajeError(err, "No pudimos actualizar la contraseña. Puede que el link haya expirado — pedí uno nuevo desde Ingresar."));
     } finally {
       setEnviando(false);
     }

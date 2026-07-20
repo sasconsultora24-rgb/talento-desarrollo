@@ -19,15 +19,19 @@ export default function Capacitaciones() {
     return matchTexto && matchCategoria;
   });
 
+  const [error, setError] = useState("");
+
   async function handleInscribir(id) {
-    if (session.role !== "candidato") {
+    if (session.role !== "candidato" && session.role !== "empresa") {
       navigate("/registro");
       return;
     }
+    setError("");
     try {
-      await inscribirCapacitacion(id, session.userId);
+      await inscribirCapacitacion(id, session.userId, session.role);
     } catch (err) {
       console.error(err);
+      setError("No pudimos completar la inscripción. Probá de nuevo en unos segundos.");
     }
   }
 
@@ -54,13 +58,20 @@ export default function Capacitaciones() {
         </div>
       </div>
 
+      {error && (
+        <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{error}</div>
+      )}
+
       {filtradas.length === 0 ? (
         <EmptyState text="No encontramos capacitaciones con esos filtros." />
       ) : (
       <div className="grid md:grid-cols-2 gap-5">
         {filtradas.map((c) => {
-          const inscripto = session.role === "candidato" && c.inscriptos.includes(session.userId);
-          const cuposLibres = c.cupos - c.inscriptos.length;
+          const inscripto =
+            (session.role === "candidato" && c.inscriptosCandidatos.includes(session.userId)) ||
+            (session.role === "empresa" && c.inscriptosEmpresas.includes(session.userId));
+          const totalInscriptos = c.inscriptosCandidatos.length + c.inscriptosEmpresas.length;
+          const cuposLibres = c.cupos - totalInscriptos;
           return (
             <Card key={c.id} className="p-6">
               <div className="flex items-start justify-between gap-3">

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MapPin, Building2, CheckCircle2 } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Card, Badge, Button, SectionTitle, EmptyState, Input, Select } from "../components/ui.jsx";
+import { mensajeError } from "../utils/errores";
 
 export default function Vacantes() {
   const { vacantes, empresas, postulaciones, postular, session } = useApp();
@@ -10,6 +11,7 @@ export default function Vacantes() {
   const [busqueda, setBusqueda] = useState("");
   const [area, setArea] = useState("todas");
   const [confirmado, setConfirmado] = useState(null);
+  const [error, setError] = useState("");
 
   const aprobadas = vacantes.filter((v) => v.estado === "aprobada");
   const areas = useMemo(() => ["todas", ...new Set(aprobadas.map((v) => v.area))], [aprobadas]);
@@ -25,11 +27,13 @@ export default function Vacantes() {
       navigate("/registro");
       return;
     }
+    setError("");
     try {
       await postular(session.userId, vacanteId);
       setConfirmado(vacanteId);
     } catch (err) {
       console.error(err);
+      setError(mensajeError(err, "No pudimos registrar tu postulación. Probá de nuevo en unos segundos."));
     }
   }
 
@@ -55,6 +59,10 @@ export default function Vacantes() {
           </Select>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{error}</div>
+      )}
 
       {filtradas.length === 0 ? (
         <EmptyState text="No encontramos vacantes con esos filtros." />

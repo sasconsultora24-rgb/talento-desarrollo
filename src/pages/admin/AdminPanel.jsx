@@ -5,6 +5,7 @@ import { Card, Badge, Button, StatCard, EmptyState, Field, Input, Select, Textar
 import { descargarCSV } from "../../utils/exportarCsv.js";
 import SasConsultoraLogo from "../../components/SasConsultoraLogo.jsx";
 import { MENTORIA_PAQUETES, formatoPesos } from "../../data/mentoriaPaquetes.js";
+import { mensajeError } from "../../utils/errores";
 
 const TABS = [
   { id: "metricas", label: "Métricas", icon: LayoutDashboard },
@@ -24,6 +25,7 @@ export default function AdminPanel() {
   const [tab, setTab] = useState("metricas");
   const [nuevaCap, setNuevaCap] = useState({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
   const [capExpandida, setCapExpandida] = useState(null);
+  const [errorCap, setErrorCap] = useState("");
 
   const comprasMentorias = pagos
     .filter((p) => p.tipo === "mentoria")
@@ -123,11 +125,13 @@ export default function AdminPanel() {
 
   async function submitCapacitacion(e) {
     e.preventDefault();
+    setErrorCap("");
     try {
       await crearCapacitacion({ ...nuevaCap, cupos: Number(nuevaCap.cupos) });
       setNuevaCap({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
     } catch (err) {
       console.error(err);
+      setErrorCap(mensajeError(err, "No pudimos crear la capacitación. Probá de nuevo en unos segundos."));
     }
   }
 
@@ -247,6 +251,9 @@ export default function AdminPanel() {
         <div>
           <Card className="p-6 mb-6 max-w-2xl">
             <h3 className="font-bold text-forest-900 mb-3">Nueva capacitación</h3>
+            {errorCap && (
+              <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorCap}</div>
+            )}
             <form onSubmit={submitCapacitacion}>
               <Field label="Título">
                 <Input required value={nuevaCap.titulo} onChange={(e) => setNuevaCap({ ...nuevaCap, titulo: e.target.value })} />
@@ -275,14 +282,21 @@ export default function AdminPanel() {
           <div className="grid sm:grid-cols-2 gap-4">
             {capacitaciones.map((c) => {
               const expandida = capExpandida === c.id;
-              const inscriptosCap = c.inscriptos
+              const inscriptosCand = c.inscriptosCandidatos
                 .map((id) => candidatos.find((cand) => cand.id === id))
-                .filter(Boolean);
+                .filter(Boolean)
+                .map((cand) => ({ tipo: "Candidato", nombre: cand.nombre, email: cand.email, telefono: cand.telefono }));
+              const inscriptosEmp = c.inscriptosEmpresas
+                .map((id) => empresas.find((emp) => emp.id === id))
+                .filter(Boolean)
+                .map((emp) => ({ tipo: "PYME", nombre: `${emp.nombre} (${emp.contacto})`, email: emp.email, telefono: "" }));
+              const inscriptosCap = [...inscriptosCand, ...inscriptosEmp];
+              const totalInscriptos = inscriptosCap.length;
               return (
                 <Card key={c.id} className="p-4">
                   <p className="font-semibold text-forest-900">{c.titulo}</p>
-                  <p className="text-sm text-forest-500">{c.fecha} · {c.inscriptos.length}/{c.cupos} inscriptos</p>
-                  {c.inscriptos.length > 0 && (
+                  <p className="text-sm text-forest-500">{c.fecha} · {totalInscriptos}/{c.cupos} inscriptos</p>
+                  {totalInscriptos > 0 && (
                     <button
                       type="button"
                       onClick={() => setCapExpandida(expandida ? null : c.id)}
@@ -293,12 +307,12 @@ export default function AdminPanel() {
                   )}
                   {expandida && (
                     <div className="mt-3 space-y-2 border-t border-forest-100 pt-3">
-                      {inscriptosCap.map((cand) => (
-                        <div key={cand.id} className="text-sm">
-                          <p className="font-medium text-forest-800">{cand.nombre}</p>
+                      {inscriptosCap.map((insc, i) => (
+                        <div key={i} className="text-sm">
+                          <p className="font-medium text-forest-800">{insc.nombre} <span className="text-forest-400 font-normal">· {insc.tipo}</span></p>
                           <p className="text-forest-400">
-                            {cand.email}
-                            {cand.telefono ? ` · ${cand.telefono}` : ""}
+                            {insc.email}
+                            {insc.telefono ? ` · ${insc.telefono}` : ""}
                           </p>
                         </div>
                       ))}

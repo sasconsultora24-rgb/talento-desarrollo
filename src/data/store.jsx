@@ -73,6 +73,8 @@ function mapPostulacion(row) {
 }
 
 function mapCapacitacion(row, inscriptos) {
+  const inscriptosCandidatos = inscriptos?.candidatos || [];
+  const inscriptosEmpresas = inscriptos?.empresas || [];
   return {
     id: row.id,
     titulo: row.titulo,
@@ -82,7 +84,10 @@ function mapCapacitacion(row, inscriptos) {
     cupos: row.cupos,
     destacada: row.destacada,
     descripcion: row.descripcion,
-    inscriptos: inscriptos || [],
+    inscriptosCandidatos,
+    inscriptosEmpresas,
+    // Compatibilidad: código viejo que solo conocía candidatos sigue funcionando.
+    inscriptos: inscriptosCandidatos,
   };
 }
 
@@ -152,7 +157,9 @@ export function AppProvider({ children }) {
 
       const inscriptosPorCap = {};
       (inscriptosRows || []).forEach((r) => {
-        (inscriptosPorCap[r.capacitacion_id] ||= []).push(r.candidato_id);
+        const bucket = (inscriptosPorCap[r.capacitacion_id] ||= { candidatos: [], empresas: [] });
+        if (r.candidato_id) bucket.candidatos.push(r.candidato_id);
+        if (r.empresa_id) bucket.empresas.push(r.empresa_id);
       });
 
       setEmpresas((empresasRows || []).map(mapEmpresa));
@@ -512,17 +519,27 @@ export function AppProvider({ children }) {
   }, []);
 
   // ---------- Capacitaciones ----------
-  const inscribirCapacitacion = useCallback(async (capacitacionId, candidatoId) => {
-    const { error: insertError } = await supabase
-      .from("capacitacion_inscriptos")
-      .insert({ capacitacion_id: capacitacionId, candidato_id: candidatoId });
+  // tipo: "candidato" (default) o "empresa" — una PYME puede anotar a la
+  // persona de contacto / a su equipo, igual que un profesional se anota a sí mismo.
+  const inscribirCapacitacion = useCallback(async (capacitacionId, id, tipo = "candidato") => {
+    const payload =
+      tipo === "empresa"
+        ? { capacitacion_id: capacitacionId, empresa_id: id }
+        : { capacitacion_id: capacitacionId, candidato_id: id };
+    const { error: insertError } = await supabase.from("capacitacion_inscriptos").insert(payload);
     if (insertError && insertError.code !== "23505") throw insertError;
     setCapacitaciones((prev) =>
-      prev.map((c) =>
-        c.id === capacitacionId && !c.inscriptos.includes(candidatoId)
-          ? { ...c, inscriptos: [...c.inscriptos, candidatoId] }
-          : c
-      )
+      prev.map((c) => {
+        if (c.id !== capacitacionId) return c;
+        if (tipo === "empresa") {
+          return c.inscriptosEmpresas.includes(id)
+            ? c
+            : { ...c, inscriptosEmpresas: [...c.inscriptosEmpresas, id] };
+        }
+        return c.inscriptosCandidatos.includes(id)
+          ? c
+          : { ...c, inscriptosCandidatos: [...c.inscriptosCandidatos, id], inscriptos: [...c.inscriptos, id] };
+      })
     );
   }, []);
 
@@ -542,7 +559,7 @@ export function AppProvider({ children }) {
       .select()
       .single();
     if (insertError) throw insertError;
-    setCapacitaciones((prev) => [...prev, mapCapacitacion(data, [])]);
+    setCapacitaciones((prev) => [...prev, mapCapacitacion(data, { candidatos: [], empresas: [] })]);
   }, []);
 
   const value = {
