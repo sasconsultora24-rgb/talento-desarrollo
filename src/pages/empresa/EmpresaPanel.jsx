@@ -1,12 +1,14 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, GraduationCap, Calendar, CheckCircle2 } from "lucide-react";
+import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, GraduationCap, Calendar, CheckCircle2, Clock } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
 import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
 import { mensajeError } from "../../utils/errores";
+import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA } from "../../utils/capacitaciones.js";
+import { formatoPesos } from "../../data/mentoriaPaquetes.js";
 
 const DIAS_PRUEBA = 14;
 
@@ -76,9 +78,10 @@ const postulacionBadge = {
 };
 
 export default function EmpresaPanel() {
-  const { session, empresas, vacantes, candidatos, postulaciones, capacitaciones, publicarVacante, cambiarEstadoPostulacion, iniciarPago, inscribirCapacitacion } = useApp();
+  const { session, empresas, vacantes, candidatos, postulaciones, capacitaciones, pagos, publicarVacante, cambiarEstadoPostulacion, iniciarPago, inscribirCapacitacion } = useApp();
   const [errorCap, setErrorCap] = useState("");
   const [errorVacante, setErrorVacante] = useState("");
+  const [comprandoCap, setComprandoCap] = useState(null);
   const [searchParams] = useSearchParams();
   const tabInicial = TABS.some((t) => t.id === searchParams.get("tab")) ? searchParams.get("tab") : "vacantes";
   const [tab, setTab] = useState(tabInicial);
@@ -159,11 +162,23 @@ export default function EmpresaPanel() {
     }
   }
 
+  async function handleComprarAccesoCap(id) {
+    setErrorCap("");
+    setComprandoCap(id);
+    try {
+      const { initPoint } = await iniciarPago("capacitacion", id);
+      window.location.href = initPoint;
+    } catch (err) {
+      setErrorCap(err.message || "No se pudo iniciar el pago.");
+      setComprandoCap(null);
+    }
+  }
+
   async function pagarPlan(planId) {
     setErrorPago("");
     setPagando(planId);
     try {
-      const initPoint = await iniciarPago("plan_empresa", planId);
+      const { initPoint } = await iniciarPago("plan_empresa", planId);
       window.location.href = initPoint;
     } catch (err) {
       setErrorPago(err.message || "No se pudo iniciar el pago.");
@@ -430,12 +445,18 @@ export default function EmpresaPanel() {
             ) : (
               <div className="grid md:grid-cols-2 gap-5">
                 {capacitaciones.map((c) => {
-                  const inscripto = c.inscriptosEmpresas.includes(empresa.id);
                   const totalInscriptos = c.inscriptosCandidatos.length + c.inscriptosEmpresas.length;
                   const cuposLibres = c.cupos - totalInscriptos;
+                  const acc = accesoCapacitacion(c, { role: "empresa", empresa, pagos });
                   return (
                     <Card key={c.id} className="p-5">
-                      <h4 className="font-bold text-forest-900">{c.titulo}</h4>
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-bold text-forest-900">{c.titulo}</h4>
+                        {c.accesoTipo === "paga" && <Badge tone="terracotta">{formatoPesos(c.precio)}</Badge>}
+                        {c.accesoTipo === "plan" && c.planMinimoEmpresa && (
+                          <Badge tone="gray">Desde {NOMBRE_PLAN_EMPRESA[c.planMinimoEmpresa]}</Badge>
+                        )}
+                      </div>
                       <p className="text-sm text-forest-500 mt-1">{c.categoria}</p>
                       <p className="text-sm text-forest-400 mt-3 leading-relaxed">{c.descripcion}</p>
                       <div className="flex flex-wrap gap-4 text-sm text-forest-500 mt-3">
@@ -443,15 +464,36 @@ export default function EmpresaPanel() {
                         <span>{cuposLibres} cupos disponibles</span>
                       </div>
                       <div className="mt-4">
-                        {inscripto ? (
+                        {acc.estado === "inscripto" ? (
                           <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
                             <CheckCircle2 size={18} /> Ya está inscripta
                           </span>
                         ) : cuposLibres <= 0 ? (
                           <Button disabled className="w-full sm:w-auto">Sin cupos</Button>
+                        ) : acc.estado === "pago_pendiente" ? (
+                          <span className="inline-flex items-center gap-1.5 text-terracotta-500 text-sm font-semibold">
+                            <Clock size={18} /> Pago pendiente de confirmación
+                          </span>
+                        ) : acc.estado === "requiere_pago" ? (
+                          <Button
+                            onClick={() => handleComprarAccesoCap(c.id)}
+                            disabled={comprandoCap === c.id}
+                            className="w-full sm:w-auto"
+                          >
+                            {comprandoCap === c.id ? "Redirigiendo a Mercado Pago..." : `Comprar acceso — ${formatoPesos(acc.precio)}`}
+                          </Button>
+                        ) : acc.estado === "requiere_plan" ? (
+                          <div className="text-sm">
+                            <span className="inline-flex items-center gap-1.5 font-semibold text-forest-600">
+                              <Lock size={16} /> Disponible desde el plan {NOMBRE_PLAN_EMPRESA[acc.planRequerido]}
+                            </span>
+                            <button type="button" onClick={() => setTab("plan")} className="block text-gold-600 font-semibold mt-1">
+                              Ver planes
+                            </button>
+                          </div>
                         ) : (
                           <Button onClick={() => handleInscribirCap(c.id)} className="w-full sm:w-auto">
-                            Inscribir a mi PYME
+                            {acc.estado === "incluida_en_plan" ? "Inscribir a mi PYME (incluida en tu plan)" : "Inscribir a mi PYME"}
                           </Button>
                         )}
                       </div>

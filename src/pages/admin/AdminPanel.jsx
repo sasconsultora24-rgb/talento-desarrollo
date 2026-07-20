@@ -6,6 +6,7 @@ import { descargarCSV } from "../../utils/exportarCsv.js";
 import SasConsultoraLogo from "../../components/SasConsultoraLogo.jsx";
 import { MENTORIA_PAQUETES, formatoPesos } from "../../data/mentoriaPaquetes.js";
 import { mensajeError } from "../../utils/errores";
+import { NOMBRE_PLAN_EMPRESA } from "../../utils/capacitaciones.js";
 
 const TABS = [
   { id: "metricas", label: "Métricas", icon: LayoutDashboard },
@@ -23,7 +24,10 @@ export default function AdminPanel() {
     cambiarEstadoVacante, crearCapacitacion,
   } = useApp();
   const [tab, setTab] = useState("metricas");
-  const [nuevaCap, setNuevaCap] = useState({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
+  const [nuevaCap, setNuevaCap] = useState({
+    titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
+    accesoTipo: "gratis", precio: "", planMinimoEmpresa: "", planMinimoCandidato: "",
+  });
   const [capExpandida, setCapExpandida] = useState(null);
   const [errorCap, setErrorCap] = useState("");
 
@@ -127,8 +131,17 @@ export default function AdminPanel() {
     e.preventDefault();
     setErrorCap("");
     try {
-      await crearCapacitacion({ ...nuevaCap, cupos: Number(nuevaCap.cupos) });
-      setNuevaCap({ titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "" });
+      await crearCapacitacion({
+        ...nuevaCap,
+        cupos: Number(nuevaCap.cupos),
+        precio: nuevaCap.precio ? Number(nuevaCap.precio) : null,
+        planMinimoEmpresa: nuevaCap.planMinimoEmpresa || null,
+        planMinimoCandidato: nuevaCap.planMinimoCandidato || null,
+      });
+      setNuevaCap({
+        titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
+        accesoTipo: "gratis", precio: "", planMinimoEmpresa: "", planMinimoCandidato: "",
+      });
     } catch (err) {
       console.error(err);
       setErrorCap(mensajeError(err, "No pudimos crear la capacitación. Probá de nuevo en unos segundos."));
@@ -275,6 +288,40 @@ export default function AdminPanel() {
                 <Field label="Cupos"><Input type="number" min="1" value={nuevaCap.cupos} onChange={(e) => setNuevaCap({ ...nuevaCap, cupos: e.target.value })} /></Field>
               </div>
               <Field label="Descripción"><Textarea rows={2} value={nuevaCap.descripcion} onChange={(e) => setNuevaCap({ ...nuevaCap, descripcion: e.target.value })} /></Field>
+
+              <Field label="Acceso" hint="Cómo se habilita la inscripción">
+                <Select value={nuevaCap.accesoTipo} onChange={(e) => setNuevaCap({ ...nuevaCap, accesoTipo: e.target.value })}>
+                  <option value="gratis">Gratis para todos</option>
+                  <option value="paga">Paga (cobro único vía Mercado Pago)</option>
+                  <option value="plan">Incluida según plan/membresía</option>
+                </Select>
+              </Field>
+
+              {nuevaCap.accesoTipo === "paga" && (
+                <Field label="Precio" hint="En pesos argentinos">
+                  <Input type="number" min="0" required value={nuevaCap.precio} onChange={(e) => setNuevaCap({ ...nuevaCap, precio: e.target.value })} />
+                </Field>
+              )}
+
+              {nuevaCap.accesoTipo === "plan" && (
+                <div className="grid sm:grid-cols-2 gap-x-4">
+                  <Field label="Plan mínimo de PYME" hint="Dejar vacío si no aplica a empresas">
+                    <Select value={nuevaCap.planMinimoEmpresa} onChange={(e) => setNuevaCap({ ...nuevaCap, planMinimoEmpresa: e.target.value })}>
+                      <option value="">No aplica a PYMEs</option>
+                      <option value="avanzado">Avanzado o superior</option>
+                      <option value="premium">Premium o superior</option>
+                      <option value="platino">Solo Platino</option>
+                    </Select>
+                  </Field>
+                  <Field label="Membresía mínima candidato" hint="Dejar vacío si no aplica a candidatos">
+                    <Select value={nuevaCap.planMinimoCandidato} onChange={(e) => setNuevaCap({ ...nuevaCap, planMinimoCandidato: e.target.value })}>
+                      <option value="">No aplica a candidatos</option>
+                      <option value="premium">Desarrollo Profesional (premium)</option>
+                    </Select>
+                  </Field>
+                </div>
+              )}
+
               <Button type="submit">Crear capacitación</Button>
             </form>
           </Card>
@@ -294,7 +341,15 @@ export default function AdminPanel() {
               const totalInscriptos = inscriptosCap.length;
               return (
                 <Card key={c.id} className="p-4">
-                  <p className="font-semibold text-forest-900">{c.titulo}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-semibold text-forest-900">{c.titulo}</p>
+                    {c.accesoTipo === "paga" && <Badge tone="terracotta">{formatoPesos(c.precio)}</Badge>}
+                    {c.accesoTipo === "plan" && (
+                      <Badge tone="gray">
+                        {c.planMinimoEmpresa ? `Desde ${NOMBRE_PLAN_EMPRESA[c.planMinimoEmpresa]}` : c.planMinimoCandidato ? "Membresía premium" : "Por plan"}
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-sm text-forest-500">{c.fecha} · {totalInscriptos}/{c.cupos} inscriptos</p>
                   {totalInscriptos > 0 && (
                     <button

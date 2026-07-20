@@ -26,8 +26,9 @@ export default function Landing() {
               Impulsamos tu talento,<br /> transformamos <span className="text-gold-300">PYMEs</span>.
             </h1>
             <p className="mt-5 text-forest-200 text-lg leading-relaxed max-w-lg">
-              Conectamos pequeñas y medianas empresas con profesionales listos para crecer,
-              y acompañamos ese crecimiento con capacitación y mentorías reales.
+              No somos una bolsa de trabajo más. Conectamos PYMEs con el talento que necesitan
+              y acompañamos el crecimiento de ambos lados con capacitación, mentorías y todo
+              el respaldo de SAS Consultora — antes, durante y después de cada contratación.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/registro">
@@ -157,12 +158,15 @@ export default function Landing() {
           <div>
             <ShieldCheck className="text-gold-300" size={36} />
             <h2 className="text-2xl md:text-3xl font-extrabold font-display mt-4">
-              No solo conectamos. Acompañamos.
+              La diferencia con otras consultoras de RRHH
             </h2>
             <p className="mt-4 text-forest-300 leading-relaxed">
-              Cada contratación incluye acompañamiento: mentorías de adaptación para quien
-              se suma a un nuevo equipo, y asesoría estratégica para la PYME que lo incorpora.
-              Así construimos relaciones de largo plazo, no solo búsquedas puntuales.
+              La mayoría de las plataformas de empleo terminan la relación apenas se cierra una
+              búsqueda o se paga una suscripción. Talento &amp; Desarrollo es la unidad de SAS
+              Consultora pensada para seguir después de eso: mentorías de adaptación para quien
+              se suma a un equipo nuevo, capacitación continua, y desarrollo organizacional real
+              para la PYME que lo incorpora — con el resto de los servicios de SAS Consultora
+              disponibles en el mismo lugar. Construimos relaciones de largo plazo, no búsquedas puntuales.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-4">

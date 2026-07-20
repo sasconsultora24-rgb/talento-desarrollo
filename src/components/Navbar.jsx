@@ -1,9 +1,97 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { Menu, X, LogOut } from "lucide-react";
+import { useState, useRef } from "react";
+import { Menu, X, LogOut, ChevronDown } from "lucide-react";
 import Logo from "./Logo";
 import { useApp } from "../data/store.jsx";
 import { Button } from "./ui.jsx";
+
+const ENLACES_PROFESIONALES = [
+  { to: "/registro?tipo=candidato", label: "Registrate como profesional" },
+  { to: "/vacantes", label: "Ofertas laborales" },
+  { to: "/capacitaciones?ver=mentorias", label: "Mentorías y Coaching" },
+  { to: "/capacitaciones", label: "Capacitación continua" },
+];
+
+const ENLACES_PYMES = [
+  { to: "/registro?tipo=empresa", label: "Registrar mi PYME" },
+  { to: "/pymes?ver=reclutamiento", label: "Reclutamiento y Selección" },
+  { to: "/pymes?ver=retencion-talento", label: "Desarrollo y Retención de Talento" },
+  { to: "/pymes?ver=capacitacion-desarrollo", label: "Capacitación y Desarrollo" },
+  { to: "/pymes?ver=capital-humano", label: "Gestión del Capital Humano" },
+];
+
+// Dropdown de navegación reutilizado para "Para Profesionales" y "Para PYMEs":
+// abre al pasar el mouse (con un pequeño delay de cierre) o al hacer click/tap.
+function NavDropdown({ label, enlaces }) {
+  const [abierto, setAbierto] = useState(false);
+  const cierreTimeout = useRef(null);
+
+  function abrir() {
+    clearTimeout(cierreTimeout.current);
+    setAbierto(true);
+  }
+  function cerrarConDelay() {
+    cierreTimeout.current = setTimeout(() => setAbierto(false), 150);
+  }
+
+  return (
+    <div className="relative" onMouseEnter={abrir} onMouseLeave={cerrarConDelay}>
+      <button
+        type="button"
+        onClick={() => setAbierto((o) => !o)}
+        className="inline-flex items-center gap-1 hover:text-gold-600"
+      >
+        {label} <ChevronDown size={14} className={abierto ? "rotate-180 transition-transform" : "transition-transform"} />
+      </button>
+      {abierto && (
+        <div className="absolute top-full left-0 pt-2 w-72">
+          <div className="bg-white border border-forest-100 rounded-xl shadow-soft py-2">
+            {enlaces.map((l) => (
+              <Link
+                key={l.label}
+                to={l.to}
+                onClick={() => setAbierto(false)}
+                className="block px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 hover:text-gold-600"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NavDropdownMobile({ label, enlaces, onNavigate }) {
+  const [abierto, setAbierto] = useState(false);
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setAbierto((o) => !o)}
+        className="w-full flex items-center justify-between text-forest-700 font-medium"
+      >
+        {label}
+        <ChevronDown size={16} className={abierto ? "rotate-180 transition-transform" : "transition-transform"} />
+      </button>
+      {abierto && (
+        <div className="pl-3 mt-2.5 space-y-2.5 border-l-2 border-forest-100">
+          {enlaces.map((l) => (
+            <Link
+              key={l.label}
+              to={l.to}
+              onClick={onNavigate}
+              className="block text-sm text-forest-500 font-medium"
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const { session, logout, candidatos, empresas } = useApp();
@@ -40,9 +128,8 @@ export default function Navbar() {
         <Logo />
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-forest-600">
-          <Link to="/vacantes" className="hover:text-gold-600">Vacantes</Link>
-          <Link to="/capacitaciones" className="hover:text-gold-600">Capacitaciones y mentorías</Link>
-          <Link to="/pymes" className="hover:text-gold-600">Para PYMEs</Link>
+          <NavDropdown label="Para Profesionales" enlaces={ENLACES_PROFESIONALES} />
+          <NavDropdown label="Para PYMEs" enlaces={ENLACES_PYMES} />
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
@@ -73,10 +160,9 @@ export default function Navbar() {
       </div>
 
       {open && (
-        <div className="md:hidden border-t border-forest-100 px-4 py-4 space-y-3 bg-white">
-          <Link to="/vacantes" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Vacantes</Link>
-          <Link to="/capacitaciones" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Capacitaciones y mentorías</Link>
-          <Link to="/pymes" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Para PYMEs</Link>
+        <div className="md:hidden border-t border-forest-100 px-4 py-4 space-y-4 bg-white">
+          <NavDropdownMobile label="Para Profesionales" enlaces={ENLACES_PROFESIONALES} onNavigate={() => setOpen(false)} />
+          <NavDropdownMobile label="Para PYMEs" enlaces={ENLACES_PYMES} onNavigate={() => setOpen(false)} />
           <div className="pt-3 border-t border-forest-100 flex flex-col gap-2">
             {usuario ? (
               <>

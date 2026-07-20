@@ -84,6 +84,12 @@ function mapCapacitacion(row, inscriptos) {
     cupos: row.cupos,
     destacada: row.destacada,
     descripcion: row.descripcion,
+    // Acceso: "gratis" (default), "paga" (requiere pago único vía Mercado Pago,
+    // ver utils/capacitaciones.js) o "plan" (incluida solo desde cierto plan).
+    accesoTipo: row.acceso_tipo || "gratis",
+    precio: row.precio,
+    planMinimoEmpresa: row.plan_minimo_empresa,
+    planMinimoCandidato: row.plan_minimo_candidato,
     inscriptosCandidatos,
     inscriptosEmpresas,
     // Compatibilidad: código viejo que solo conocía candidatos sigue funcionando.
@@ -451,9 +457,16 @@ export function AppProvider({ children }) {
       }
       throw new Error(mensaje);
     }
+    // Mentorías: si el plan de la PYME ya la incluye (Premium: 1 incluida,
+    // Platino: ilimitadas), el backend la aprueba directo sin pasar por
+    // Mercado Pago. Refrescamos para que se vea "ya compraste" al toque.
+    if (data?.incluido) {
+      await refresh();
+      return { incluido: true };
+    }
     if (!data?.initPoint) throw new Error("No se pudo iniciar el pago.");
-    return data.initPoint;
-  }, []);
+    return { initPoint: data.initPoint };
+  }, [refresh]);
 
   // ---------- Vacantes ----------
   const publicarVacante = useCallback(async (empresaId, vacante) => {
@@ -552,6 +565,10 @@ export function AppProvider({ children }) {
       cupos: capacitacion.cupos,
       destacada: capacitacion.destacada || false,
       descripcion: capacitacion.descripcion,
+      acceso_tipo: capacitacion.accesoTipo || "gratis",
+      precio: capacitacion.accesoTipo === "paga" ? capacitacion.precio || null : null,
+      plan_minimo_empresa: capacitacion.accesoTipo === "plan" ? capacitacion.planMinimoEmpresa || null : null,
+      plan_minimo_candidato: capacitacion.accesoTipo === "plan" ? capacitacion.planMinimoCandidato || null : null,
     };
     const { data, error: insertError } = await supabase
       .from("capacitaciones")

@@ -210,13 +210,22 @@ export const planesEmpresas = [
     id: "basico",
     nombre: "Básico",
     precio: "$50.000/mes",
-    incluye: ["Publicación de 1 vacante activa", "Acceso a perfiles filtrados"],
+    incluye: [
+      "Publicación de 1 vacante activa",
+      "Acceso a perfiles filtrados",
+      "Capacitaciones y mentorías: se cobran aparte, según disponibilidad",
+    ],
   },
   {
     id: "avanzado",
     nombre: "Avanzado",
     precio: "$110.000/mes",
-    incluye: ["Hasta 5 vacantes activas", "Entrevistas y shortlisting", "Soporte prioritario"],
+    incluye: [
+      "Hasta 5 vacantes activas",
+      "Entrevistas y shortlisting",
+      "Soporte prioritario",
+      "Capacitaciones para tu equipo incluidas",
+    ],
   },
   {
     id: "premium",
@@ -226,6 +235,7 @@ export const planesEmpresas = [
       "Vacantes ilimitadas",
       "Selección + inducción + mentoría de acompañamiento",
       "Diagnóstico de clima laboral",
+      "Capacitaciones incluidas + 1 mentoría de acompañamiento incluida por período",
     ],
   },
   {
@@ -235,6 +245,7 @@ export const planesEmpresas = [
     incluye: [
       "Todo lo del plan Premium",
       "Selección a medida, diagnóstico de clima e inducción con mayor frecuencia/alcance",
+      "Capacitaciones y mentorías ilimitadas incluidas",
       "30% de descuento adicional en servicios a la carta",
       "Soporte prioritario con tiempos de respuesta acotados",
       "Reporte trimestral de benchmarking salarial",

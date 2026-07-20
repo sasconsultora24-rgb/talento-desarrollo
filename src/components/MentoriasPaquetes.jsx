@@ -10,12 +10,19 @@ import { MENTORIA_PAQUETES, formatoPesos } from "../data/mentoriaPaquetes.js";
 // registrado, a un precio especial solo por estar registrado en la plataforma.
 // Se usa como sección dentro de Capacitaciones y también en los paneles.
 export default function MentoriasPaquetes({ titulo = "Mentorías personalizadas", mostrarIntro = true }) {
-  const { session, pagos, iniciarPago } = useApp();
+  const { session, pagos, iniciarPago, empresas } = useApp();
   const navigate = useNavigate();
   const [comprando, setComprando] = useState(null);
   const [error, setError] = useState("");
 
   const puedeComprar = session.role === "candidato" || session.role === "empresa";
+  const empresaActual = session.role === "empresa" ? empresas.find((e) => e.id === session.userId) : null;
+  const mentoriasIncluidasEnPlan =
+    empresaActual?.plan === "platino"
+      ? "Tu plan Platino incluye mentorías ilimitadas, sin costo adicional."
+      : empresaActual?.plan === "premium"
+      ? "Tu plan Premium incluye 1 mentoría sin costo por período. Las siguientes se cobran al precio de socio."
+      : null;
 
   async function handleComprar(paqueteId) {
     if (!puedeComprar) {
@@ -25,8 +32,12 @@ export default function MentoriasPaquetes({ titulo = "Mentorías personalizadas"
     setError("");
     setComprando(paqueteId);
     try {
-      const initPoint = await iniciarPago("mentoria", paqueteId);
-      window.location.href = initPoint;
+      const resultado = await iniciarPago("mentoria", paqueteId);
+      if (resultado.incluido) {
+        setComprando(null);
+        return;
+      }
+      window.location.href = resultado.initPoint;
     } catch (err) {
       setError(err.message || "No se pudo iniciar el pago.");
       setComprando(null);
@@ -38,7 +49,8 @@ export default function MentoriasPaquetes({ titulo = "Mentorías personalizadas"
     const misPagos = pagos.filter(
       (p) => p.tipo === "mentoria" && p.planId === paqueteId && p.entidadId === session.userId
     );
-    if (misPagos.some((p) => p.estado === "aprobado")) return "aprobado";
+    const aprobado = misPagos.find((p) => p.estado === "aprobado");
+    if (aprobado) return Number(aprobado.monto) === 0 ? "incluido" : "aprobado";
     if (misPagos.some((p) => p.estado === "pendiente")) return "pendiente";
     return null;
   }
@@ -55,6 +67,12 @@ export default function MentoriasPaquetes({ titulo = "Mentorías personalizadas"
             No son sesiones con un mentor a elección: son 2 procesos de acompañamiento individual, a precio
             especial por estar registrado en Talento &amp; Desarrollo — sin importar si sos candidato o PYME.
           </p>
+        </div>
+      )}
+
+      {mentoriasIncluidasEnPlan && (
+        <div className="mb-4 text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-4 py-2">
+          {mentoriasIncluidasEnPlan}
         </div>
       )}
 
@@ -83,7 +101,11 @@ export default function MentoriasPaquetes({ titulo = "Mentorías personalizadas"
               </div>
 
               <div className="mt-4">
-                {estado === "aprobado" ? (
+                {estado === "incluido" ? (
+                  <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
+                    <CheckCircle2 size={18} /> Incluida en tu plan — te contactamos para coordinar
+                  </span>
+                ) : estado === "aprobado" ? (
                   <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
                     <CheckCircle2 size={18} /> Ya compraste este paquete — te contactamos para coordinar
                   </span>

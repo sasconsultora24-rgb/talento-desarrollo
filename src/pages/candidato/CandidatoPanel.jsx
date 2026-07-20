@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { User, Briefcase, GraduationCap, UserRound, Paperclip, X, FileText } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState } from "../../components/ui.jsx";
@@ -32,7 +32,9 @@ export default function CandidatoPanel() {
     session, candidatos, vacantes, empresas, postulaciones, capacitaciones,
     actualizarCandidato, subirCV, iniciarPago,
   } = useApp();
-  const [tab, setTab] = useState("perfil");
+  const [searchParams] = useSearchParams();
+  const TAB_IDS = TABS.map((t) => t.id);
+  const [tab, setTab] = useState(TAB_IDS.includes(searchParams.get("tab")) ? searchParams.get("tab") : "perfil");
   const candidato = candidatos.find((c) => c.id === session.userId);
   const [form, setForm] = useState(candidato);
   const [cvFile, setCvFile] = useState(null);
@@ -121,7 +123,7 @@ export default function CandidatoPanel() {
     setErrorPago("");
     setPagando(planId);
     try {
-      const initPoint = await iniciarPago("membresia_candidato", planId);
+      const { initPoint } = await iniciarPago("membresia_candidato", planId);
       window.location.href = initPoint;
     } catch (err) {
       setErrorPago(err.message || "No se pudo iniciar el pago.");
