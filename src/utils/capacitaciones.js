@@ -44,10 +44,14 @@ export function accesoCapacitacion(c, { role, empresa, candidato, pagos }) {
         : { estado: "requiere_plan", planRequerido: c.planMinimoEmpresa };
     }
     if (role === "candidato") {
-      const cumple = c.planMinimoCandidato ? candidatoCumplePlanMinimo(candidato, c.planMinimoCandidato) : false;
+      // Si la capacitación no tiene un requisito específico para candidatos
+      // (plan_minimo_candidato vacío), el gating es solo para PYMEs — el
+      // candidato accede gratis, igual que antes de este cambio.
+      if (!c.planMinimoCandidato) return { estado: "gratis" };
+      const cumple = candidatoCumplePlanMinimo(candidato, c.planMinimoCandidato);
       return cumple
         ? { estado: "incluida_en_plan" }
-        : { estado: "requiere_plan", planRequerido: c.planMinimoCandidato ? "premium" : null };
+        : { estado: "requiere_plan", planRequerido: "premium" };
     }
     return { estado: "requiere_plan", planRequerido: null };
   }

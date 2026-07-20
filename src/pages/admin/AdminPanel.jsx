@@ -26,7 +26,9 @@ export default function AdminPanel() {
   const [tab, setTab] = useState("metricas");
   const [nuevaCap, setNuevaCap] = useState({
     titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
-    accesoTipo: "gratis", precio: "", planMinimoEmpresa: "", planMinimoCandidato: "",
+    // Por defecto, "incluida desde plan Avanzado" para PYMEs (política estándar
+    // acordada) y abierta para candidatos. El admin puede cambiarlo por capacitación.
+    accesoTipo: "plan", precio: "", planMinimoEmpresa: "avanzado", planMinimoCandidato: "",
   });
   const [capExpandida, setCapExpandida] = useState(null);
   const [errorCap, setErrorCap] = useState("");
@@ -140,7 +142,7 @@ export default function AdminPanel() {
       });
       setNuevaCap({
         titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
-        accesoTipo: "gratis", precio: "", planMinimoEmpresa: "", planMinimoCandidato: "",
+        accesoTipo: "plan", precio: "", planMinimoEmpresa: "avanzado", planMinimoCandidato: "",
       });
     } catch (err) {
       console.error(err);

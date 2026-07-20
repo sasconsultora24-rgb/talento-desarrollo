@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Calendar, Users2, CheckCircle2, Clock, Lock } from "lucide-react";
 import { useApp } from "../data/store.jsx";
@@ -6,16 +6,13 @@ import { Card, Badge, Button, SectionTitle, EmptyState, Input, Select } from "..
 import MentoriasPaquetes from "../components/MentoriasPaquetes.jsx";
 import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA } from "../utils/capacitaciones.js";
 import { formatoPesos } from "../data/mentoriaPaquetes.js";
+import { useScrollToAnchor } from "../utils/useScrollToAnchor.js";
 
 export default function Capacitaciones() {
   const { capacitaciones, inscribirCapacitacion, session, empresas, candidatos, pagos, iniciarPago } = useApp();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  useEffect(() => {
-    if (searchParams.get("ver") === "mentorias") {
-      document.getElementById("mentorias")?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [searchParams]);
+  useScrollToAnchor(searchParams);
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("todas");
   const empresa = session.role === "empresa" ? empresas.find((e) => e.id === session.userId) : null;
@@ -64,11 +61,13 @@ export default function Capacitaciones() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-      <SectionTitle
-        eyebrow="Formación"
-        title="Capacitaciones y talleres"
-        subtitle="Programas de liderazgo, comunicación, trabajo en equipo y formación técnica para PYMEs y profesionales."
-      />
+      <div id="capacitacion-continua" className="scroll-mt-24">
+        <SectionTitle
+          eyebrow="Capacitación continua"
+          title="Capacitaciones y talleres"
+          subtitle="Programas de liderazgo, comunicación, trabajo en equipo y formación técnica para PYMEs y profesionales."
+        />
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-8">
         <Input
@@ -104,10 +103,15 @@ export default function Capacitaciones() {
                   {c.destacada && <Badge tone="terracotta">Destacada</Badge>}
                   <h3 className="text-lg font-bold text-forest-900 mt-2">{c.titulo}</h3>
                   <Badge tone="gold">{c.categoria}</Badge>
-                  {c.accesoTipo === "paga" && <Badge tone="terracotta">{formatoPesos(c.precio)}</Badge>}
-                  {c.accesoTipo === "plan" && (
+                  {c.accesoTipo === "paga" && acceso.estado !== "inscripto" && (
+                    <Badge tone="terracotta">{formatoPesos(c.precio)}</Badge>
+                  )}
+                  {acceso.estado === "incluida_en_plan" && <Badge tone="gold">Incluida en tu plan</Badge>}
+                  {acceso.estado === "requiere_plan" && (
                     <Badge tone="gray">
-                      Incluida desde {c.planMinimoEmpresa ? `plan ${NOMBRE_PLAN_EMPRESA[c.planMinimoEmpresa]}` : "membresía Premium"}
+                      {acceso.planRequerido
+                        ? `Incluida desde ${session.role === "candidato" ? "membresía Premium" : `plan ${NOMBRE_PLAN_EMPRESA[acceso.planRequerido]}`}`
+                        : "Incluida según tu plan"}
                     </Badge>
                   )}
                 </div>
@@ -164,8 +168,8 @@ export default function Capacitaciones() {
       </div>
       )}
 
-      <div className="mt-16 pt-16 border-t border-forest-100" id="mentorias">
-        <MentoriasPaquetes />
+      <div className="mt-16 pt-16 border-t border-forest-100 scroll-mt-24" id="mentorias">
+        <MentoriasPaquetes titulo="Mentorías y Coaching" />
       </div>
     </div>
   );

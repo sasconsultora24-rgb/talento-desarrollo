@@ -14,6 +14,7 @@ const ENLACES_PROFESIONALES = [
 
 const ENLACES_PYMES = [
   { to: "/registro?tipo=empresa", label: "Registrar mi PYME" },
+  { to: "/pymes", label: "Ver todas las áreas de servicio" },
   { to: "/pymes?ver=reclutamiento", label: "Reclutamiento y Selección" },
   { to: "/pymes?ver=retencion-talento", label: "Desarrollo y Retención de Talento" },
   { to: "/pymes?ver=capacitacion-desarrollo", label: "Capacitación y Desarrollo" },
@@ -128,6 +129,8 @@ export default function Navbar() {
         <Logo />
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-forest-600">
+          <Link to="/vacantes" className="hover:text-gold-600">Vacantes</Link>
+          <Link to="/capacitaciones" className="hover:text-gold-600">Capacitaciones y mentorías</Link>
           <NavDropdown label="Para Profesionales" enlaces={ENLACES_PROFESIONALES} />
           <NavDropdown label="Para PYMEs" enlaces={ENLACES_PYMES} />
         </nav>
@@ -161,6 +164,8 @@ export default function Navbar() {
 
       {open && (
         <div className="md:hidden border-t border-forest-100 px-4 py-4 space-y-4 bg-white">
+          <Link to="/vacantes" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Vacantes</Link>
+          <Link to="/capacitaciones" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Capacitaciones y mentorías</Link>
           <NavDropdownMobile label="Para Profesionales" enlaces={ENLACES_PROFESIONALES} onNavigate={() => setOpen(false)} />
           <NavDropdownMobile label="Para PYMEs" enlaces={ENLACES_PYMES} onNavigate={() => setOpen(false)} />
           <div className="pt-3 border-t border-forest-100 flex flex-col gap-2">
