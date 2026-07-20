@@ -39,7 +39,7 @@ function NavDropdown({ label, enlaces }) {
     <div className="relative" onMouseEnter={abrir} onMouseLeave={cerrarConDelay}>
       <button
         type="button"
-        onClick={() => setAbierto((o) => !o)}
+        onClick={abrir}
         className="inline-flex items-center gap-1 hover:text-gold-600"
       >
         {label} <ChevronDown size={14} className={abierto ? "rotate-180 transition-transform" : "transition-transform"} />
