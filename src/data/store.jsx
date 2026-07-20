@@ -86,16 +86,17 @@ function mapCapacitacion(row, inscriptos) {
   };
 }
 
-function mapMentoria(row, reservas) {
+function mapPago(row) {
   return {
     id: row.id,
-    mentor: row.mentor,
-    especialidad: row.especialidad,
-    modalidad: row.modalidad,
-    publico: row.publico || "candidato",
-    cuposDisponibles: row.cupos_disponibles,
-    reservasCandidatos: reservas?.candidatos || [],
-    reservasEmpresas: reservas?.empresas || [],
+    tipo: row.tipo,
+    entidadId: row.entidad_id,
+    planId: row.plan_id,
+    monto: row.monto,
+    estado: row.estado,
+    periodoDesde: row.periodo_desde,
+    periodoHasta: row.periodo_hasta,
+    createdAt: row.created_at,
   };
 }
 
@@ -110,7 +111,7 @@ export function AppProvider({ children }) {
   const [vacantes, setVacantes] = useState([]);
   const [postulaciones, setPostulaciones] = useState([]);
   const [capacitaciones, setCapacitaciones] = useState([]);
-  const [mentorias, setMentorias] = useState([]);
+  const [pagos, setPagos] = useState([]);
   const [session, setSession] = useState(SESSION_VACIA);
   const [resolviendo, setResolviendo] = useState(false);
   const navigate = useNavigate();
@@ -132,8 +133,7 @@ export function AppProvider({ children }) {
         { data: postulacionesRows, error: e4 },
         { data: capacitacionesRows, error: e5 },
         { data: inscriptosRows, error: e6 },
-        { data: mentoriasRows, error: e7 },
-        { data: reservasRows, error: e8 },
+        { data: pagosRows, error: e7 },
       ] = await Promise.all([
         supabase.from("empresas").select("*").order("created_at"),
         supabase.from("candidatos").select("*").order("created_at"),
@@ -141,22 +141,18 @@ export function AppProvider({ children }) {
         supabase.from("postulaciones").select("*"),
         supabase.from("capacitaciones").select("*").order("fecha"),
         supabase.from("capacitacion_inscriptos").select("*"),
-        supabase.from("mentorias").select("*"),
-        supabase.from("mentoria_reservas").select("*"),
+        // RLS filtra esto automáticamente: cada candidato/empresa solo ve sus
+        // propios pagos, y el admin los ve todos. Sirve para mostrar "ya
+        // compraste" en mentorías y el historial de compras en el panel admin.
+        supabase.from("pagos").select("*").order("created_at", { ascending: false }),
       ]);
 
-      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8;
+      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7;
       if (firstError) throw firstError;
 
       const inscriptosPorCap = {};
       (inscriptosRows || []).forEach((r) => {
         (inscriptosPorCap[r.capacitacion_id] ||= []).push(r.candidato_id);
-      });
-      const reservasPorMentoria = {};
-      (reservasRows || []).forEach((r) => {
-        const bucket = (reservasPorMentoria[r.mentoria_id] ||= { candidatos: [], empresas: [] });
-        if (r.candidato_id) bucket.candidatos.push(r.candidato_id);
-        if (r.empresa_id) bucket.empresas.push(r.empresa_id);
       });
 
       setEmpresas((empresasRows || []).map(mapEmpresa));
@@ -164,7 +160,7 @@ export function AppProvider({ children }) {
       setVacantes((vacantesRows || []).map(mapVacante));
       setPostulaciones((postulacionesRows || []).map(mapPostulacion));
       setCapacitaciones((capacitacionesRows || []).map((r) => mapCapacitacion(r, inscriptosPorCap[r.id])));
-      setMentorias((mentoriasRows || []).map((r) => mapMentoria(r, reservasPorMentoria[r.id])));
+      setPagos((pagosRows || []).map(mapPago));
     } catch (err) {
       console.error("Error cargando datos de Supabase", err);
       setError(err.message || "No se pudieron cargar los datos.");
@@ -549,39 +545,6 @@ export function AppProvider({ children }) {
     setCapacitaciones((prev) => [...prev, mapCapacitacion(data, [])]);
   }, []);
 
-  // ---------- Mentorías ----------
-  const crearMentoria = useCallback(async (mentoria) => {
-    const payload = {
-      mentor: mentoria.mentor,
-      especialidad: mentoria.especialidad,
-      modalidad: mentoria.modalidad,
-      cupos_disponibles: mentoria.cuposDisponibles,
-      publico: mentoria.publico || "candidato",
-    };
-    const { data, error: insertError } = await supabase.from("mentorias").insert(payload).select().single();
-    if (insertError) throw insertError;
-    setMentorias((prev) => [...prev, mapMentoria(data, { candidatos: [], empresas: [] })]);
-  }, []);
-
-  // tipo: "candidato" (default) o "empresa" — según quién reserva la sesión.
-  const reservarMentoria = useCallback(async (mentoriaId, id, tipo = "candidato") => {
-    const payload =
-      tipo === "empresa"
-        ? { mentoria_id: mentoriaId, empresa_id: id }
-        : { mentoria_id: mentoriaId, candidato_id: id };
-    const { error: insertError } = await supabase.from("mentoria_reservas").insert(payload);
-    if (insertError && insertError.code !== "23505") throw insertError;
-    setMentorias((prev) =>
-      prev.map((m) => {
-        if (m.id !== mentoriaId) return m;
-        if (tipo === "empresa") {
-          return m.reservasEmpresas.includes(id) ? m : { ...m, reservasEmpresas: [...m.reservasEmpresas, id] };
-        }
-        return m.reservasCandidatos.includes(id) ? m : { ...m, reservasCandidatos: [...m.reservasCandidatos, id] };
-      })
-    );
-  }, []);
-
   const value = {
     loading,
     authReady,
@@ -592,7 +555,7 @@ export function AppProvider({ children }) {
     vacantes,
     postulaciones,
     capacitaciones,
-    mentorias,
+    pagos,
     session,
     logout,
     iniciarSesion,
@@ -611,8 +574,6 @@ export function AppProvider({ children }) {
     cambiarEstadoPostulacion,
     inscribirCapacitacion,
     crearCapacitacion,
-    reservarMentoria,
-    crearMentoria,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

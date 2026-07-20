@@ -6,6 +6,7 @@ import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState } from 
 import { planesCandidatos } from "../../data/seed.js";
 import { emailValido, telefonoValido, archivoValido, CV_MAX_MB } from "../../utils/validacion";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
+import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
 
 const TABS = [
   { id: "perfil", label: "Mi perfil", icon: User },
@@ -27,7 +28,7 @@ function estadoPlan(vencimientoISO) {
 
 export default function CandidatoPanel() {
   const {
-    session, candidatos, vacantes, empresas, postulaciones, capacitaciones, mentorias,
+    session, candidatos, vacantes, empresas, postulaciones, capacitaciones,
     actualizarCandidato, subirCV, iniciarPago,
   } = useApp();
   const [tab, setTab] = useState("perfil");
@@ -45,7 +46,6 @@ export default function CandidatoPanel() {
 
   const misPostulaciones = postulaciones.filter((p) => p.candidatoId === candidato.id);
   const misCapacitaciones = capacitaciones.filter((c) => c.inscriptos.includes(candidato.id));
-  const misMentorias = mentorias.filter((m) => m.reservasCandidatos.includes(candidato.id));
 
   function actualizarReferencia(i, campo, valor) {
     setReferencias((prev) => prev.map((r, idx) => (idx === i ? { ...r, [campo]: valor } : r)));
@@ -292,20 +292,7 @@ export default function CandidatoPanel() {
             <Link to="/capacitaciones" className="text-gold-600 text-sm font-semibold inline-block mt-3">Ver más capacitaciones</Link>
           </div>
           <div>
-            <h3 className="font-bold text-forest-900 mb-3">Mentorías reservadas</h3>
-            {misMentorias.length === 0 ? (
-              <EmptyState text="Sin mentorías reservadas." />
-            ) : (
-              <div className="grid sm:grid-cols-2 gap-4">
-                {misMentorias.map((m) => (
-                  <Card key={m.id} className="p-4">
-                    <p className="font-semibold text-forest-900">{m.mentor}</p>
-                    <p className="text-sm text-forest-500">{m.especialidad}</p>
-                  </Card>
-                ))}
-              </div>
-            )}
-            <Link to="/mentorias" className="text-gold-600 text-sm font-semibold inline-block mt-3">Ver más mentorías</Link>
+            <MentoriasPaquetes titulo="Mentorías personalizadas" />
           </div>
         </div>
       )}

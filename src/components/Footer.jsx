@@ -17,7 +17,7 @@ export default function Footer() {
           <ul className="space-y-2 text-sm text-forest-400">
             <li><Link to="/vacantes" className="hover:text-gold-300">Buscar empleo</Link></li>
             <li><Link to="/capacitaciones" className="hover:text-gold-300">Capacitaciones</Link></li>
-            <li><Link to="/mentorias" className="hover:text-gold-300">Mentorías</Link></li>
+            <li><Link to="/capacitaciones" className="hover:text-gold-300">Mentorías</Link></li>
             <li><Link to="/registro" className="hover:text-gold-300">Crear mi perfil</Link></li>
           </ul>
         </div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Calendar, Users2, CheckCircle2 } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Card, Badge, Button, SectionTitle, EmptyState, Input, Select } from "../components/ui.jsx";
+import MentoriasPaquetes from "../components/MentoriasPaquetes.jsx";
 
 export default function Capacitaciones() {
   const { capacitaciones, inscribirCapacitacion, session } = useApp();
@@ -93,6 +94,10 @@ export default function Capacitaciones() {
         })}
       </div>
       )}
+
+      <div className="mt-16 pt-16 border-t border-forest-100" id="mentorias">
+        <MentoriasPaquetes />
+      </div>
     </div>
   );
 }

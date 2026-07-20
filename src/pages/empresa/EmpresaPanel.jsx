@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, UserRound, CheckCircle2 } from "lucide-react";
+import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, UserRound } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
+import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
 
 const DIAS_PRUEBA = 14;
 
@@ -74,14 +75,13 @@ const postulacionBadge = {
 };
 
 export default function EmpresaPanel() {
-  const { session, empresas, vacantes, candidatos, postulaciones, mentorias, publicarVacante, cambiarEstadoPostulacion, iniciarPago, reservarMentoria } = useApp();
+  const { session, empresas, vacantes, candidatos, postulaciones, publicarVacante, cambiarEstadoPostulacion, iniciarPago } = useApp();
   const [searchParams] = useSearchParams();
   const tabInicial = TABS.some((t) => t.id === searchParams.get("tab")) ? searchParams.get("tab") : "vacantes";
   const [tab, setTab] = useState(tabInicial);
   const [formOpen, setFormOpen] = useState(false);
   const [pagando, setPagando] = useState(null);
   const [errorPago, setErrorPago] = useState("");
-  const [reservandoMentoria, setReservandoMentoria] = useState(null);
   const empresa = empresas.find((e) => e.id === session.userId);
 
   const [nueva, setNueva] = useState({
@@ -141,19 +141,6 @@ export default function EmpresaPanel() {
       setFormOpen(false);
     } catch (err) {
       console.error(err);
-    }
-  }
-
-  const mentoriasVisibles = mentorias.filter((m) => m.publico === "empresa" || m.publico === "ambos");
-
-  async function handleReservarMentoria(mentoriaId) {
-    setReservandoMentoria(mentoriaId);
-    try {
-      await reservarMentoria(mentoriaId, empresa.id, "empresa");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setReservandoMentoria(null);
     }
   }
 
@@ -413,56 +400,7 @@ export default function EmpresaPanel() {
 
       {tab === "mentorias" && !acceso.activo && <Paywall />}
       {tab === "mentorias" && acceso.activo && (
-        <div>
-          <p className="text-sm text-forest-400 mb-4">
-            Sesiones de mentoría para tu equipo o para vos como dueño/responsable de la PYME.
-          </p>
-          {mentoriasVisibles.length === 0 ? (
-            <EmptyState text="Todavía no hay mentorías disponibles para empresas." />
-          ) : (
-            <div className="grid md:grid-cols-2 gap-5">
-              {mentoriasVisibles.map((m) => {
-                const totalReservas = m.reservasCandidatos.length + m.reservasEmpresas.length;
-                const cuposLibres = m.cuposDisponibles - totalReservas;
-                const reservado = m.reservasEmpresas.includes(empresa.id);
-                return (
-                  <Card key={m.id} className="p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-full bg-gold-50 flex items-center justify-center text-gold-600">
-                        <UserRound size={22} />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-forest-900">{m.mentor}</h3>
-                        <p className="text-sm text-forest-500">{m.especialidad}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-3 mt-4 text-sm text-forest-500">
-                      <Badge tone="gray">{m.modalidad}</Badge>
-                      <span>{cuposLibres} cupos disponibles</span>
-                    </div>
-                    <div className="mt-5">
-                      {reservado ? (
-                        <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
-                          <CheckCircle2 size={18} /> Sesión reservada
-                        </span>
-                      ) : cuposLibres <= 0 ? (
-                        <Button disabled className="w-full sm:w-auto">Sin cupos</Button>
-                      ) : (
-                        <Button
-                          disabled={reservandoMentoria === m.id}
-                          onClick={() => handleReservarMentoria(m.id)}
-                          className="w-full sm:w-auto"
-                        >
-                          {reservandoMentoria === m.id ? "Reservando..." : "Reservar sesión"}
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        <MentoriasPaquetes titulo="Mentorías para tu PYME" />
       )}
 
       {tab === "plan" && (

@@ -41,8 +41,7 @@ export default function Navbar() {
 
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-forest-600">
           <Link to="/vacantes" className="hover:text-gold-600">Vacantes</Link>
-          <Link to="/capacitaciones" className="hover:text-gold-600">Capacitaciones</Link>
-          <Link to="/mentorias" className="hover:text-gold-600">Mentorías</Link>
+          <Link to="/capacitaciones" className="hover:text-gold-600">Capacitaciones y mentorías</Link>
           <Link to="/pymes" className="hover:text-gold-600">Para PYMEs</Link>
         </nav>
 
@@ -76,8 +75,7 @@ export default function Navbar() {
       {open && (
         <div className="md:hidden border-t border-forest-100 px-4 py-4 space-y-3 bg-white">
           <Link to="/vacantes" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Vacantes</Link>
-          <Link to="/capacitaciones" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Capacitaciones</Link>
-          <Link to="/mentorias" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Mentorías</Link>
+          <Link to="/capacitaciones" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Capacitaciones y mentorías</Link>
           <Link to="/pymes" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Para PYMEs</Link>
           <div className="pt-3 border-t border-forest-100 flex flex-col gap-2">
             {usuario ? (
