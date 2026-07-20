@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase, CV_BUCKET } from "./supabaseClient";
 
@@ -114,6 +114,12 @@ export function AppProvider({ children }) {
   const [session, setSession] = useState(SESSION_VACIA);
   const [resolviendo, setResolviendo] = useState(false);
   const navigate = useNavigate();
+  // Cuando alguien hace login mientras ya había otra sesión activa (o el
+  // listener de auth dispara más de un evento seguido), pueden quedar dos
+  // llamadas a resolverSesion corriendo en paralelo. Sin esto, la más lenta
+  // podía "ganarle" a la más nueva y pisar la sesión recién resuelta con
+  // datos viejos — eso era la causa de que el login a veces no redirigiera.
+  const resolverSesionIdRef = useRef(0);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -178,8 +184,11 @@ export function AppProvider({ children }) {
   // (quedó pendiente en user_metadata al registrarse), la crea ahora que ya
   // hay una sesión válida.
   const resolverSesion = useCallback(async (authUser) => {
+    const miId = ++resolverSesionIdRef.current;
+    const esVigente = () => miId === resolverSesionIdRef.current;
+
     if (!authUser) {
-      setSession(SESSION_VACIA);
+      if (esVigente()) setSession(SESSION_VACIA);
       return;
     }
     setResolviendo(true);
@@ -190,7 +199,7 @@ export function AppProvider({ children }) {
         .eq("user_id", authUser.id)
         .maybeSingle();
       if (adminRow) {
-        setSession({ role: "admin", userId: "admin", authUserId: authUser.id, email: authUser.email });
+        if (esVigente()) setSession({ role: "admin", userId: "admin", authUserId: authUser.id, email: authUser.email });
         return;
       }
 
@@ -200,7 +209,7 @@ export function AppProvider({ children }) {
         .eq("user_id", authUser.id)
         .maybeSingle();
       if (candRow) {
-        setSession({ role: "candidato", userId: candRow.id, authUserId: authUser.id, email: authUser.email });
+        if (esVigente()) setSession({ role: "candidato", userId: candRow.id, authUserId: authUser.id, email: authUser.email });
         return;
       }
 
@@ -210,7 +219,7 @@ export function AppProvider({ children }) {
         .eq("user_id", authUser.id)
         .maybeSingle();
       if (empRow) {
-        setSession({ role: "empresa", userId: empRow.id, authUserId: authUser.id, email: authUser.email });
+        if (esVigente()) setSession({ role: "empresa", userId: empRow.id, authUserId: authUser.id, email: authUser.email });
         return;
       }
 
@@ -233,7 +242,7 @@ export function AppProvider({ children }) {
         }
         if (fila) {
           await refresh();
-          setSession({ role: "candidato", userId: fila.id, authUserId: authUser.id, email: authUser.email });
+          if (esVigente()) setSession({ role: "candidato", userId: fila.id, authUserId: authUser.id, email: authUser.email });
           return;
         }
       }
@@ -252,14 +261,14 @@ export function AppProvider({ children }) {
         }
         if (fila) {
           await refresh();
-          setSession({ role: "empresa", userId: fila.id, authUserId: authUser.id, email: authUser.email });
+          if (esVigente()) setSession({ role: "empresa", userId: fila.id, authUserId: authUser.id, email: authUser.email });
           return;
         }
       }
 
-      setSession({ role: null, userId: null, authUserId: authUser.id, email: authUser.email });
+      if (esVigente()) setSession({ role: null, userId: null, authUserId: authUser.id, email: authUser.email });
     } finally {
-      setResolviendo(false);
+      if (esVigente()) setResolviendo(false);
     }
   }, [refresh]);
 
