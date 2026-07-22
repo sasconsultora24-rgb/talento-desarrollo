@@ -1,5 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { Briefcase, Users, GraduationCap, LineChart, Check, ArrowRight } from "lucide-react";
+import { Briefcase, Users, GraduationCap, HeartHandshake, Check, ArrowRight } from "lucide-react";
 import { Card, Button, SectionTitle, Badge } from "../components/ui.jsx";
 import { planesEmpresas } from "../data/seed.js";
 import { useApp } from "../data/store.jsx";
@@ -71,23 +71,22 @@ const areas = [
   },
   {
     id: "capital-humano",
-    icon: LineChart,
+    icon: HeartHandshake,
     title: "Gestión del Capital Humano",
     pitch:
-      "Es el corazón de lo que SAS Consultora hace desde siempre como consultora de RRHH tradicional, ahora también disponible desde la plataforma: ordenar cómo funciona tu gente, no solo conseguirla o retenerla.",
+      "No es diseño organizacional ni planillas de RRHH. Es ordenar lo humano de tu equipo — las conversaciones que se evitan, el desgaste que nadie nombra, los roles que generan tensión — trabajado desde la conversación real, no desde manuales ni recetas.",
     items: [
-      "Diseño de estructura organizacional: organigramas, descripciones de puesto y niveles de reporte",
-      "Bandas salariales y política de compensaciones, con benchmarking del rubro",
-      "Manuales de políticas internas y procesos de RRHH (onboarding, legajos, procedimientos)",
-      "Evaluaciones de desempeño y planes de carrera y sucesión",
+      "Talleres y jornadas humanas con equipos, para ordenar la comunicación y bajar la tensión relacional",
+      "RE-MEDIO: acompañamiento específico para mandos medios — autonomía, comunicación con arriba y abajo, alivio de la carga",
+      "Intervenciones puntuales ante conflictos o climas deteriorados",
+      "Acuerdos claros y procesos humanos para sostener al equipo en el día a día, sin tecnicismos",
     ],
     incluido: [
-      "Reporte trimestral de benchmarking salarial del rubro en el plan Platino",
-      "30% de descuento en cualquiera de estos proyectos cuando se contratan a medida, también en Platino",
+      "30% de descuento en estos acompañamientos cuando se contratan a medida, en el plan Platino (mismo beneficio que el resto de servicios a la carta)",
     ],
     aparte: [
-      "Diseño organizacional, bandas salariales, manuales de políticas, evaluaciones de desempeño y planes de sucesión",
-      "Es el mismo servicio de consultoría tradicional que SAS Consultora presta hoy fuera de la plataforma — se cotiza a medida según el alcance del proyecto y el tamaño del equipo",
+      "RE-MEDIO para mandos medios, jornadas con equipos e intervenciones puntuales",
+      "Se cotiza según cantidad de personas y alcance, con el mismo criterio que las mentorías individuales (Espacio de Orden y Refoco)",
     ],
   },
 ];
