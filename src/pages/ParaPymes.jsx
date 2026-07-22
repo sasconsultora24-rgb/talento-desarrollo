@@ -73,19 +73,21 @@ const areas = [
     id: "capital-humano",
     icon: LineChart,
     title: "Gestión del Capital Humano",
-    pitch: "Cuando el equipo crece, hace falta estructura: quién reporta a quién, cómo se progresa, cómo se mide el desempeño.",
+    pitch:
+      "Es el corazón de lo que SAS Consultora hace desde siempre como consultora de RRHH tradicional, ahora también disponible desde la plataforma: ordenar cómo funciona tu gente, no solo conseguirla o retenerla.",
     items: [
-      "Diseño de estructuras organizacionales",
-      "Planes de carrera y desarrollo profesional",
-      "Implementación de evaluaciones de desempeño",
+      "Diseño de estructura organizacional: organigramas, descripciones de puesto y niveles de reporte",
+      "Bandas salariales y política de compensaciones, con benchmarking del rubro",
+      "Manuales de políticas internas y procesos de RRHH (onboarding, legajos, procedimientos)",
+      "Evaluaciones de desempeño y planes de carrera y sucesión",
     ],
     incluido: [
-      "Reporte trimestral de benchmarking salarial en el plan Platino",
-      "30% de descuento en estos servicios cuando se contratan a medida, también en Platino",
+      "Reporte trimestral de benchmarking salarial del rubro en el plan Platino",
+      "30% de descuento en cualquiera de estos proyectos cuando se contratan a medida, también en Platino",
     ],
     aparte: [
-      "Diseño de estructuras organizacionales, planes de carrera y evaluaciones de desempeño",
-      "Se cotizan a medida según el alcance del proyecto, dentro del catálogo de SAS Consultora",
+      "Diseño organizacional, bandas salariales, manuales de políticas, evaluaciones de desempeño y planes de sucesión",
+      "Es el mismo servicio de consultoría tradicional que SAS Consultora presta hoy fuera de la plataforma — se cotiza a medida según el alcance del proyecto y el tamaño del equipo",
     ],
   },
 ];
@@ -121,7 +123,7 @@ export default function ParaPymes() {
         <SectionTitle
           eyebrow="Nuestro servicio"
           title="4 áreas, un solo lugar"
-          subtitle="Cada una ataca una etapa distinta del ciclo de vida de tu equipo. Bajá para ver el detalle de cada una: qué incluye, qué está en tu abono y qué se cobra aparte."
+          subtitle="Cada una ataca una etapa distinta del ciclo de vida de tu equipo. Bajá para ver el detalle de cada una: qué incluye, qué está en tu abono y qué es un servicio adicional."
         />
       </section>
 
@@ -162,7 +164,7 @@ export default function ParaPymes() {
                 </ul>
               </div>
               <div className="rounded-2xl border border-forest-100 bg-white p-5">
-                <Badge tone="gray">Se cobra aparte</Badge>
+                <Badge tone="gray">Servicio adicional</Badge>
                 <ul className="mt-3 space-y-2.5">
                   {a.aparte.map((linea) => (
                     <li key={linea} className="text-sm text-forest-500 leading-relaxed">
