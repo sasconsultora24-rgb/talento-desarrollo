@@ -10,9 +10,10 @@ const MAX_CV_MB = CV_MAX_MB;
 
 export default function Registro() {
   const [params] = useSearchParams();
-  const tipoInicial = params.get("tipo") === "empresa" ? "empresa" : "candidato";
+  const tipoInicial =
+    params.get("tipo") === "empresa" ? "empresa" : params.get("tipo") === "integrante" ? "integrante" : "candidato";
   const [tipo, setTipo] = useState(tipoInicial);
-  const { registrarCandidato, registrarEmpresa, subirCV, session, resolviendo } = useApp();
+  const { registrarCandidato, registrarEmpresa, registrarIntegrante, subirCV, session, resolviendo } = useApp();
   const navigate = useNavigate();
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
@@ -26,6 +27,7 @@ export default function Registro() {
     if (!intentado || resolviendo) return;
     if (session.role === "candidato") navigate("/candidato");
     else if (session.role === "empresa") navigate("/empresa");
+    else if (session.role === "integrante") navigate("/integrante");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [intentado, resolviendo, session]);
 
@@ -51,6 +53,8 @@ export default function Registro() {
     contacto: "",
     email: "",
   });
+
+  const [integrante, setIntegrante] = useState({ nombre: "", email: "", codigoEmpresa: "" });
 
   function actualizarReferencia(i, campo, valor) {
     setReferencias((prev) => prev.map((r, idx) => (idx === i ? { ...r, [campo]: valor } : r)));
@@ -132,6 +136,37 @@ export default function Registro() {
     }
   }
 
+  async function submitIntegrante(e) {
+    e.preventDefault();
+    setError("");
+    if (!emailValido(integrante.email)) {
+      setError("Ingresá un email válido.");
+      return;
+    }
+    if (!integrante.codigoEmpresa.trim()) {
+      setError("Ingresá el código de empresa que te compartió tu PYME.");
+      return;
+    }
+    if (!aceptaTerminos) {
+      setError("Para crear tu acceso tenés que aceptar la Política de Privacidad y los Términos y Condiciones.");
+      return;
+    }
+    setEnviando(true);
+    try {
+      const resultado = await registrarIntegrante(integrante, password);
+      if (resultado.confirmado) {
+        setIntentado(true);
+      } else {
+        setRevisarEmail(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setError(mensajeError(err, "No pudimos crear tu acceso. Probá de nuevo en unos segundos."));
+    } finally {
+      setEnviando(false);
+    }
+  }
+
   async function submitEmpresa(e) {
     e.preventDefault();
     setError("");
@@ -171,7 +206,7 @@ export default function Registro() {
         </p>
       </div>
 
-      <div className="flex gap-2 mb-6 bg-forest-50 rounded-xl p-1 max-w-sm mx-auto">
+      <div className="flex gap-2 mb-6 bg-forest-50 rounded-xl p-1 max-w-lg mx-auto">
         <button
           onClick={() => setTipo("candidato")}
           className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
@@ -188,6 +223,14 @@ export default function Registro() {
         >
           Soy una PYME
         </button>
+        <button
+          onClick={() => setTipo("integrante")}
+          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+            tipo === "integrante" ? "bg-white shadow-sm text-forest-900" : "text-forest-500"
+          }`}
+        >
+          Soy parte de un equipo
+        </button>
       </div>
 
       <Card className="p-6 md:p-8">
@@ -203,7 +246,7 @@ export default function Registro() {
           </div>
         )}
         {tipo === "candidato" ? (
-          <form onSubmit={submitCandidato}>
+          <form onSubmit={submitCandidato} key="candidato">
             <Field label="Nombre completo">
               <Input required value={candidato.nombre} onChange={(e) => setCandidato({ ...candidato, nombre: e.target.value })} />
             </Field>
@@ -320,8 +363,8 @@ export default function Registro() {
               {enviando ? "Creando perfil..." : "Crear mi perfil"}
             </Button>
           </form>
-        ) : (
-          <form onSubmit={submitEmpresa}>
+        ) : tipo === "empresa" ? (
+          <form onSubmit={submitEmpresa} key="empresa">
             <Field label="Nombre de la empresa">
               <Input required value={empresa.nombre} onChange={(e) => setEmpresa({ ...empresa, nombre: e.target.value })} />
             </Field>
@@ -366,6 +409,46 @@ export default function Registro() {
             </label>
             <Button type="submit" disabled={enviando} className="w-full mt-2">
               {enviando ? "Registrando..." : "Registrar mi PYME"}
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={submitIntegrante} key="integrante">
+            <p className="text-sm text-forest-500 mb-4">
+              Si tu PYME ya está registrada en la plataforma y te compartió un código de equipo, usalo acá para
+              crear tu propio acceso a las capacitaciones incluidas en su plan.
+            </p>
+            <Field label="Nombre completo">
+              <Input required value={integrante.nombre} onChange={(e) => setIntegrante({ ...integrante, nombre: e.target.value })} />
+            </Field>
+            <Field label="Email">
+              <Input type="email" required value={integrante.email} onChange={(e) => setIntegrante({ ...integrante, email: e.target.value })} />
+            </Field>
+            <Field label="Código de empresa" hint="Te lo comparte el administrador de tu PYME desde su panel">
+              <Input
+                required
+                value={integrante.codigoEmpresa}
+                onChange={(e) => setIntegrante({ ...integrante, codigoEmpresa: e.target.value.toUpperCase() })}
+                placeholder="Ej: A1B2C3D4"
+              />
+            </Field>
+            <Field label="Contraseña" hint="Mínimo 8 caracteres">
+              <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            </Field>
+            <label className="flex items-start gap-2 text-sm text-forest-600 mt-3 mb-4">
+              <input
+                type="checkbox"
+                required
+                checked={aceptaTerminos}
+                onChange={(e) => setAceptaTerminos(e.target.checked)}
+                className="mt-0.5"
+              />
+              Leí y acepto la{" "}
+              <Link to="/privacidad" target="_blank" className="text-gold-600 font-semibold">Política de Privacidad</Link>{" "}
+              y los{" "}
+              <Link to="/terminos" target="_blank" className="text-gold-600 font-semibold">Términos y Condiciones</Link>.
+            </label>
+            <Button type="submit" disabled={enviando} className="w-full mt-2">
+              {enviando ? "Creando acceso..." : "Crear mi acceso"}
             </Button>
           </form>
         )}

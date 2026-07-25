@@ -128,6 +128,11 @@ export default function Landing() {
               </Card>
             ))}
           </div>
+          <div className="mt-6">
+            <Link to="/profesionales" className="text-gold-600 font-semibold text-sm inline-flex items-center gap-1 hover:gap-2 transition-all">
+              Ver todos los servicios para profesionales <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </section>
 

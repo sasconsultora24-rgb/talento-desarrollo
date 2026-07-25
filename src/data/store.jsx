@@ -75,6 +75,9 @@ function mapPostulacion(row) {
 function mapCapacitacion(row, inscriptos) {
   const inscriptosCandidatos = inscriptos?.candidatos || [];
   const inscriptosEmpresas = inscriptos?.empresas || [];
+  // Integrantes de equipo se inscriben de a uno (no comparten el cupo de la
+  // empresa), gateados por el plan de su empresa. Ver utils/capacitaciones.js.
+  const inscriptosIntegrantes = inscriptos?.integrantes || [];
   return {
     id: row.id,
     titulo: row.titulo,
@@ -88,12 +91,29 @@ function mapCapacitacion(row, inscriptos) {
     // ver utils/capacitaciones.js) o "plan" (incluida solo desde cierto plan).
     accesoTipo: row.acceso_tipo || "gratis",
     precio: row.precio,
+    // Precio/cupos de lanzamiento, vigentes hasta promocionHasta (inclusive).
+    // Ver utils/capacitaciones.js: precioEfectivo() / cuposEfectivos().
+    precioPromocional: row.precio_promocional,
+    promocionHasta: row.promocion_hasta,
+    cuposPromocional: row.cupos_promocional,
     planMinimoEmpresa: row.plan_minimo_empresa,
     planMinimoCandidato: row.plan_minimo_candidato,
     inscriptosCandidatos,
     inscriptosEmpresas,
+    inscriptosIntegrantes,
     // Compatibilidad: código viejo que solo conocía candidatos sigue funcionando.
     inscriptos: inscriptosCandidatos,
+  };
+}
+
+function mapIntegrante(row) {
+  return {
+    id: row.id,
+    empresaId: row.empresa_id,
+    userId: row.user_id,
+    nombre: row.nombre,
+    email: row.email,
+    fechaAlta: row.created_at ? row.created_at.slice(0, 10) : "",
   };
 }
 
@@ -123,6 +143,11 @@ export function AppProvider({ children }) {
   const [postulaciones, setPostulaciones] = useState([]);
   const [capacitaciones, setCapacitaciones] = useState([]);
   const [pagos, setPagos] = useState([]);
+  // RLS filtra esto: el dueño de la PYME ve a todo su equipo, un integrante
+  // solo se ve a sí mismo (y el admin, a todos).
+  const [integrantes, setIntegrantes] = useState([]);
+  // Código de acceso de la propia empresa (RLS: solo lo ve su dueño/admin).
+  const [codigoEmpresa, setCodigoEmpresa] = useState(null);
   const [session, setSession] = useState(SESSION_VACIA);
   const [resolviendo, setResolviendo] = useState(false);
   const navigate = useNavigate();
@@ -145,6 +170,8 @@ export function AppProvider({ children }) {
         { data: capacitacionesRows, error: e5 },
         { data: inscriptosRows, error: e6 },
         { data: pagosRows, error: e7 },
+        { data: integrantesRows, error: e8 },
+        { data: codigoRows, error: e9 },
       ] = await Promise.all([
         supabase.from("empresas").select("*").order("created_at"),
         supabase.from("candidatos").select("*").order("created_at"),
@@ -156,16 +183,19 @@ export function AppProvider({ children }) {
         // propios pagos, y el admin los ve todos. Sirve para mostrar "ya
         // compraste" en mentorías y el historial de compras en el panel admin.
         supabase.from("pagos").select("*").order("created_at", { ascending: false }),
+        supabase.from("empresa_integrantes").select("*").order("created_at"),
+        supabase.from("empresa_codigos").select("*"),
       ]);
 
-      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7;
+      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9;
       if (firstError) throw firstError;
 
       const inscriptosPorCap = {};
       (inscriptosRows || []).forEach((r) => {
-        const bucket = (inscriptosPorCap[r.capacitacion_id] ||= { candidatos: [], empresas: [] });
+        const bucket = (inscriptosPorCap[r.capacitacion_id] ||= { candidatos: [], empresas: [], integrantes: [] });
         if (r.candidato_id) bucket.candidatos.push(r.candidato_id);
         if (r.empresa_id) bucket.empresas.push(r.empresa_id);
+        if (r.integrante_id) bucket.integrantes.push(r.integrante_id);
       });
 
       setEmpresas((empresasRows || []).map(mapEmpresa));
@@ -174,6 +204,10 @@ export function AppProvider({ children }) {
       setPostulaciones((postulacionesRows || []).map(mapPostulacion));
       setCapacitaciones((capacitacionesRows || []).map((r) => mapCapacitacion(r, inscriptosPorCap[r.id])));
       setPagos((pagosRows || []).map(mapPago));
+      setIntegrantes((integrantesRows || []).map(mapIntegrante));
+      // RLS acota esto a lo sumo a una fila (la de la propia empresa) para
+      // dueños, o vacío para cualquier otro rol.
+      setCodigoEmpresa(codigoRows?.[0]?.codigo || null);
     } catch (err) {
       console.error("Error cargando datos de Supabase", err);
       setError(err.message || "No se pudieron cargar los datos.");
@@ -232,6 +266,17 @@ export function AppProvider({ children }) {
         return;
       }
 
+      const { data: integRow } = await supabase
+        .from("empresa_integrantes")
+        .select("id, empresa_id")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (integRow) {
+        if (esVigente())
+          setSession({ role: "integrante", userId: integRow.id, empresaId: integRow.empresa_id, authUserId: authUser.id, email: authUser.email });
+        return;
+      }
+
       // Sin perfil todavía: ¿venía de un registro pendiente de confirmación de email?
       // (usa upsert-por-conflicto: si dos eventos de auth corren en paralelo y ya
       // se creó el perfil, se recupera la fila existente en vez de duplicar)
@@ -271,6 +316,26 @@ export function AppProvider({ children }) {
         if (fila) {
           await refresh();
           if (esVigente()) setSession({ role: "empresa", userId: fila.id, authUserId: authUser.id, email: authUser.email });
+          return;
+        }
+      }
+      if (pendiente?.tipo === "integrante") {
+        let fila = null;
+        const { data: creado, error: insErr } = await supabase
+          .from("empresa_integrantes")
+          .insert({ ...pendiente.datos, user_id: authUser.id })
+          .select()
+          .single();
+        if (!insErr) fila = creado;
+        else if (insErr.code === "23505") {
+          const { data: existente } = await supabase
+            .from("empresa_integrantes").select("id, empresa_id").eq("user_id", authUser.id).maybeSingle();
+          fila = existente;
+        }
+        if (fila) {
+          await refresh();
+          if (esVigente())
+            setSession({ role: "integrante", userId: fila.id, empresaId: fila.empresa_id, authUserId: authUser.id, email: authUser.email });
           return;
         }
       }
@@ -356,6 +421,40 @@ export function AppProvider({ children }) {
     });
     if (signUpError) throw signUpError;
     return { confirmado: !!data.session };
+  }, []);
+
+  // Alta de un integrante de equipo por código de empresa (autorregistro).
+  // Valida el código y el cupo ANTES de crear la cuenta para dar un error
+  // claro; el cupo se re-valida igual en el servidor (RLS) al insertar la fila.
+  const registrarIntegrante = useCallback(async (perfil, password) => {
+    const { data: resultados, error: buscarError } = await supabase.rpc("buscar_empresa_por_codigo", {
+      p_codigo: perfil.codigoEmpresa,
+    });
+    if (buscarError) throw buscarError;
+    const empresaEncontrada = resultados?.[0];
+    if (!empresaEncontrada) throw new Error("No encontramos ninguna PYME con ese código. Revisalo con quien te lo compartió.");
+    if (!empresaEncontrada.tiene_cupo) {
+      throw new Error("Esa PYME ya usó todos los cupos de integrantes de su plan. Pedile a su administrador que libere un cupo o suba de plan.");
+    }
+    const datos = {
+      empresa_id: empresaEncontrada.empresa_id,
+      nombre: perfil.nombre,
+      email: perfil.email,
+    };
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: perfil.email,
+      password,
+      options: { data: { pending_profile: { tipo: "integrante", datos } } },
+    });
+    if (signUpError) throw signUpError;
+    return { confirmado: !!data.session, empresaNombre: empresaEncontrada.nombre };
+  }, []);
+
+  // El dueño de la PYME da de baja a un integrante (libera su cupo).
+  const eliminarIntegrante = useCallback(async (id) => {
+    const { error: delError } = await supabase.from("empresa_integrantes").delete().eq("id", id);
+    if (delError) throw delError;
+    setIntegrantes((prev) => prev.filter((i) => i.id !== id));
   }, []);
 
   const iniciarSesion = useCallback(async (email, password) => {
@@ -532,12 +631,16 @@ export function AppProvider({ children }) {
   }, []);
 
   // ---------- Capacitaciones ----------
-  // tipo: "candidato" (default) o "empresa" — una PYME puede anotar a la
-  // persona de contacto / a su equipo, igual que un profesional se anota a sí mismo.
+  // tipo: "candidato" (default), "empresa" o "integrante" — una PYME puede
+  // anotar a la persona de contacto / a su equipo, un profesional se anota a
+  // sí mismo, y cada integrante de equipo se anota individualmente (no
+  // comparte el cupo de inscripción de su empresa).
   const inscribirCapacitacion = useCallback(async (capacitacionId, id, tipo = "candidato") => {
     const payload =
       tipo === "empresa"
         ? { capacitacion_id: capacitacionId, empresa_id: id }
+        : tipo === "integrante"
+        ? { capacitacion_id: capacitacionId, integrante_id: id }
         : { capacitacion_id: capacitacionId, candidato_id: id };
     const { error: insertError } = await supabase.from("capacitacion_inscriptos").insert(payload);
     if (insertError && insertError.code !== "23505") throw insertError;
@@ -548,6 +651,11 @@ export function AppProvider({ children }) {
           return c.inscriptosEmpresas.includes(id)
             ? c
             : { ...c, inscriptosEmpresas: [...c.inscriptosEmpresas, id] };
+        }
+        if (tipo === "integrante") {
+          return c.inscriptosIntegrantes.includes(id)
+            ? c
+            : { ...c, inscriptosIntegrantes: [...c.inscriptosIntegrantes, id] };
         }
         return c.inscriptosCandidatos.includes(id)
           ? c
@@ -567,6 +675,9 @@ export function AppProvider({ children }) {
       descripcion: capacitacion.descripcion,
       acceso_tipo: capacitacion.accesoTipo || "gratis",
       precio: capacitacion.accesoTipo === "paga" ? capacitacion.precio || null : null,
+      precio_promocional: capacitacion.accesoTipo === "paga" ? capacitacion.precioPromocional || null : null,
+      promocion_hasta: capacitacion.accesoTipo === "paga" ? capacitacion.promocionHasta || null : null,
+      cupos_promocional: capacitacion.accesoTipo === "paga" ? capacitacion.cuposPromocional || null : null,
       plan_minimo_empresa: capacitacion.accesoTipo === "plan" ? capacitacion.planMinimoEmpresa || null : null,
       plan_minimo_candidato: capacitacion.accesoTipo === "plan" ? capacitacion.planMinimoCandidato || null : null,
     };
@@ -608,6 +719,10 @@ export function AppProvider({ children }) {
     cambiarEstadoPostulacion,
     inscribirCapacitacion,
     crearCapacitacion,
+    integrantes,
+    codigoEmpresa,
+    registrarIntegrante,
+    eliminarIntegrante,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

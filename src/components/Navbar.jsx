@@ -7,9 +7,10 @@ import { Button } from "./ui.jsx";
 
 const ENLACES_PROFESIONALES = [
   { to: "/registro?tipo=candidato", label: "Registrate como profesional" },
-  { to: "/vacantes", label: "Ofertas laborales" },
-  { to: "/capacitaciones?ver=mentorias", label: "Mentorías y Coaching" },
-  { to: "/capacitaciones", label: "Capacitación continua" },
+  { to: "/profesionales", label: "Ver todas las áreas de servicio" },
+  { to: "/profesionales?ver=ofertas-laborales", label: "Ofertas laborales" },
+  { to: "/profesionales?ver=mentorias", label: "Mentorías y Coaching" },
+  { to: "/profesionales?ver=capacitacion-continua", label: "Capacitación continua" },
 ];
 
 const ENLACES_PYMES = [
@@ -95,7 +96,7 @@ function NavDropdownMobile({ label, enlaces, onNavigate }) {
 }
 
 export default function Navbar() {
-  const { session, logout, candidatos, empresas } = useApp();
+  const { session, logout, candidatos, empresas, integrantes } = useApp();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -104,6 +105,8 @@ export default function Navbar() {
       ? candidatos.find((c) => c.id === session.userId)
       : session.role === "empresa"
       ? empresas.find((e) => e.id === session.userId)
+      : session.role === "integrante"
+      ? integrantes.find((i) => i.id === session.userId)
       : session.role === "admin"
       ? { nombre: "Admin SAS" }
       : null;
@@ -113,6 +116,8 @@ export default function Navbar() {
       ? "/candidato"
       : session.role === "empresa"
       ? "/empresa"
+      : session.role === "integrante"
+      ? "/integrante"
       : session.role === "admin"
       ? "/admin"
       : null;

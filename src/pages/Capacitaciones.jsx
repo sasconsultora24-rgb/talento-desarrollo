@@ -4,7 +4,7 @@ import { Calendar, Users2, CheckCircle2, Clock, Lock } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Card, Badge, Button, SectionTitle, EmptyState, Input, Select } from "../components/ui.jsx";
 import MentoriasPaquetes from "../components/MentoriasPaquetes.jsx";
-import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA } from "../utils/capacitaciones.js";
+import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, precioEfectivo, cuposEfectivos, enPeriodoPromocional, candidatoEsPremiumVigente } from "../utils/capacitaciones.js";
 import { formatoPesos } from "../data/mentoriaPaquetes.js";
 import { useScrollToAnchor } from "../utils/useScrollToAnchor.js";
 
@@ -51,8 +51,12 @@ export default function Capacitaciones() {
     setError("");
     setComprando(id);
     try {
-      const { initPoint } = await iniciarPago("capacitacion", id);
-      window.location.href = initPoint;
+      const resultado = await iniciarPago("capacitacion", id);
+      if (resultado.incluido) {
+        setComprando(null);
+        return;
+      }
+      window.location.href = resultado.initPoint;
     } catch (err) {
       setError(err.message || "No se pudo iniciar el pago.");
       setComprando(null);
@@ -84,6 +88,12 @@ export default function Capacitaciones() {
         </div>
       </div>
 
+      {candidatoEsPremiumVigente(candidato) && (
+        <div className="mb-6 text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-4 py-2">
+          Tu membresía Desarrollo Profesional incluye acceso a las capacitaciones pagas, sin costo adicional.
+        </div>
+      )}
+
       {error && (
         <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{error}</div>
       )}
@@ -94,8 +104,9 @@ export default function Capacitaciones() {
       <div className="grid md:grid-cols-2 gap-5">
         {filtradas.map((c) => {
           const totalInscriptos = c.inscriptosCandidatos.length + c.inscriptosEmpresas.length;
-          const cuposLibres = c.cupos - totalInscriptos;
+          const cuposLibres = cuposEfectivos(c) - totalInscriptos;
           const acceso = accesoCapacitacion(c, { role: session.role, empresa, candidato, pagos });
+          const promoVigente = c.accesoTipo === "paga" && enPeriodoPromocional(c);
           return (
             <Card key={c.id} className="p-6">
               <div className="flex items-start justify-between gap-3">
@@ -103,8 +114,18 @@ export default function Capacitaciones() {
                   {c.destacada && <Badge tone="terracotta">Destacada</Badge>}
                   <h3 className="text-lg font-bold text-forest-900 mt-2">{c.titulo}</h3>
                   <Badge tone="gold">{c.categoria}</Badge>
-                  {c.accesoTipo === "paga" && acceso.estado !== "inscripto" && (
-                    <Badge tone="terracotta">{formatoPesos(c.precio)}</Badge>
+                  {c.accesoTipo === "paga" && acceso.estado !== "inscripto" && acceso.estado !== "incluida_en_plan" && (
+                    <Badge tone="terracotta">
+                      {promoVigente ? `${formatoPesos(precioEfectivo(c))} de lanzamiento` : formatoPesos(precioEfectivo(c))}
+                    </Badge>
+                  )}
+                  {c.accesoTipo === "paga" && acceso.estado === "incluida_en_plan" && (
+                    <Badge tone="gold">Incluida en tu membresía</Badge>
+                  )}
+                  {promoVigente && acceso.estado === "requiere_pago" && (
+                    <p className="text-xs text-terracotta-500 font-semibold mt-1">
+                      Precio de lanzamiento hasta el {c.promocionHasta} · después {formatoPesos(c.precio)}
+                    </p>
                   )}
                   {acceso.estado === "incluida_en_plan" && <Badge tone="gold">Incluida en tu plan</Badge>}
                   {acceso.estado === "requiere_plan" && (

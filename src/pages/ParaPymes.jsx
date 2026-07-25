@@ -213,7 +213,7 @@ export default function ParaPymes() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
           <SectionTitle
             eyebrow="Precios"
-            title="Planes de Reclutamiento y Selección"
+            title="Planes de Reclutamiento y Desarrollo"
             subtitle="Elegí el nivel de acompañamiento que necesita tu PYME. Cada plan también define qué tenés incluido en las otras 3 áreas de arriba."
             center
           />

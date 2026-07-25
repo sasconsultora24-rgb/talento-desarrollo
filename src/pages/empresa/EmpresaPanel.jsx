@@ -1,13 +1,13 @@
 import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, GraduationCap, Calendar, CheckCircle2, Clock } from "lucide-react";
+import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, GraduationCap, Calendar, CheckCircle2, Clock, UsersRound, Copy, Trash2 } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
 import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
 import { mensajeError } from "../../utils/errores";
-import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA } from "../../utils/capacitaciones.js";
+import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, precioEfectivo, cuposEfectivos, enPeriodoPromocional } from "../../utils/capacitaciones.js";
 import { formatoPesos } from "../../data/mentoriaPaquetes.js";
 
 const DIAS_PRUEBA = 14;
@@ -59,8 +59,13 @@ const TABS = [
   { id: "candidatos", label: "Candidatos postulados", icon: Users2 },
   { id: "buscar", label: "Buscar candidatos", icon: Search },
   { id: "formacion", label: "Capacitaciones y mentorías", icon: GraduationCap },
+  { id: "equipo", label: "Mi equipo", icon: UsersRound },
   { id: "plan", label: "Mi plan", icon: Award },
 ];
+
+// Cupos de integrantes de equipo según plan — espejo de la función SQL
+// `cupo_integrantes_plan`. Platino es ilimitado (no tiene número fijo).
+const CUPO_INTEGRANTES = { basico: 0, avanzado: 3, premium: 8, platino: null };
 
 const estadoBadge = {
   pendiente: "terracotta",
@@ -78,7 +83,12 @@ const postulacionBadge = {
 };
 
 export default function EmpresaPanel() {
-  const { session, empresas, vacantes, candidatos, postulaciones, capacitaciones, pagos, publicarVacante, cambiarEstadoPostulacion, iniciarPago, inscribirCapacitacion } = useApp();
+  const {
+    session, empresas, vacantes, candidatos, postulaciones, capacitaciones, pagos, publicarVacante,
+    cambiarEstadoPostulacion, iniciarPago, inscribirCapacitacion, integrantes, codigoEmpresa, eliminarIntegrante,
+  } = useApp();
+  const [errorEquipo, setErrorEquipo] = useState("");
+  const [copiado, setCopiado] = useState(false);
   const [errorCap, setErrorCap] = useState("");
   const [errorVacante, setErrorVacante] = useState("");
   const [comprandoCap, setComprandoCap] = useState(null);
@@ -166,8 +176,12 @@ export default function EmpresaPanel() {
     setErrorCap("");
     setComprandoCap(id);
     try {
-      const { initPoint } = await iniciarPago("capacitacion", id);
-      window.location.href = initPoint;
+      const resultado = await iniciarPago("capacitacion", id);
+      if (resultado.incluido) {
+        setComprandoCap(null);
+        return;
+      }
+      window.location.href = resultado.initPoint;
     } catch (err) {
       setErrorCap(err.message || "No se pudo iniciar el pago.");
       setComprandoCap(null);
@@ -446,13 +460,18 @@ export default function EmpresaPanel() {
               <div className="grid md:grid-cols-2 gap-5">
                 {capacitaciones.map((c) => {
                   const totalInscriptos = c.inscriptosCandidatos.length + c.inscriptosEmpresas.length;
-                  const cuposLibres = c.cupos - totalInscriptos;
+                  const cuposLibres = cuposEfectivos(c) - totalInscriptos;
                   const acc = accesoCapacitacion(c, { role: "empresa", empresa, pagos });
+                  const promoVigente = c.accesoTipo === "paga" && enPeriodoPromocional(c);
                   return (
                     <Card key={c.id} className="p-5">
                       <div className="flex items-start justify-between gap-2">
                         <h4 className="font-bold text-forest-900">{c.titulo}</h4>
-                        {c.accesoTipo === "paga" && <Badge tone="terracotta">{formatoPesos(c.precio)}</Badge>}
+                        {c.accesoTipo === "paga" && (
+                          <Badge tone="terracotta">
+                            {promoVigente ? `${formatoPesos(precioEfectivo(c))} de lanzamiento` : formatoPesos(precioEfectivo(c))}
+                          </Badge>
+                        )}
                         {c.accesoTipo === "plan" && c.planMinimoEmpresa && (
                           <Badge tone="gray">Desde {NOMBRE_PLAN_EMPRESA[c.planMinimoEmpresa]}</Badge>
                         )}
@@ -463,6 +482,11 @@ export default function EmpresaPanel() {
                         <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
                         <span>{cuposLibres} cupos disponibles</span>
                       </div>
+                      {promoVigente && (
+                        <p className="text-xs text-terracotta-500 font-semibold mt-1">
+                          Precio de lanzamiento hasta el {c.promocionHasta} · después {formatoPesos(c.precio)}
+                        </p>
+                      )}
                       <div className="mt-4">
                         {acc.estado === "inscripto" ? (
                           <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
@@ -504,6 +528,90 @@ export default function EmpresaPanel() {
             )}
           </div>
           <MentoriasPaquetes titulo="Mentorías para tu PYME" />
+        </div>
+      )}
+
+      {tab === "equipo" && (
+        <div>
+          {(() => {
+            const misIntegrantes = integrantes.filter((i) => i.empresaId === empresa.id);
+            const cupo = CUPO_INTEGRANTES[empresa.plan] ?? 0;
+            const cupoTexto = cupo === null ? "ilimitados" : cupo;
+            async function handleEliminar(id) {
+              setErrorEquipo("");
+              try {
+                await eliminarIntegrante(id);
+              } catch (err) {
+                setErrorEquipo(mensajeError(err, "No pudimos quitar a esa persona. Probá de nuevo."));
+              }
+            }
+            function handleCopiar() {
+              if (!codigoEmpresa) return;
+              navigator.clipboard?.writeText(codigoEmpresa);
+              setCopiado(true);
+              setTimeout(() => setCopiado(false), 2000);
+            }
+            return (
+              <>
+                {errorEquipo && (
+                  <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorEquipo}</div>
+                )}
+                <Card className="p-6 mb-6">
+                  <h3 className="font-bold text-forest-900 mb-1">Código de tu equipo</h3>
+                  {cupo === 0 ? (
+                    <p className="text-sm text-forest-500">
+                      Tu plan actual ({NOMBRE_PLAN_EMPRESA[empresa.plan] || "Básico"}) no incluye integrantes de equipo.
+                      Subí a un plan superior desde la pestaña "Mi plan" para habilitar cupos.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-forest-500 mb-3">
+                        Compartí este código con tu equipo: cualquiera que lo use en{" "}
+                        <span className="font-semibold text-forest-700">Registrarme → Soy parte de un equipo</span>{" "}
+                        se suma a tu cuenta, con acceso propio a las capacitaciones incluidas en tu plan (sin ver
+                        vacantes ni candidatos, eso queda solo para vos).
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <code className="text-lg font-extrabold tracking-widest bg-forest-50 border border-forest-100 rounded-lg px-4 py-2 text-forest-900">
+                          {codigoEmpresa || "—"}
+                        </code>
+                        <Button variant="outline" onClick={handleCopiar} className="!px-3">
+                          <Copy size={16} /> {copiado ? "¡Copiado!" : "Copiar"}
+                        </Button>
+                      </div>
+                      <p className="text-sm text-forest-500 mt-4">
+                        Cupos usados: <strong>{misIntegrantes.length} de {cupoTexto}</strong>
+                      </p>
+                    </>
+                  )}
+                </Card>
+
+                <h3 className="font-bold text-forest-900 mb-3">Integrantes ({misIntegrantes.length})</h3>
+                {misIntegrantes.length === 0 ? (
+                  <EmptyState text="Todavía no se sumó ningún integrante con el código de tu equipo." />
+                ) : (
+                  <div className="space-y-3">
+                    {misIntegrantes.map((i) => (
+                      <Card key={i.id} className="p-4 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-forest-900">{i.nombre}</p>
+                          <p className="text-sm text-forest-500">{i.email} · Se sumó el {i.fechaAlta}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleEliminar(i.id)}
+                          className="text-forest-400 hover:text-red-500 p-2"
+                          aria-label="Quitar integrante"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 

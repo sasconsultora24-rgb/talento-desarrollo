@@ -5,6 +5,7 @@ import Vacantes from "./pages/Vacantes.jsx";
 import Capacitaciones from "./pages/Capacitaciones.jsx";
 import Mentorias from "./pages/Mentorias.jsx";
 import ParaPymes from "./pages/ParaPymes.jsx";
+import ParaProfesionales from "./pages/ParaProfesionales.jsx";
 import Registro from "./pages/Registro.jsx";
 import Ingresar from "./pages/Ingresar.jsx";
 import PagoResultado from "./pages/PagoResultado.jsx";
@@ -13,6 +14,7 @@ import PoliticaPrivacidad from "./pages/PoliticaPrivacidad.jsx";
 import TerminosCondiciones from "./pages/TerminosCondiciones.jsx";
 import CandidatoPanel from "./pages/candidato/CandidatoPanel.jsx";
 import EmpresaPanel from "./pages/empresa/EmpresaPanel.jsx";
+import IntegrantePanel from "./pages/integrante/IntegrantePanel.jsx";
 import AdminPanel from "./pages/admin/AdminPanel.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import RequireRole from "./components/RequireRole.jsx";
@@ -26,6 +28,7 @@ function App() {
         <Route path="/capacitaciones" element={<Capacitaciones />} />
         <Route path="/mentorias" element={<Mentorias />} />
         <Route path="/pymes" element={<ParaPymes />} />
+        <Route path="/profesionales" element={<ParaProfesionales />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/ingresar" element={<Ingresar />} />
         <Route path="/pago/resultado" element={<PagoResultado />} />
@@ -45,6 +48,14 @@ function App() {
           element={
             <RequireRole role="empresa">
               <EmpresaPanel />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/integrante"
+          element={
+            <RequireRole role="integrante">
+              <IntegrantePanel />
             </RequireRole>
           }
         />

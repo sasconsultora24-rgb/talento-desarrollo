@@ -264,8 +264,10 @@ export const planesCandidatos = [
   {
     id: "premium",
     nombre: "Desarrollo Profesional",
-    precio: "$10.000/mes",
+    precio: "$15.000/mes",
     incluye: [
+      "Todas las capacitaciones pagas incluidas, sin costo adicional",
+      "Perfil destacado y prioritario para las PYMEs que buscan personal",
       "Prioridad en postulaciones",
       "Mentorías con descuento",
       "Revisión de CV y simulacro de entrevista",

@@ -6,7 +6,7 @@ import { descargarCSV } from "../../utils/exportarCsv.js";
 import SasConsultoraLogo from "../../components/SasConsultoraLogo.jsx";
 import { MENTORIA_PAQUETES, formatoPesos } from "../../data/mentoriaPaquetes.js";
 import { mensajeError } from "../../utils/errores";
-import { NOMBRE_PLAN_EMPRESA } from "../../utils/capacitaciones.js";
+import { NOMBRE_PLAN_EMPRESA, precioEfectivo, enPeriodoPromocional } from "../../utils/capacitaciones.js";
 
 const TABS = [
   { id: "metricas", label: "Métricas", icon: LayoutDashboard },
@@ -28,7 +28,8 @@ export default function AdminPanel() {
     titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
     // Por defecto, "incluida desde plan Avanzado" para PYMEs (política estándar
     // acordada) y abierta para candidatos. El admin puede cambiarlo por capacitación.
-    accesoTipo: "plan", precio: "", planMinimoEmpresa: "avanzado", planMinimoCandidato: "",
+    accesoTipo: "plan", precio: "", precioPromocional: "", promocionHasta: "", cuposPromocional: "",
+    planMinimoEmpresa: "avanzado", planMinimoCandidato: "",
   });
   const [capExpandida, setCapExpandida] = useState(null);
   const [errorCap, setErrorCap] = useState("");
@@ -137,12 +138,16 @@ export default function AdminPanel() {
         ...nuevaCap,
         cupos: Number(nuevaCap.cupos),
         precio: nuevaCap.precio ? Number(nuevaCap.precio) : null,
+        precioPromocional: nuevaCap.precioPromocional ? Number(nuevaCap.precioPromocional) : null,
+        promocionHasta: nuevaCap.promocionHasta || null,
+        cuposPromocional: nuevaCap.cuposPromocional ? Number(nuevaCap.cuposPromocional) : null,
         planMinimoEmpresa: nuevaCap.planMinimoEmpresa || null,
         planMinimoCandidato: nuevaCap.planMinimoCandidato || null,
       });
       setNuevaCap({
         titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
-        accesoTipo: "plan", precio: "", planMinimoEmpresa: "avanzado", planMinimoCandidato: "",
+        accesoTipo: "plan", precio: "", precioPromocional: "", promocionHasta: "", cuposPromocional: "",
+        planMinimoEmpresa: "avanzado", planMinimoCandidato: "",
       });
     } catch (err) {
       console.error(err);
@@ -300,9 +305,22 @@ export default function AdminPanel() {
               </Field>
 
               {nuevaCap.accesoTipo === "paga" && (
-                <Field label="Precio" hint="En pesos argentinos">
-                  <Input type="number" min="0" required value={nuevaCap.precio} onChange={(e) => setNuevaCap({ ...nuevaCap, precio: e.target.value })} />
-                </Field>
+                <>
+                  <Field label="Precio normal" hint="En pesos argentinos, rige después de la promo (o siempre, si no hay promo)">
+                    <Input type="number" min="0" required value={nuevaCap.precio} onChange={(e) => setNuevaCap({ ...nuevaCap, precio: e.target.value })} />
+                  </Field>
+                  <div className="grid sm:grid-cols-3 gap-x-4">
+                    <Field label="Precio promocional" hint="Opcional — precio de lanzamiento">
+                      <Input type="number" min="0" value={nuevaCap.precioPromocional} onChange={(e) => setNuevaCap({ ...nuevaCap, precioPromocional: e.target.value })} />
+                    </Field>
+                    <Field label="Promo válida hasta" hint="Última fecha con precio promocional">
+                      <Input type="date" value={nuevaCap.promocionHasta} onChange={(e) => setNuevaCap({ ...nuevaCap, promocionHasta: e.target.value })} />
+                    </Field>
+                    <Field label="Cupos en promo" hint="Cupos durante el período promocional">
+                      <Input type="number" min="0" value={nuevaCap.cuposPromocional} onChange={(e) => setNuevaCap({ ...nuevaCap, cuposPromocional: e.target.value })} />
+                    </Field>
+                  </div>
+                </>
               )}
 
               {nuevaCap.accesoTipo === "plan" && (
@@ -345,7 +363,13 @@ export default function AdminPanel() {
                 <Card key={c.id} className="p-4">
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-semibold text-forest-900">{c.titulo}</p>
-                    {c.accesoTipo === "paga" && <Badge tone="terracotta">{formatoPesos(c.precio)}</Badge>}
+                    {c.accesoTipo === "paga" && (
+                      <Badge tone="terracotta">
+                        {enPeriodoPromocional(c)
+                          ? `${formatoPesos(precioEfectivo(c))} promo hasta ${c.promocionHasta}`
+                          : formatoPesos(precioEfectivo(c))}
+                      </Badge>
+                    )}
                     {c.accesoTipo === "plan" && (
                       <Badge tone="gray">
                         {c.planMinimoEmpresa ? `Desde ${NOMBRE_PLAN_EMPRESA[c.planMinimoEmpresa]}` : c.planMinimoCandidato ? "Membresía premium" : "Por plan"}
