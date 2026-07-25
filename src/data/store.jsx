@@ -91,11 +91,15 @@ function mapCapacitacion(row, inscriptos) {
     // ver utils/capacitaciones.js) o "plan" (incluida solo desde cierto plan).
     accesoTipo: row.acceso_tipo || "gratis",
     precio: row.precio,
+    precioUsd: row.precio_usd,
     // Precio/cupos de lanzamiento, vigentes hasta promocionHasta (inclusive).
     // Ver utils/capacitaciones.js: precioEfectivo() / cuposEfectivos().
     precioPromocional: row.precio_promocional,
+    precioPromocionalUsd: row.precio_promocional_usd,
     promocionHasta: row.promocion_hasta,
     cuposPromocional: row.cupos_promocional,
+    // Link a la grabación/reunión/material — se manda por email al inscribirse.
+    enlaceAcceso: row.enlace_acceso,
     planMinimoEmpresa: row.plan_minimo_empresa,
     planMinimoCandidato: row.plan_minimo_candidato,
     inscriptosCandidatos,
@@ -664,6 +668,17 @@ export function AppProvider({ children }) {
     );
   }, []);
 
+  // El admin puede cargar/editar el link de acceso (grabación, reunión,
+  // materiales) de una capacitación ya creada, sin tocar el resto de sus datos.
+  const actualizarEnlaceCapacitacion = useCallback(async (id, enlaceAcceso) => {
+    const { error: updError } = await supabase
+      .from("capacitaciones")
+      .update({ enlace_acceso: enlaceAcceso || null })
+      .eq("id", id);
+    if (updError) throw updError;
+    setCapacitaciones((prev) => prev.map((c) => (c.id === id ? { ...c, enlaceAcceso: enlaceAcceso || null } : c)));
+  }, []);
+
   const crearCapacitacion = useCallback(async (capacitacion) => {
     const payload = {
       titulo: capacitacion.titulo,
@@ -675,9 +690,12 @@ export function AppProvider({ children }) {
       descripcion: capacitacion.descripcion,
       acceso_tipo: capacitacion.accesoTipo || "gratis",
       precio: capacitacion.accesoTipo === "paga" ? capacitacion.precio || null : null,
+      precio_usd: capacitacion.accesoTipo === "paga" ? capacitacion.precioUsd || null : null,
       precio_promocional: capacitacion.accesoTipo === "paga" ? capacitacion.precioPromocional || null : null,
+      precio_promocional_usd: capacitacion.accesoTipo === "paga" ? capacitacion.precioPromocionalUsd || null : null,
       promocion_hasta: capacitacion.accesoTipo === "paga" ? capacitacion.promocionHasta || null : null,
       cupos_promocional: capacitacion.accesoTipo === "paga" ? capacitacion.cuposPromocional || null : null,
+      enlace_acceso: capacitacion.enlaceAcceso || null,
       plan_minimo_empresa: capacitacion.accesoTipo === "plan" ? capacitacion.planMinimoEmpresa || null : null,
       plan_minimo_candidato: capacitacion.accesoTipo === "plan" ? capacitacion.planMinimoCandidato || null : null,
     };
@@ -719,6 +737,7 @@ export function AppProvider({ children }) {
     cambiarEstadoPostulacion,
     inscribirCapacitacion,
     crearCapacitacion,
+    actualizarEnlaceCapacitacion,
     integrantes,
     codigoEmpresa,
     registrarIntegrante,

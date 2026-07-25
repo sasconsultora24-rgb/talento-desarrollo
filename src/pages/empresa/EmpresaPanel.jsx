@@ -7,7 +7,8 @@ import { planesEmpresas } from "../../data/seed.js";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
 import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
 import { mensajeError } from "../../utils/errores";
-import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, precioEfectivo, cuposEfectivos, enPeriodoPromocional } from "../../utils/capacitaciones.js";
+import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, cuposEfectivos } from "../../utils/capacitaciones.js";
+import PrecioCapacitacion from "../../components/PrecioCapacitacion.jsx";
 import { formatoPesos } from "../../data/mentoriaPaquetes.js";
 
 const DIAS_PRUEBA = 14;
@@ -462,16 +463,10 @@ export default function EmpresaPanel() {
                   const totalInscriptos = c.inscriptosCandidatos.length + c.inscriptosEmpresas.length;
                   const cuposLibres = cuposEfectivos(c) - totalInscriptos;
                   const acc = accesoCapacitacion(c, { role: "empresa", empresa, pagos });
-                  const promoVigente = c.accesoTipo === "paga" && enPeriodoPromocional(c);
                   return (
                     <Card key={c.id} className="p-5">
                       <div className="flex items-start justify-between gap-2">
                         <h4 className="font-bold text-forest-900">{c.titulo}</h4>
-                        {c.accesoTipo === "paga" && (
-                          <Badge tone="terracotta">
-                            {promoVigente ? `${formatoPesos(precioEfectivo(c))} de lanzamiento` : formatoPesos(precioEfectivo(c))}
-                          </Badge>
-                        )}
                         {c.accesoTipo === "plan" && c.planMinimoEmpresa && (
                           <Badge tone="gray">Desde {NOMBRE_PLAN_EMPRESA[c.planMinimoEmpresa]}</Badge>
                         )}
@@ -482,11 +477,7 @@ export default function EmpresaPanel() {
                         <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
                         <span>{cuposLibres} cupos disponibles</span>
                       </div>
-                      {promoVigente && (
-                        <p className="text-xs text-terracotta-500 font-semibold mt-1">
-                          Precio de lanzamiento hasta el {c.promocionHasta} · después {formatoPesos(c.precio)}
-                        </p>
-                      )}
+                      <PrecioCapacitacion c={c} totalInscriptos={totalInscriptos} className="mt-3" />
                       <div className="mt-4">
                         {acc.estado === "inscripto" ? (
                           <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">

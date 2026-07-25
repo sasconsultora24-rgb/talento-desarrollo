@@ -21,18 +21,21 @@ const estadoBadge = { pendiente: "terracotta", aprobada: "gold", rechazada: "gra
 export default function AdminPanel() {
   const {
     vacantes, empresas, candidatos, postulaciones, capacitaciones, pagos,
-    cambiarEstadoVacante, crearCapacitacion,
+    cambiarEstadoVacante, crearCapacitacion, actualizarEnlaceCapacitacion,
   } = useApp();
   const [tab, setTab] = useState("metricas");
   const [nuevaCap, setNuevaCap] = useState({
     titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
     // Por defecto, "incluida desde plan Avanzado" para PYMEs (política estándar
     // acordada) y abierta para candidatos. El admin puede cambiarlo por capacitación.
-    accesoTipo: "plan", precio: "", precioPromocional: "", promocionHasta: "", cuposPromocional: "",
-    planMinimoEmpresa: "avanzado", planMinimoCandidato: "",
+    accesoTipo: "plan", precio: "", precioUsd: "", precioPromocional: "", precioPromocionalUsd: "", promocionHasta: "", cuposPromocional: "",
+    planMinimoEmpresa: "avanzado", planMinimoCandidato: "", enlaceAcceso: "",
   });
   const [capExpandida, setCapExpandida] = useState(null);
   const [errorCap, setErrorCap] = useState("");
+  const [enlaceEditando, setEnlaceEditando] = useState(null);
+  const [enlaceValor, setEnlaceValor] = useState("");
+  const [errorEnlace, setErrorEnlace] = useState("");
 
   const comprasMentorias = pagos
     .filter((p) => p.tipo === "mentoria")
@@ -138,16 +141,19 @@ export default function AdminPanel() {
         ...nuevaCap,
         cupos: Number(nuevaCap.cupos),
         precio: nuevaCap.precio ? Number(nuevaCap.precio) : null,
+        precioUsd: nuevaCap.precioUsd ? Number(nuevaCap.precioUsd) : null,
         precioPromocional: nuevaCap.precioPromocional ? Number(nuevaCap.precioPromocional) : null,
+        precioPromocionalUsd: nuevaCap.precioPromocionalUsd ? Number(nuevaCap.precioPromocionalUsd) : null,
         promocionHasta: nuevaCap.promocionHasta || null,
         cuposPromocional: nuevaCap.cuposPromocional ? Number(nuevaCap.cuposPromocional) : null,
         planMinimoEmpresa: nuevaCap.planMinimoEmpresa || null,
         planMinimoCandidato: nuevaCap.planMinimoCandidato || null,
+        enlaceAcceso: nuevaCap.enlaceAcceso || null,
       });
       setNuevaCap({
         titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
-        accesoTipo: "plan", precio: "", precioPromocional: "", promocionHasta: "", cuposPromocional: "",
-        planMinimoEmpresa: "avanzado", planMinimoCandidato: "",
+        accesoTipo: "plan", precio: "", precioUsd: "", precioPromocional: "", precioPromocionalUsd: "", promocionHasta: "", cuposPromocional: "",
+        planMinimoEmpresa: "avanzado", planMinimoCandidato: "", enlaceAcceso: "",
       });
     } catch (err) {
       console.error(err);
@@ -306,13 +312,23 @@ export default function AdminPanel() {
 
               {nuevaCap.accesoTipo === "paga" && (
                 <>
-                  <Field label="Precio normal" hint="En pesos argentinos, rige después de la promo (o siempre, si no hay promo)">
-                    <Input type="number" min="0" required value={nuevaCap.precio} onChange={(e) => setNuevaCap({ ...nuevaCap, precio: e.target.value })} />
-                  </Field>
-                  <div className="grid sm:grid-cols-3 gap-x-4">
-                    <Field label="Precio promocional" hint="Opcional — precio de lanzamiento">
+                  <div className="grid sm:grid-cols-2 gap-x-4">
+                    <Field label="Precio normal (ARS)" hint="Rige después de la promo, o siempre si no hay promo">
+                      <Input type="number" min="0" required value={nuevaCap.precio} onChange={(e) => setNuevaCap({ ...nuevaCap, precio: e.target.value })} />
+                    </Field>
+                    <Field label="Precio normal (USD)" hint="Opcional — valor exacto, no una conversión">
+                      <Input type="number" min="0" value={nuevaCap.precioUsd} onChange={(e) => setNuevaCap({ ...nuevaCap, precioUsd: e.target.value })} />
+                    </Field>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-x-4">
+                    <Field label="Precio promocional (ARS)" hint="Opcional — precio de lanzamiento">
                       <Input type="number" min="0" value={nuevaCap.precioPromocional} onChange={(e) => setNuevaCap({ ...nuevaCap, precioPromocional: e.target.value })} />
                     </Field>
+                    <Field label="Precio promocional (USD)" hint="Opcional">
+                      <Input type="number" min="0" value={nuevaCap.precioPromocionalUsd} onChange={(e) => setNuevaCap({ ...nuevaCap, precioPromocionalUsd: e.target.value })} />
+                    </Field>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-x-4">
                     <Field label="Promo válida hasta" hint="Última fecha con precio promocional">
                       <Input type="date" value={nuevaCap.promocionHasta} onChange={(e) => setNuevaCap({ ...nuevaCap, promocionHasta: e.target.value })} />
                     </Field>
@@ -322,6 +338,10 @@ export default function AdminPanel() {
                   </div>
                 </>
               )}
+
+              <Field label="Enlace de acceso" hint="Grabación, reunión o materiales — se manda por email a quien se inscribe. Se puede cargar después.">
+                <Input value={nuevaCap.enlaceAcceso} onChange={(e) => setNuevaCap({ ...nuevaCap, enlaceAcceso: e.target.value })} placeholder="https://..." />
+              </Field>
 
               {nuevaCap.accesoTipo === "plan" && (
                 <div className="grid sm:grid-cols-2 gap-x-4">
@@ -377,14 +397,53 @@ export default function AdminPanel() {
                     )}
                   </div>
                   <p className="text-sm text-forest-500">{c.fecha} · {totalInscriptos}/{c.cupos} inscriptos</p>
-                  {totalInscriptos > 0 && (
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    {totalInscriptos > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setCapExpandida(expandida ? null : c.id)}
+                        className="text-gold-600 text-sm font-semibold"
+                      >
+                        {expandida ? "Ocultar inscriptos" : "Ver inscriptos"}
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={() => setCapExpandida(expandida ? null : c.id)}
-                      className="text-gold-600 text-sm font-semibold mt-2"
+                      onClick={() => {
+                        setErrorEnlace("");
+                        setEnlaceEditando(enlaceEditando === c.id ? null : c.id);
+                        setEnlaceValor(c.enlaceAcceso || "");
+                      }}
+                      className="text-forest-500 text-sm font-semibold"
                     >
-                      {expandida ? "Ocultar inscriptos" : "Ver inscriptos"}
+                      {c.enlaceAcceso ? "Editar enlace de acceso" : "Cargar enlace de acceso"}
                     </button>
+                  </div>
+                  {enlaceEditando === c.id && (
+                    <form
+                      className="mt-3 flex gap-2 border-t border-forest-100 pt-3"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setErrorEnlace("");
+                        try {
+                          await actualizarEnlaceCapacitacion(c.id, enlaceValor.trim());
+                          setEnlaceEditando(null);
+                        } catch (err) {
+                          setErrorEnlace(mensajeError(err, "No pudimos guardar el enlace."));
+                        }
+                      }}
+                    >
+                      <Input
+                        value={enlaceValor}
+                        onChange={(e) => setEnlaceValor(e.target.value)}
+                        placeholder="https://..."
+                        className="flex-1"
+                      />
+                      <Button type="submit" className="!px-4">Guardar</Button>
+                    </form>
+                  )}
+                  {enlaceEditando === c.id && errorEnlace && (
+                    <p className="text-sm text-red-600 mt-1">{errorEnlace}</p>
                   )}
                   {expandida && (
                     <div className="mt-3 space-y-2 border-t border-forest-100 pt-3">

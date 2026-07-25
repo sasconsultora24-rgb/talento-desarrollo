@@ -266,7 +266,8 @@ export const planesCandidatos = [
     nombre: "Desarrollo Profesional",
     precio: "$15.000/mes",
     incluye: [
-      "Todas las capacitaciones pagas incluidas, sin costo adicional",
+      "Todas las capacitaciones gratuitas, sin límite",
+      "Hasta 2 capacitaciones pagas por mes incluidas, sin costo adicional",
       "Perfil destacado y prioritario para las PYMEs que buscan personal",
       "Prioridad en postulaciones",
       "Mentorías con descuento",

@@ -42,6 +42,16 @@ export function precioEfectivo(c) {
   return c.precio != null ? Number(c.precio) : null;
 }
 
+// Precio en USD vigente hoy (valor exacto cargado por el admin, no una
+// conversión automática de precioEfectivo). Puede ser null si no se cargó.
+export function precioUsdEfectivo(c) {
+  if (c.precioPromocionalUsd != null && c.promocionHasta) {
+    const hoy = new Date().toISOString().slice(0, 10);
+    if (hoy <= c.promocionHasta) return Number(c.precioPromocionalUsd);
+  }
+  return c.precioUsd != null ? Number(c.precioUsd) : null;
+}
+
 export function cuposEfectivos(c) {
   if (c.cuposPromocional != null && c.promocionHasta) {
     const hoy = new Date().toISOString().slice(0, 10);

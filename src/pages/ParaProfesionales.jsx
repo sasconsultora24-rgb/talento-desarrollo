@@ -38,7 +38,7 @@ const areas = [
       "Las capacitaciones gratuitas están disponibles sin costo para cualquier perfil registrado",
     ],
     aparte: [
-      "Con Desarrollo Profesional, todas las capacitaciones pagas quedan incluidas sin costo adicional — accedés a todo el catálogo por un solo abono mensual.",
+      "Con Desarrollo Profesional sumás hasta 2 capacitaciones pagas por mes incluidas, sin costo adicional — las gratuitas ya están incluidas siempre, para cualquier perfil.",
     ],
   },
   {
