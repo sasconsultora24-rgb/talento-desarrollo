@@ -24,9 +24,8 @@ const areas = [
       "Entrevistas y shortlisting desde Avanzado",
     ],
     aparte: [
-      "Búsquedas ejecutivas o de alta especialización",
-      "Procesos con evaluaciones psicotécnicas",
-      "Ambos se cotizan a medida según el perfil buscado",
+      "Búsquedas ejecutivas o de alta especialización, cotizadas a medida según el perfil buscado",
+      "Procesos con evaluaciones psicotécnicas, cotizados a medida según el alcance",
     ],
   },
   {
@@ -46,8 +45,8 @@ const areas = [
       "1 Espacio de Orden Y 1 Mentoría Refoco incluidos por mes en Platino",
     ],
     aparte: [
-      "Por Vacante y Avanzado no incluyen diagnóstico de clima ni mentorías",
-      "Se compran por separado desde Capacitaciones y mentorías, al precio de socio publicado en cada paquete",
+      "Mentorías individuales (Espacio de Orden o Refoco) compradas sueltas, al precio de socio publicado en cada paquete",
+      "Diagnóstico de clima laboral a medida, para PYMEs en plan Por Vacante o Avanzado",
     ],
   },
   {
@@ -65,8 +64,8 @@ const areas = [
       "Certificado de participación en cada capacitación",
     ],
     aparte: [
-      "El plan Por Vacante no incluye integrantes de equipo ni capacitaciones — se cobran por separado si están disponibles como pagas",
-      "Programas puntuales fuera del calendario estándar, con precio publicado en cada capacitación",
+      "Capacitaciones pagas sueltas, disponibles para cualquier plan sin necesitar cupo de integrante, al precio publicado en cada una",
+      "Programas de formación a medida para tu equipo, fuera del calendario estándar, cotizados según temática y alcance",
     ],
   },
   {
@@ -89,11 +88,11 @@ const areas = [
       "El liderazgo se vuelve más habitable, con decisiones más claras",
     ],
     incluido: [
-      "30% de descuento en estos acompañamientos cuando se contratan a medida, en el plan Platino — igual que el resto de servicios de consultoría a la carta",
+      "Hasta 20% de descuento en estos acompañamientos cuando se contratan a medida, en el plan Platino (el % exacto depende del alcance del proceso) — igual que el resto de servicios de consultoría a la carta",
     ],
     aparte: [
-      "RE-MEDIO para mandos medios, jornadas con equipos completos e intervenciones ante conflictos puntuales",
-      "Se cotiza según cantidad de personas y alcance del proceso — es el mismo servicio de consultoría tradicional que SAS presta hoy, llevado a la plataforma",
+      "RE-MEDIO, jornadas con equipos completos e intervenciones ante conflictos, contratados a medida por fuera del abono",
+      "Se cotiza según cantidad de personas y alcance del proceso — el mismo servicio de consultoría tradicional que SAS presta hoy, llevado a la plataforma",
     ],
   },
 ];

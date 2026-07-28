@@ -257,7 +257,7 @@ export const planesEmpresas = [
       "1 Espacio de Orden Y 1 Mentoría Refoco por mes, para quien vos asignes",
       "1 sesión de consultoría de 45 min por mes, reservable con 7+ días de anticipación",
       "Account manager dedicado",
-      "30% de descuento adicional en servicios a la carta",
+      "Hasta 20% de descuento adicional en servicios a la carta, según corresponda",
       "Reporte trimestral de benchmarking salarial",
       "Una vacante destacada por mes",
     ],
