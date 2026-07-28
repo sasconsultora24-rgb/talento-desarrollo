@@ -24,10 +24,11 @@ function estadoPlan(vencimientoISO) {
 
 // Determina si la empresa tiene acceso activo a los servicios de la plataforma:
 // plan pagado vigente, o (si nunca pagó) todavía dentro del período de prueba
-// gratis de 14 días desde el registro. Coincide con la lógica de RLS del lado
-// del servidor (función `empresa_tiene_acceso` en Supabase) — esto es solo la
+// gratis de 14 días desde el registro, o (plan Por Vacante) tiene al menos una
+// vacante activa y paga vigente. Coincide con la lógica de RLS del lado del
+// servidor (función `empresa_tiene_acceso` en Supabase) — esto es solo la
 // versión de UI para mostrar el mensaje correcto; el bloqueo real ya está en la base.
-function estadoAcceso(empresa) {
+function estadoAcceso(empresa, misVacantes = []) {
   const ahora = new Date();
   if (empresa.planVencimiento) {
     const vence = new Date(empresa.planVencimiento);
@@ -47,9 +48,18 @@ function estadoAcceso(empresa) {
         texto: `Estás en período de prueba: ${diasRestantes} día${diasRestantes === 1 ? "" : "s"} restante${diasRestantes === 1 ? "" : "s"}.`,
       };
     }
+  }
+  if (empresa.plan === "basico") {
+    const hoy = ahora.toISOString().slice(0, 10);
+    const tieneVacanteActiva = misVacantes.some(
+      (v) => ["pendiente", "aprobada"].includes(v.estado) && (!v.fechaVencimiento || v.fechaVencimiento >= hoy)
+    );
+    if (tieneVacanteActiva) {
+      return { activo: true, texto: "Tenés una búsqueda activa: acceso a candidatos habilitado mientras dure." };
+    }
     return {
       activo: false,
-      texto: "Tu período de prueba de 14 días terminó. Elegí un plan para seguir usando la plataforma.",
+      texto: "Publicá una vacante para tener acceso a los perfiles de candidatos mientras esté activa.",
     };
   }
   return { activo: false, texto: "No pudimos verificar tu plan." };
@@ -65,8 +75,8 @@ const TABS = [
 ];
 
 // Cupos de integrantes de equipo según plan — espejo de la función SQL
-// `cupo_integrantes_plan`. Platino es ilimitado (no tiene número fijo).
-const CUPO_INTEGRANTES = { basico: 0, avanzado: 3, premium: 8, platino: null };
+// `cupo_integrantes_plan`.
+const CUPO_INTEGRANTES = { basico: 0, avanzado: 3, premium: 5, platino: 10 };
 
 const estadoBadge = {
   pendiente: "terracotta",
@@ -86,13 +96,19 @@ const postulacionBadge = {
 export default function EmpresaPanel() {
   const {
     session, empresas, vacantes, candidatos, postulaciones, capacitaciones, pagos, publicarVacante,
-    cambiarEstadoPostulacion, iniciarPago, inscribirCapacitacion, integrantes, codigoEmpresa, eliminarIntegrante,
+    publicarVacanteConPago, reservarConsultoria, cambiarEstadoPostulacion, iniciarPago, inscribirCapacitacion,
+    integrantes, codigoEmpresa, eliminarIntegrante,
   } = useApp();
   const [errorEquipo, setErrorEquipo] = useState("");
   const [copiado, setCopiado] = useState(false);
   const [errorCap, setErrorCap] = useState("");
   const [errorVacante, setErrorVacante] = useState("");
   const [comprandoCap, setComprandoCap] = useState(null);
+  const [publicandoVacante, setPublicandoVacante] = useState(false);
+  const [fechaConsultoria, setFechaConsultoria] = useState("");
+  const [errorConsultoria, setErrorConsultoria] = useState("");
+  const [reservandoConsultoria, setReservandoConsultoria] = useState(false);
+  const [consultoriaReservada, setConsultoriaReservada] = useState(false);
   const [searchParams] = useSearchParams();
   const tabInicial = TABS.some((t) => t.id === searchParams.get("tab")) ? searchParams.get("tab") : "vacantes";
   const [tab, setTab] = useState(tabInicial);
@@ -135,8 +151,8 @@ export default function EmpresaPanel() {
 
   if (!empresa) return null;
 
-  const acceso = estadoAcceso(empresa);
   const misVacantes = vacantes.filter((v) => v.empresaId === empresa.id);
+  const acceso = estadoAcceso(empresa, misVacantes);
   const idsMisVacantes = misVacantes.map((v) => v.id);
   // Beneficio real del plan premium de candidato: sus postulaciones aparecen primero.
   const postulacionesRecibidas = postulaciones
@@ -150,16 +166,27 @@ export default function EmpresaPanel() {
   async function crearVacante(e) {
     e.preventDefault();
     setErrorVacante("");
+    const payload = {
+      ...nueva,
+      requisitos: nueva.requisitos.split(",").map((r) => r.trim()).filter(Boolean),
+    };
     try {
-      await publicarVacante(empresa.id, {
-        ...nueva,
-        requisitos: nueva.requisitos.split(",").map((r) => r.trim()).filter(Boolean),
-      });
+      if (empresa.plan === "basico") {
+        // Plan Por Vacante: se paga $80.000 al publicar, la búsqueda queda
+        // activa por 45 días. Se crea en "pendiente_pago" y redirige a MP;
+        // recién al aprobarse el pago pasa a moderación normal.
+        setPublicandoVacante(true);
+        const { initPoint } = await publicarVacanteConPago(empresa.id, payload);
+        window.location.href = initPoint;
+        return;
+      }
+      await publicarVacante(empresa.id, payload);
       setNueva({ titulo: "", area: "", modalidad: "Presencial", ubicacion: empresa.ubicacion, nivel: "Junior", descripcion: "", salario: "", requisitos: "" });
       setFormOpen(false);
     } catch (err) {
       console.error(err);
       setErrorVacante(mensajeError(err, "No pudimos publicar la vacante. Probá de nuevo en unos segundos."));
+      setPublicandoVacante(false);
     }
   }
 
@@ -250,9 +277,14 @@ export default function EmpresaPanel() {
         ))}
       </div>
 
-      {tab === "vacantes" && !acceso.activo && <Paywall />}
-      {tab === "vacantes" && acceso.activo && (
+      {tab === "vacantes" && empresa.plan !== "basico" && !acceso.activo && <Paywall />}
+      {tab === "vacantes" && (empresa.plan === "basico" || acceso.activo) && (
         <div>
+          {empresa.plan === "basico" && (
+            <div className="mb-4 text-sm text-forest-600 bg-forest-50 border border-forest-100 rounded-lg px-4 py-2">
+              Con el plan Por Vacante, cada búsqueda se paga por separado ($80.000) y queda activa 45 días. Al publicar te vamos a redirigir a Mercado Pago.
+            </div>
+          )}
           <div className="flex justify-end mb-4">
             <Button onClick={() => setFormOpen((o) => !o)}>
               <PlusCircle size={16} /> {formOpen ? "Cerrar" : "Publicar vacante"}
@@ -287,8 +319,14 @@ export default function EmpresaPanel() {
                   <Field label="Rango salarial"><Input value={nueva.salario} onChange={(e) => setNueva({ ...nueva, salario: e.target.value })} /></Field>
                   <Field label="Requisitos" hint="Separados por coma"><Input value={nueva.requisitos} onChange={(e) => setNueva({ ...nueva, requisitos: e.target.value })} /></Field>
                 </div>
-                <p className="text-xs text-forest-400 mb-4">La vacante quedará en estado "pendiente" hasta que nuestro equipo la revise y apruebe.</p>
-                <Button type="submit">Publicar</Button>
+                <p className="text-xs text-forest-400 mb-4">
+                  {empresa.plan === "basico"
+                    ? "Se publica una vez que se acredite el pago de $80.000, y queda activa 45 días."
+                    : "La vacante quedará en estado \"pendiente\" hasta que nuestro equipo la revise y apruebe."}
+                </p>
+                <Button type="submit" disabled={publicandoVacante}>
+                  {publicandoVacante ? "Redirigiendo a Mercado Pago..." : empresa.plan === "basico" ? "Publicar y pagar" : "Publicar"}
+                </Button>
               </form>
             </Card>
           )}
@@ -301,9 +339,12 @@ export default function EmpresaPanel() {
                 <Card key={v.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h3 className="font-bold text-forest-900">{v.titulo}</h3>
-                    <p className="text-sm text-forest-500">{v.area} · {v.ubicacion} · Publicada el {v.fechaPublicacion}</p>
+                    <p className="text-sm text-forest-500">
+                      {v.area} · {v.ubicacion} · Publicada el {v.fechaPublicacion}
+                      {v.fechaVencimiento && ` · Activa hasta el ${v.fechaVencimiento}`}
+                    </p>
                   </div>
-                  <Badge tone={estadoBadge[v.estado]}>{v.estado}</Badge>
+                  <Badge tone={estadoBadge[v.estado] || "gray"}>{v.estado === "pendiente_pago" ? "esperando pago" : v.estado}</Badge>
                 </Card>
               ))}
             </div>
@@ -551,7 +592,7 @@ export default function EmpresaPanel() {
                   <h3 className="font-bold text-forest-900 mb-1">Código de tu equipo</h3>
                   {cupo === 0 ? (
                     <p className="text-sm text-forest-500">
-                      Tu plan actual ({NOMBRE_PLAN_EMPRESA[empresa.plan] || "Básico"}) no incluye integrantes de equipo.
+                      Tu plan actual ({NOMBRE_PLAN_EMPRESA[empresa.plan] || "Por Vacante"}) no incluye integrantes de equipo.
                       Subí a un plan superior desde la pestaña "Mi plan" para habilitar cupos.
                     </p>
                   ) : (
@@ -630,21 +671,77 @@ export default function EmpresaPanel() {
                       </p>
                     </div>
                   )}
-                  <Button
-                    variant="outline"
-                    className="w-full mt-4"
-                    disabled={pagando === p.id}
-                    onClick={() => pagarPlan(p.id)}
-                  >
-                    {pagando === p.id ? "Redirigiendo a Mercado Pago..." : esActual ? "Renovar" : "Elegir y pagar este plan"}
-                  </Button>
+                  {p.id === "basico" ? (
+                    <Button variant="outline" className="w-full mt-4" onClick={() => setTab("vacantes")}>
+                      Publicar y pagar una vacante
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full mt-4"
+                      disabled={pagando === p.id}
+                      onClick={() => pagarPlan(p.id)}
+                    >
+                      {pagando === p.id ? "Redirigiendo a Mercado Pago..." : esActual ? "Renovar" : "Elegir y pagar este plan"}
+                    </Button>
+                  )}
                 </Card>
               );
             })}
           </div>
           <p className="text-xs text-forest-400 mt-6">
-            El pago se procesa con Mercado Pago. Cada pago aprobado extiende la vigencia del plan 30 días desde hoy (o desde el vencimiento actual, si todavía está vigente).
+            El plan Por Vacante se paga una vez por cada búsqueda que publicás. Los demás planes se pagan por mes: cada pago aprobado extiende la vigencia 30 días desde hoy (o desde el vencimiento actual, si todavía está vigente).
           </p>
+
+          {empresa.plan === "platino" && (
+            <Card className="p-6 mt-8">
+              <h3 className="font-bold text-forest-900 mb-1">Consultoría de 45 minutos</h3>
+              <p className="text-sm text-forest-500 mb-4">
+                Beneficio exclusivo Platino: reservá tu sesión de consultoría con al menos 7 días de anticipación.
+              </p>
+              {errorConsultoria && (
+                <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorConsultoria}</div>
+              )}
+              {consultoriaReservada ? (
+                <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
+                  <CheckCircle2 size={18} /> Reserva enviada — te contactamos para confirmar.
+                </span>
+              ) : (
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                  <Field label="Fecha y hora">
+                    <Input
+                      type="datetime-local"
+                      value={fechaConsultoria}
+                      onChange={(e) => setFechaConsultoria(e.target.value)}
+                    />
+                  </Field>
+                  <Button
+                    disabled={reservandoConsultoria || !fechaConsultoria}
+                    onClick={async () => {
+                      setErrorConsultoria("");
+                      const minimo = new Date();
+                      minimo.setDate(minimo.getDate() + 7);
+                      if (new Date(fechaConsultoria) < minimo) {
+                        setErrorConsultoria("Tiene que ser con al menos 7 días de anticipación.");
+                        return;
+                      }
+                      setReservandoConsultoria(true);
+                      try {
+                        await reservarConsultoria(empresa.id, new Date(fechaConsultoria).toISOString());
+                        setConsultoriaReservada(true);
+                      } catch (err) {
+                        setErrorConsultoria(mensajeError(err, "No pudimos registrar la reserva. Probá de nuevo."));
+                      } finally {
+                        setReservandoConsultoria(false);
+                      }
+                    }}
+                  >
+                    {reservandoConsultoria ? "Reservando..." : "Reservar consultoría"}
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )}
         </div>
       )}
     </div>

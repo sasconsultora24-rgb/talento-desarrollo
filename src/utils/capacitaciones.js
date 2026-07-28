@@ -105,16 +105,13 @@ export function accesoCapacitacion(c, { role, empresa, candidato, integrante, pa
   }
 
   if (tipo === "paga") {
-    // Los integrantes de equipo no compran capacitaciones sueltas por su
-    // cuenta en esta primera versión — solo acceden a las incluidas en el
-    // plan de su empresa madre.
-    if (role === "integrante") return { estado: "requiere_plan", planRequerido: null };
-    // Nota: el beneficio "capacitaciones pagas incluidas" de la membresía
-    // Desarrollo Profesional se resuelve del lado del servidor (edge function
-    // crear-preferencia-pago), igual que la inclusión de mentorías por plan.
-    // Acá seguimos mostrando el botón de compra normal; si corresponde, el
+    // Nota: el beneficio "capacitaciones pagas incluidas" se resuelve del lado
+    // del servidor (edge function crear-preferencia-pago) — cada persona
+    // (candidato Premium, empresa dueña, o cada integrante de equipo según el
+    // plan de su empresa madre) tiene su propio cupo mensual individual. Acá
+    // seguimos mostrando el botón de compra normal; si corresponde, el
     // servidor aprueba sin cobrar y el estado pasa a "inscripto" tras refrescar.
-    const entidadId = role === "empresa" ? empresa?.id : candidato?.id;
+    const entidadId = role === "empresa" ? empresa?.id : role === "integrante" ? integrante?.id : candidato?.id;
     const misPagos = (pagos || []).filter(
       (p) => p.tipo === "capacitacion" && p.planId === c.id && p.entidadId === entidadId
     );

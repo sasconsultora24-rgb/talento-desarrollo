@@ -18,7 +18,7 @@ const areas = [
       "Inducción breve para nuevas contrataciones",
     ],
     incluido: [
-      "1 vacante activa en el plan Básico",
+      "Plan Por Vacante: pago único de $80.000 por búsqueda, activa 45 días, sin suscripción mensual",
       "Hasta 5 vacantes activas en el plan Avanzado",
       "Vacantes ilimitadas en Premium y Platino",
       "Entrevistas y shortlisting desde Avanzado",
@@ -42,11 +42,11 @@ const areas = [
     ],
     incluido: [
       "Diagnóstico de clima laboral en Premium y Platino (Platino con mayor frecuencia y alcance)",
-      "1 mentoría de acompañamiento incluida por período en Premium",
-      "Mentorías ilimitadas incluidas en Platino",
+      "1 Espacio de Orden (mentoría) incluido por mes en Premium, para quien la empresa asigne",
+      "1 Espacio de Orden Y 1 Mentoría Refoco incluidos por mes en Platino",
     ],
     aparte: [
-      "Básico y Avanzado no incluyen diagnóstico de clima ni mentorías",
+      "Por Vacante y Avanzado no incluyen diagnóstico de clima ni mentorías",
       "Se compran por separado desde Capacitaciones y mentorías, al precio de socio publicado en cada paquete",
     ],
   },
@@ -61,11 +61,11 @@ const areas = [
       "Talleres de team building",
     ],
     incluido: [
-      "Acceso de todo tu equipo a las capacitaciones grupales desde el plan Avanzado",
-      "Sin costo adicional por persona inscripta, mientras el plan esté vigente",
+      "Desde Avanzado, cada integrante de tu equipo tiene acceso propio a las capacitaciones (gratuitas siempre, más un cupo mensual de pagas: 1 en Avanzado, 2 en Premium, sin límite en Platino)",
+      "Certificado de participación en cada capacitación",
     ],
     aparte: [
-      "El plan Básico no incluye capacitaciones — se cobran por separado si están disponibles como pagas",
+      "El plan Por Vacante no incluye integrantes de equipo ni capacitaciones — se cobran por separado si están disponibles como pagas",
       "Programas puntuales fuera del calendario estándar, con precio publicado en cada capacitación",
     ],
   },

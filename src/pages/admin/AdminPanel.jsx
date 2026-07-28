@@ -251,19 +251,28 @@ export default function AdminPanel() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-forest-900">{v.titulo}</h3>
-                      <Badge tone={estadoBadge[v.estado]}>{v.estado}</Badge>
+                      <Badge tone={estadoBadge[v.estado] || "terracotta"}>
+                        {v.estado === "pendiente_pago" ? "esperando pago" : v.estado}
+                      </Badge>
+                      {v.fechaVencimiento && <span className="text-xs text-forest-400">vence {v.fechaVencimiento}</span>}
                     </div>
                     <p className="text-sm text-forest-500">{empresa?.nombre} · {v.ubicacion} · {v.fechaPublicacion}</p>
                   </div>
                   <div className="flex gap-2">
-                    {v.estado !== "aprobada" && (
-                      <Button variant="primary" onClick={() => cambiarEstadoVacante(v.id, "aprobada")}>Aprobar</Button>
-                    )}
-                    {v.estado !== "rechazada" && (
-                      <Button variant="outline" onClick={() => cambiarEstadoVacante(v.id, "rechazada")}>Rechazar</Button>
-                    )}
-                    {v.estado === "aprobada" && (
-                      <Button variant="ghost" onClick={() => cambiarEstadoVacante(v.id, "cerrada")}>Cerrar</Button>
+                    {v.estado === "pendiente_pago" ? (
+                      <span className="text-sm text-forest-400">Todavía no se acreditó el pago de esta vacante.</span>
+                    ) : (
+                      <>
+                        {v.estado !== "aprobada" && (
+                          <Button variant="primary" onClick={() => cambiarEstadoVacante(v.id, "aprobada")}>Aprobar</Button>
+                        )}
+                        {v.estado !== "rechazada" && (
+                          <Button variant="outline" onClick={() => cambiarEstadoVacante(v.id, "rechazada")}>Rechazar</Button>
+                        )}
+                        {v.estado === "aprobada" && (
+                          <Button variant="ghost" onClick={() => cambiarEstadoVacante(v.id, "cerrada")}>Cerrar</Button>
+                        )}
+                      </>
                     )}
                   </div>
                 </Card>

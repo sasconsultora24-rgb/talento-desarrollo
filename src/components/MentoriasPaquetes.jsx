@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, Clock, Compass } from "lucide-react";
 import { useApp } from "../data/store.jsx";
-import { Card, Badge, Button } from "./ui.jsx";
+import { Card, Badge, Button, Select } from "./ui.jsx";
 import { MENTORIA_PAQUETES, formatoPesos } from "../data/mentoriaPaquetes.js";
 
 // Mentorías personalizadas: 2 paquetes fijos de acompañamiento 1 a 1 (no un
@@ -10,18 +10,20 @@ import { MENTORIA_PAQUETES, formatoPesos } from "../data/mentoriaPaquetes.js";
 // registrado, a un precio especial solo por estar registrado en la plataforma.
 // Se usa como sección dentro de Capacitaciones y también en los paneles.
 export default function MentoriasPaquetes({ titulo = "Mentorías personalizadas", mostrarIntro = true }) {
-  const { session, pagos, iniciarPago, empresas } = useApp();
+  const { session, pagos, iniciarPago, empresas, integrantes } = useApp();
   const navigate = useNavigate();
   const [comprando, setComprando] = useState(null);
   const [error, setError] = useState("");
+  const [asignaciones, setAsignaciones] = useState({});
 
   const puedeComprar = session.role === "candidato" || session.role === "empresa";
   const empresaActual = session.role === "empresa" ? empresas.find((e) => e.id === session.userId) : null;
+  const misIntegrantes = empresaActual ? integrantes.filter((i) => i.empresaId === empresaActual.id) : [];
   const mentoriasIncluidasEnPlan =
     empresaActual?.plan === "platino"
-      ? "Tu plan Platino incluye mentorías ilimitadas, sin costo adicional."
+      ? "Tu plan Platino incluye 1 Espacio de Orden y 1 Refoco por mes, sin costo adicional."
       : empresaActual?.plan === "premium"
-      ? "Tu plan Premium incluye 1 mentoría sin costo por período. Las siguientes se cobran al precio de socio."
+      ? "Tu plan Premium incluye 1 Espacio de Orden por mes, sin costo adicional. El resto se cobra al precio de socio."
       : null;
 
   async function handleComprar(paqueteId) {
@@ -32,7 +34,7 @@ export default function MentoriasPaquetes({ titulo = "Mentorías personalizadas"
     setError("");
     setComprando(paqueteId);
     try {
-      const resultado = await iniciarPago("mentoria", paqueteId);
+      const resultado = await iniciarPago("mentoria", paqueteId, { asignadoA: asignaciones[paqueteId] || null });
       if (resultado.incluido) {
         setComprando(null);
         return;
@@ -99,6 +101,22 @@ export default function MentoriasPaquetes({ titulo = "Mentorías personalizadas"
                 </div>
                 <p className="text-xs text-gold-600 font-semibold mt-0.5">Precio especial por estar registrado</p>
               </div>
+
+              {misIntegrantes.length > 0 && estado === null && (
+                <div className="mt-4">
+                  <label className="text-xs font-semibold text-forest-500">Asignar esta sesión a</label>
+                  <Select
+                    className="mt-1"
+                    value={asignaciones[p.id] || ""}
+                    onChange={(e) => setAsignaciones((prev) => ({ ...prev, [p.id]: e.target.value || null }))}
+                  >
+                    <option value="">Yo (dueño/a de la cuenta)</option>
+                    {misIntegrantes.map((i) => (
+                      <option key={i.id} value={i.id}>{i.nombre}</option>
+                    ))}
+                  </Select>
+                </div>
+              )}
 
               <div className="mt-4">
                 {estado === "incluido" ? (

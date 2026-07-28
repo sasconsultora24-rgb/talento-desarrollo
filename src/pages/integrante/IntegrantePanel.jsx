@@ -1,17 +1,25 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, CheckCircle2, Lock, LogOut, Users2 } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, Lock, LogOut, Users2 } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, SectionTitle, EmptyState } from "../../components/ui.jsx";
+import PrecioCapacitacion from "../../components/PrecioCapacitacion.jsx";
 import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, cuposEfectivos } from "../../utils/capacitaciones.js";
+import { formatoPesos } from "../../data/mentoriaPaquetes.js";
 
 // Panel liviano para integrantes de equipo: solo capacitaciones incluidas en
 // el plan de su empresa madre. A propósito NO tiene acceso a reclutamiento
 // (vacantes/candidatos/postulaciones) — estructuralmente no puede, porque un
 // integrante no tiene fila propia en `empresas` y esas tablas filtran por
-// dueño de empresa vía RLS.
+// dueño de empresa vía RLS. Cada integrante tiene su propio cupo mensual de
+// capacitaciones pagas incluidas según el plan de su empresa (1 en Avanzado,
+// 2 en Premium, sin límite en Platino) — el servidor decide si corresponde
+// incluirla sin cobrar al momento de comprar.
 export default function IntegrantePanel() {
-  const { session, empresas, integrantes, capacitaciones, inscribirCapacitacion, logout } = useApp();
+  const { session, empresas, integrantes, capacitaciones, inscribirCapacitacion, iniciarPago, pagos, logout } = useApp();
   const navigate = useNavigate();
+  const [comprando, setComprando] = useState(null);
+  const [error, setError] = useState("");
 
   const integrante = integrantes.find((i) => i.id === session.userId);
   const empresaMadre = empresas.find((e) => e.id === session.empresaId);
@@ -19,6 +27,22 @@ export default function IntegrantePanel() {
   async function handleLogout() {
     await logout();
     navigate("/");
+  }
+
+  async function handleComprarAcceso(id) {
+    setError("");
+    setComprando(id);
+    try {
+      const resultado = await iniciarPago("capacitacion", id);
+      if (resultado.incluido) {
+        setComprando(null);
+        return;
+      }
+      window.location.href = resultado.initPoint;
+    } catch (err) {
+      setError(err.message || "No se pudo iniciar el pago.");
+      setComprando(null);
+    }
   }
 
   if (!empresaMadre) return null;
@@ -42,6 +66,10 @@ export default function IntegrantePanel() {
 
       <SectionTitle eyebrow="Tu equipo" title="Capacitaciones de tu empresa" />
 
+      {error && (
+        <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{error}</div>
+      )}
+
       {capacitaciones.length === 0 ? (
         <EmptyState text="Todavía no hay capacitaciones disponibles." />
       ) : (
@@ -49,7 +77,7 @@ export default function IntegrantePanel() {
           {capacitaciones.map((c) => {
             const totalInscriptos = c.inscriptosCandidatos.length + c.inscriptosEmpresas.length + c.inscriptosIntegrantes.length;
             const cuposLibres = cuposEfectivos(c) - totalInscriptos;
-            const acceso = accesoCapacitacion(c, { role: "integrante", empresa: empresaMadre, integrante });
+            const acceso = accesoCapacitacion(c, { role: "integrante", empresa: empresaMadre, integrante, pagos });
             return (
               <Card key={c.id} className="p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -64,6 +92,9 @@ export default function IntegrantePanel() {
                   <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
                   <span className="inline-flex items-center gap-1"><Users2 size={14} />{cuposLibres} cupos disponibles</span>
                 </div>
+                {acceso.estado !== "inscripto" && (
+                  <PrecioCapacitacion c={c} totalInscriptos={totalInscriptos} className="mt-3" />
+                )}
                 <div className="mt-4">
                   {acceso.estado === "inscripto" ? (
                     <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
@@ -71,6 +102,18 @@ export default function IntegrantePanel() {
                     </span>
                   ) : cuposLibres <= 0 ? (
                     <Button disabled className="w-full sm:w-auto">Sin cupos</Button>
+                  ) : acceso.estado === "pago_pendiente" ? (
+                    <span className="inline-flex items-center gap-1.5 text-terracotta-500 text-sm font-semibold">
+                      <Clock size={18} /> Pago pendiente de confirmación
+                    </span>
+                  ) : acceso.estado === "requiere_pago" ? (
+                    <Button
+                      onClick={() => handleComprarAcceso(c.id)}
+                      disabled={comprando === c.id}
+                      className="w-full sm:w-auto"
+                    >
+                      {comprando === c.id ? "Redirigiendo a Mercado Pago..." : `Comprar acceso — ${formatoPesos(acceso.precio)}`}
+                    </Button>
                   ) : acceso.estado === "requiere_plan" ? (
                     <span className="inline-flex items-center gap-1.5 font-semibold text-forest-500 text-sm">
                       <Lock size={16} />

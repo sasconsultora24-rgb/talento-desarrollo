@@ -58,6 +58,7 @@ function mapVacante(row) {
     salario: row.salario,
     estado: row.estado,
     fechaPublicacion: row.fecha_publicacion,
+    fechaVencimiento: row.fecha_vencimiento,
   };
 }
 
@@ -546,9 +547,9 @@ export function AppProvider({ children }) {
   // plan de empresa o la membresía premium de candidato, y devuelve la URL
   // de pago a la que hay que redirigir. El precio se calcula del lado del
   // servidor, nunca se manda desde acá.
-  const iniciarPago = useCallback(async (tipo, planId) => {
+  const iniciarPago = useCallback(async (tipo, planId, opciones = {}) => {
     const { data, error: fnError } = await supabase.functions.invoke("crear-preferencia-pago", {
-      body: { tipo, planId },
+      body: { tipo, planId, asignadoA: opciones.asignadoA || null },
     });
     if (fnError) {
       let mensaje = "No se pudo iniciar el pago.";
@@ -594,6 +595,59 @@ export function AppProvider({ children }) {
     const nueva = mapVacante(data);
     setVacantes((prev) => [nueva, ...prev]);
     return nueva.id;
+  }, []);
+
+  // Plan Básico (pago por vacante): crea la vacante en estado "pendiente_pago"
+  // y arranca el pago de $80.000 en el momento. Recién cuando Mercado Pago
+  // aprueba el pago (webhook-pagos) la vacante pasa a "pendiente" (moderación
+  // normal) con 45 días de vigencia desde la aprobación.
+  const publicarVacanteConPago = useCallback(async (empresaId, vacante) => {
+    const payload = {
+      empresa_id: empresaId,
+      titulo: vacante.titulo,
+      area: vacante.area,
+      modalidad: vacante.modalidad,
+      ubicacion: vacante.ubicacion,
+      nivel: vacante.nivel,
+      descripcion: vacante.descripcion,
+      requisitos: vacante.requisitos || [],
+      salario: vacante.salario,
+      estado: "pendiente_pago",
+    };
+    const { data, error: insertError } = await supabase
+      .from("vacantes")
+      .insert(payload)
+      .select()
+      .single();
+    if (insertError) throw insertError;
+    const nueva = mapVacante(data);
+    setVacantes((prev) => [nueva, ...prev]);
+
+    const { data: pagoData, error: fnError } = await supabase.functions.invoke("crear-preferencia-pago", {
+      body: { tipo: "vacante_unica", planId: nueva.id },
+    });
+    if (fnError) {
+      let mensaje = "No se pudo iniciar el pago de la vacante.";
+      try {
+        const body = await fnError.context?.json?.();
+        if (body?.error) mensaje = body.error;
+      } catch {
+        // sin cuerpo de error legible
+      }
+      throw new Error(mensaje);
+    }
+    if (!pagoData?.initPoint) throw new Error("No se pudo iniciar el pago de la vacante.");
+    return { vacanteId: nueva.id, initPoint: pagoData.initPoint };
+  }, []);
+
+  // Reserva de la consultoría de 45 min (beneficio exclusivo Platino). El
+  // trigger de base de datos avisa por email a SAS y confirma a la empresa;
+  // la RLS ya valida que sea Platino y que falten 7+ días.
+  const reservarConsultoria = useCallback(async (empresaId, fechaHoraISO) => {
+    const { error: insError } = await supabase
+      .from("consultorias_reservadas")
+      .insert({ empresa_id: empresaId, fecha_hora: fechaHoraISO });
+    if (insError) throw insError;
   }, []);
 
   const cambiarEstadoVacante = useCallback(async (vacanteId, estado) => {
@@ -732,6 +786,8 @@ export function AppProvider({ children }) {
     registrarEmpresa,
     actualizarEmpresa,
     publicarVacante,
+    publicarVacanteConPago,
+    reservarConsultoria,
     cambiarEstadoVacante,
     postular,
     cambiarEstadoPostulacion,
