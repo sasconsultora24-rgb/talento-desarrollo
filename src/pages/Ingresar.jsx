@@ -20,6 +20,7 @@ export default function Ingresar() {
     if (!intentado || resolviendo) return;
     if (session.role === "candidato") navigate("/candidato");
     else if (session.role === "empresa") navigate("/empresa");
+    else if (session.role === "integrante") navigate("/integrante");
     else if (session.role === "admin") navigate("/admin");
     else if (session.authUserId) {
       setError("Tu cuenta no tiene un perfil asociado todavía. Contactanos si creés que es un error.");

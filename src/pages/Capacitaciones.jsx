@@ -31,6 +31,10 @@ export default function Capacitaciones() {
   const [error, setError] = useState("");
 
   async function handleInscribir(id) {
+    if (session.role === "integrante") {
+      navigate("/integrante");
+      return;
+    }
     if (session.role !== "candidato" && session.role !== "empresa") {
       navigate("/registro");
       return;
@@ -45,6 +49,10 @@ export default function Capacitaciones() {
   }
 
   async function handleComprarAcceso(id) {
+    if (session.role === "integrante") {
+      navigate("/integrante");
+      return;
+    }
     if (session.role !== "candidato" && session.role !== "empresa") {
       navigate("/registro");
       return;

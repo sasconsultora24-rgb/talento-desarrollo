@@ -39,6 +39,7 @@ export default function Recuperar() {
   function irAlPanel() {
     if (session.role === "candidato") navigate("/candidato");
     else if (session.role === "empresa") navigate("/empresa");
+    else if (session.role === "integrante") navigate("/integrante");
     else if (session.role === "admin") navigate("/admin");
     else navigate("/");
   }

@@ -46,7 +46,14 @@ export default function PagoResultado() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [estado]);
 
-  const volverA = session.role === "empresa" ? "/empresa" : session.role === "candidato" ? "/candidato" : "/";
+  const volverA =
+    session.role === "empresa"
+      ? "/empresa"
+      : session.role === "candidato"
+      ? "/candidato"
+      : session.role === "integrante"
+      ? "/integrante"
+      : "/";
 
   return (
     <div className="max-w-lg mx-auto px-4 py-24 text-center">

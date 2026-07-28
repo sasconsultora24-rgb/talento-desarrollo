@@ -216,7 +216,7 @@ export default function ParaPymes() {
             subtitle="Elegí el nivel de acompañamiento que necesita tu PYME. Cada plan también define qué tenés incluido en las otras 3 áreas de arriba."
             center
           />
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {planesEmpresas.map((p, i) => (
               <Card key={p.id} className={`p-6 flex flex-col ${i === 1 ? "border-2 border-gold-500 shadow-soft" : ""}`}>
                 {i === 1 && <Badge tone="gold">Más elegido</Badge>}

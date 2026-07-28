@@ -64,17 +64,23 @@ export default function TerminosCondiciones() {
       <H2>5. Planes pagos y pagos</H2>
       <ul className="list-disc pl-6 mb-4">
         <Li>
-          Los planes de empresa y la membresía premium de candidato son pagos mensuales que se
-          procesan a través de Mercado Pago. SAS Consultora no almacena datos de tarjetas ni
-          medios de pago.
+          Los pagos de la Plataforma (planes de empresa, publicación de vacantes, membresía
+          premium de candidato, capacitaciones pagas, mentorías y consultorías) se procesan a
+          través de Mercado Pago. SAS Consultora no almacena datos de tarjetas ni medios de pago.
         </Li>
         <Li>
-          Un pago aprobado extiende la vigencia del plan por 30 días desde la fecha de pago (o
-          desde el vencimiento anterior, si renovás antes de que venza).
+          El plan "Por Vacante" es un pago único de $80.000 por cada búsqueda publicada, con una
+          vigencia de 45 días desde su aprobación. No es una suscripción: se paga solo cuando la
+          empresa necesita publicar una vacante.
         </Li>
         <Li>
-          Si un pago es rechazado o no se renueva, el plan queda vencido; te avisamos el estado
-          de tu plan desde tu panel.
+          Los planes Avanzado, Premium y Platino, y la membresía premium de candidato, son pagos
+          mensuales. Un pago aprobado extiende la vigencia del plan por 30 días desde la fecha de
+          pago (o desde el vencimiento anterior, si renovás antes de que venza).
+        </Li>
+        <Li>
+          Si un pago es rechazado o no se renueva, el plan o la vacante quedan vencidos; te
+          avisamos el estado desde tu panel.
         </Li>
         <Li>
           Los precios pueden actualizarse. Cualquier cambio de precio aplica a partir de la
