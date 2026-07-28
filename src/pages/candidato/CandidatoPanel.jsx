@@ -7,6 +7,7 @@ import { planesCandidatos } from "../../data/seed.js";
 import { emailValido, telefonoValido, archivoValido, CV_MAX_MB } from "../../utils/validacion";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
 import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
+import UbicacionSelector from "../../components/UbicacionSelector.jsx";
 import { mensajeError } from "../../utils/errores";
 
 const TABS = [
@@ -182,18 +183,18 @@ export default function CandidatoPanel() {
                 <Input value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
               </Field>
             </div>
-            <div className="grid sm:grid-cols-2 gap-x-4">
-              <Field label="Ubicación">
-                <Input value={form.ubicacion} onChange={(e) => setForm({ ...form, ubicacion: e.target.value })} />
-              </Field>
-              <Field label="Nivel">
-                <Select value={form.nivel} onChange={(e) => setForm({ ...form, nivel: e.target.value })}>
-                  <option>Junior</option>
-                  <option>Semi Senior</option>
-                  <option>Senior</option>
-                </Select>
-              </Field>
-            </div>
+            <UbicacionSelector
+              ubicacion={form.ubicacion}
+              codigoPostal={form.codigoPostal}
+              onChange={({ ubicacion, codigoPostal }) => setForm((prev) => ({ ...prev, ubicacion, codigoPostal }))}
+            />
+            <Field label="Nivel">
+              <Select value={form.nivel} onChange={(e) => setForm({ ...form, nivel: e.target.value })}>
+                <option>Junior</option>
+                <option>Semi Senior</option>
+                <option>Senior</option>
+              </Select>
+            </Field>
             <Field label="Resumen profesional">
               <Textarea rows={3} value={form.resumen} onChange={(e) => setForm({ ...form, resumen: e.target.value })} />
             </Field>

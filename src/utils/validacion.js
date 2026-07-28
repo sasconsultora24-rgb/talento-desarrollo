@@ -20,6 +20,23 @@ export function telefonoValido(telefono) {
   return TELEFONO_RE.test(valor);
 }
 
+export const PASSWORD_MIN = 10;
+
+// Contraseña: mínimo 10 caracteres, con al menos una letra y un número.
+// (No exigimos símbolos para no volverla difícil de recordar sin agregar
+// mucha seguridad real; la combinación largo+letra+número ya sube bastante
+// el piso frente al mínimo anterior de 8 caracteres sin más requisitos.)
+export function passwordValida(password) {
+  const valor = password || "";
+  if (valor.length < PASSWORD_MIN) {
+    return { valido: false, error: `La contraseña tiene que tener al menos ${PASSWORD_MIN} caracteres.` };
+  }
+  if (!/[a-zA-Z]/.test(valor) || !/[0-9]/.test(valor)) {
+    return { valido: false, error: "La contraseña tiene que combinar letras y números." };
+  }
+  return { valido: true };
+}
+
 export function archivoValido(file, { maxMB = CV_MAX_MB, extensiones = CV_EXTENSIONES } = {}) {
   if (!file) return { valido: true };
   const nombre = file.name.toLowerCase();

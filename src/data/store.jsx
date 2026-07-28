@@ -14,6 +14,7 @@ function mapEmpresa(row) {
     rubro: row.rubro,
     tamano: row.tamano,
     ubicacion: row.ubicacion,
+    codigoPostal: row.codigo_postal,
     contacto: row.contacto,
     email: row.email,
     plan: row.plan,
@@ -30,6 +31,7 @@ function mapCandidato(row) {
     email: row.email,
     telefono: row.telefono,
     ubicacion: row.ubicacion,
+    codigoPostal: row.codigo_postal,
     titulo: row.titulo,
     resumen: row.resumen,
     habilidades: row.habilidades || [],
@@ -122,6 +124,16 @@ function mapIntegrante(row) {
   };
 }
 
+function mapConsultoria(row) {
+  return {
+    id: row.id,
+    empresaId: row.empresa_id,
+    fechaHora: row.fecha_hora,
+    estado: row.estado,
+    createdAt: row.created_at,
+  };
+}
+
 function mapPago(row) {
   return {
     id: row.id,
@@ -148,6 +160,8 @@ export function AppProvider({ children }) {
   const [postulaciones, setPostulaciones] = useState([]);
   const [capacitaciones, setCapacitaciones] = useState([]);
   const [pagos, setPagos] = useState([]);
+  // RLS: cada empresa ve solo las suyas, el admin las ve todas.
+  const [consultorias, setConsultorias] = useState([]);
   // RLS filtra esto: el dueño de la PYME ve a todo su equipo, un integrante
   // solo se ve a sí mismo (y el admin, a todos).
   const [integrantes, setIntegrantes] = useState([]);
@@ -177,6 +191,7 @@ export function AppProvider({ children }) {
         { data: pagosRows, error: e7 },
         { data: integrantesRows, error: e8 },
         { data: codigoRows, error: e9 },
+        { data: consultoriasRows, error: e10 },
       ] = await Promise.all([
         supabase.from("empresas").select("*").order("created_at"),
         supabase.from("candidatos").select("*").order("created_at"),
@@ -190,9 +205,10 @@ export function AppProvider({ children }) {
         supabase.from("pagos").select("*").order("created_at", { ascending: false }),
         supabase.from("empresa_integrantes").select("*").order("created_at"),
         supabase.from("empresa_codigos").select("*"),
+        supabase.from("consultorias_reservadas").select("*").order("fecha_hora"),
       ]);
 
-      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9;
+      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9 || e10;
       if (firstError) throw firstError;
 
       const inscriptosPorCap = {};
@@ -210,6 +226,7 @@ export function AppProvider({ children }) {
       setCapacitaciones((capacitacionesRows || []).map((r) => mapCapacitacion(r, inscriptosPorCap[r.id])));
       setPagos((pagosRows || []).map(mapPago));
       setIntegrantes((integrantesRows || []).map(mapIntegrante));
+      setConsultorias((consultoriasRows || []).map(mapConsultoria));
       // RLS acota esto a lo sumo a una fila (la de la propia empresa) para
       // dueños, o vacío para cualquier otro rol.
       setCodigoEmpresa(codigoRows?.[0]?.codigo || null);
@@ -387,6 +404,7 @@ export function AppProvider({ children }) {
       email: perfil.email,
       telefono: perfil.telefono,
       ubicacion: perfil.ubicacion,
+      codigo_postal: perfil.codigoPostal || null,
       titulo: perfil.titulo,
       resumen: perfil.resumen,
       habilidades: perfil.habilidades || [],
@@ -414,6 +432,7 @@ export function AppProvider({ children }) {
       rubro: perfil.rubro,
       tamano: perfil.tamano,
       ubicacion: perfil.ubicacion,
+      codigo_postal: perfil.codigoPostal || null,
       contacto: perfil.contacto,
       email: perfil.email,
       plan: "basico",
@@ -499,6 +518,7 @@ export function AppProvider({ children }) {
     if ("email" in cambios) payload.email = cambios.email;
     if ("telefono" in cambios) payload.telefono = cambios.telefono;
     if ("ubicacion" in cambios) payload.ubicacion = cambios.ubicacion;
+    if ("codigoPostal" in cambios) payload.codigo_postal = cambios.codigoPostal;
     if ("titulo" in cambios) payload.titulo = cambios.titulo;
     if ("resumen" in cambios) payload.resumen = cambios.resumen;
     if ("habilidades" in cambios) payload.habilidades = cambios.habilidades;
@@ -527,6 +547,7 @@ export function AppProvider({ children }) {
     if ("rubro" in cambios) payload.rubro = cambios.rubro;
     if ("tamano" in cambios) payload.tamano = cambios.tamano;
     if ("ubicacion" in cambios) payload.ubicacion = cambios.ubicacion;
+    if ("codigoPostal" in cambios) payload.codigo_postal = cambios.codigoPostal;
     if ("contacto" in cambios) payload.contacto = cambios.contacto;
     if ("email" in cambios) payload.email = cambios.email;
     if ("plan" in cambios) payload.plan = cambios.plan;
@@ -688,6 +709,19 @@ export function AppProvider({ children }) {
     setPostulaciones((prev) => prev.map((p) => (p.id === postulacionId ? actualizada : p)));
   }, []);
 
+  // Cambia el estado de una consultoría reservada (solo admin, por RLS).
+  const cambiarEstadoConsultoria = useCallback(async (consultoriaId, estado) => {
+    const { data, error: updateError } = await supabase
+      .from("consultorias_reservadas")
+      .update({ estado })
+      .eq("id", consultoriaId)
+      .select()
+      .single();
+    if (updateError) throw updateError;
+    const actualizada = mapConsultoria(data);
+    setConsultorias((prev) => prev.map((c) => (c.id === consultoriaId ? actualizada : c)));
+  }, []);
+
   // ---------- Capacitaciones ----------
   // tipo: "candidato" (default), "empresa" o "integrante" — una PYME puede
   // anotar a la persona de contacto / a su equipo, un profesional se anota a
@@ -798,6 +832,8 @@ export function AppProvider({ children }) {
     codigoEmpresa,
     registrarIntegrante,
     eliminarIntegrante,
+    consultorias,
+    cambiarEstadoConsultoria,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

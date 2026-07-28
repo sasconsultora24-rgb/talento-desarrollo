@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download } from "lucide-react";
+import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download, CalendarClock } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, StatCard, EmptyState, Field, Input, Select, Textarea } from "../../components/ui.jsx";
 import { descargarCSV } from "../../utils/exportarCsv.js";
@@ -14,15 +14,19 @@ const TABS = [
   { id: "formacion", label: "Capacitaciones y mentorías", icon: GraduationCap },
   { id: "empresas", label: "PYMEs", icon: Building2 },
   { id: "candidatos", label: "Candidatos", icon: Users },
+  { id: "consultorias", label: "Consultorías", icon: CalendarClock },
 ];
 
 const estadoBadge = { pendiente: "terracotta", aprobada: "gold", rechazada: "gray", cerrada: "gray" };
+const estadoConsultoriaBadge = { solicitada: "terracotta", confirmada: "gold", realizada: "gray", cancelada: "gray" };
 
 export default function AdminPanel() {
   const {
     vacantes, empresas, candidatos, postulaciones, capacitaciones, pagos,
     cambiarEstadoVacante, crearCapacitacion, actualizarEnlaceCapacitacion,
+    consultorias, cambiarEstadoConsultoria,
   } = useApp();
+  const [errorConsultoria, setErrorConsultoria] = useState("");
   const [tab, setTab] = useState("metricas");
   const [nuevaCap, setNuevaCap] = useState({
     titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
@@ -532,6 +536,50 @@ export default function AdminPanel() {
               <Badge tone={c.membresia === "premium" ? "terracotta" : "gray"}>{c.membresia}</Badge>
             </Card>
           ))}
+        </div>
+      )}
+
+      {tab === "consultorias" && (
+        <div className="space-y-3">
+          {errorConsultoria && (
+            <div className="mb-2 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorConsultoria}</div>
+          )}
+          {consultorias.length === 0 ? (
+            <EmptyState text="Todavía no hay consultorías reservadas (beneficio exclusivo del plan Platino)." />
+          ) : (
+            consultorias.map((cons) => {
+              const empresa = empresas.find((e) => e.id === cons.empresaId);
+              const fecha = cons.fechaHora ? new Date(cons.fechaHora).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "—";
+              return (
+                <Card key={cons.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-bold text-forest-900">{empresa?.nombre || "Empresa desconocida"}</h3>
+                    <p className="text-sm text-forest-500">Reservada para el {fecha}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge tone={estadoConsultoriaBadge[cons.estado] || "gray"}>{cons.estado}</Badge>
+                    <Select
+                      value={cons.estado}
+                      className="sm:w-44"
+                      onChange={async (e) => {
+                        setErrorConsultoria("");
+                        try {
+                          await cambiarEstadoConsultoria(cons.id, e.target.value);
+                        } catch (err) {
+                          setErrorConsultoria(mensajeError(err, "No pudimos actualizar el estado."));
+                        }
+                      }}
+                    >
+                      <option value="solicitada">Solicitada</option>
+                      <option value="confirmada">Confirmada</option>
+                      <option value="realizada">Realizada</option>
+                      <option value="cancelada">Cancelada</option>
+                    </Select>
+                  </div>
+                </Card>
+              );
+            })
+          )}
         </div>
       )}
     </div>

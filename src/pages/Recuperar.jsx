@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Button, Badge } from "../components/ui.jsx";
 import { mensajeError } from "../utils/errores";
+import { passwordValida, PASSWORD_MIN } from "../utils/validacion";
 
 export default function Recuperar() {
   const { actualizarPassword, session } = useApp();
@@ -16,8 +17,9 @@ export default function Recuperar() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    if (password.length < 8) {
-      setError("La contraseña tiene que tener al menos 8 caracteres.");
+    const chequeoPassword = passwordValida(password);
+    if (!chequeoPassword.valido) {
+      setError(chequeoPassword.error);
       return;
     }
     if (password !== password2) {
@@ -66,11 +68,11 @@ export default function Recuperar() {
                 {error}
               </div>
             )}
-            <Field label="Nueva contraseña" hint="Mínimo 8 caracteres">
-              <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Field label="Nueva contraseña" hint={`Mínimo ${PASSWORD_MIN} caracteres, combinando letras y números`}>
+              <Input type="password" required minLength={PASSWORD_MIN} value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
             <Field label="Repetir contraseña">
-              <Input type="password" required minLength={8} value={password2} onChange={(e) => setPassword2(e.target.value)} />
+              <Input type="password" required minLength={PASSWORD_MIN} value={password2} onChange={(e) => setPassword2(e.target.value)} />
             </Field>
             <Button type="submit" disabled={enviando} className="w-full">
               {enviando ? "Guardando..." : "Guardar nueva contraseña"}

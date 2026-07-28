@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Paperclip, X } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Card, Field, Input, Select, Textarea, Button, Badge } from "../components/ui.jsx";
-import { emailValido, telefonoValido, archivoValido, CV_MAX_MB } from "../utils/validacion";
+import UbicacionSelector from "../components/UbicacionSelector.jsx";
+import { emailValido, telefonoValido, archivoValido, passwordValida, PASSWORD_MIN, CV_MAX_MB } from "../utils/validacion";
 import { mensajeError } from "../utils/errores";
 
 const MAX_CV_MB = CV_MAX_MB;
@@ -36,6 +37,7 @@ export default function Registro() {
     email: "",
     telefono: "",
     ubicacion: "",
+    codigoPostal: "",
     titulo: "",
     resumen: "",
     habilidades: "",
@@ -50,6 +52,7 @@ export default function Registro() {
     rubro: "",
     tamano: "1-10 empleados",
     ubicacion: "",
+    codigoPostal: "",
     contacto: "",
     email: "",
   });
@@ -94,6 +97,11 @@ export default function Registro() {
     }
     if (!telefonoValido(candidato.telefono)) {
       setError("Ingresá un teléfono válido (solo números, espacios, + o -).");
+      return;
+    }
+    const chequeoPassword = passwordValida(password);
+    if (!chequeoPassword.valido) {
+      setError(chequeoPassword.error);
       return;
     }
     if (!aceptaTerminos || !aceptaVisibilidad) {
@@ -147,6 +155,11 @@ export default function Registro() {
       setError("Ingresá el código de empresa que te compartió tu PYME.");
       return;
     }
+    const chequeoPasswordIntegrante = passwordValida(password);
+    if (!chequeoPasswordIntegrante.valido) {
+      setError(chequeoPasswordIntegrante.error);
+      return;
+    }
     if (!aceptaTerminos) {
       setError("Para crear tu acceso tenés que aceptar la Política de Privacidad y los Términos y Condiciones.");
       return;
@@ -172,6 +185,11 @@ export default function Registro() {
     setError("");
     if (!emailValido(empresa.email)) {
       setError("Ingresá un email válido.");
+      return;
+    }
+    const chequeoPasswordEmpresa = passwordValida(password);
+    if (!chequeoPasswordEmpresa.valido) {
+      setError(chequeoPasswordEmpresa.error);
       return;
     }
     if (!aceptaTerminos) {
@@ -258,17 +276,17 @@ export default function Registro() {
                 <Input value={candidato.telefono} onChange={(e) => setCandidato({ ...candidato, telefono: e.target.value })} />
               </Field>
             </div>
-            <Field label="Contraseña" hint="Mínimo 8 caracteres">
-              <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Field label="Contraseña" hint={`Mínimo ${PASSWORD_MIN} caracteres, combinando letras y números`}>
+              <Input type="password" required minLength={PASSWORD_MIN} value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
-            <div className="grid sm:grid-cols-2 gap-x-4">
-              <Field label="Ubicación">
-                <Input required value={candidato.ubicacion} onChange={(e) => setCandidato({ ...candidato, ubicacion: e.target.value })} />
-              </Field>
-              <Field label="Puesto / título profesional">
-                <Input required value={candidato.titulo} onChange={(e) => setCandidato({ ...candidato, titulo: e.target.value })} />
-              </Field>
-            </div>
+            <UbicacionSelector
+              ubicacion={candidato.ubicacion}
+              codigoPostal={candidato.codigoPostal}
+              onChange={({ ubicacion, codigoPostal }) => setCandidato((prev) => ({ ...prev, ubicacion, codigoPostal }))}
+            />
+            <Field label="Puesto / título profesional">
+              <Input required value={candidato.titulo} onChange={(e) => setCandidato({ ...candidato, titulo: e.target.value })} />
+            </Field>
             <div className="grid sm:grid-cols-2 gap-x-4">
               <Field label="Nivel de experiencia">
                 <Select value={candidato.nivel} onChange={(e) => setCandidato({ ...candidato, nivel: e.target.value })}>
@@ -380,9 +398,11 @@ export default function Registro() {
                 </Select>
               </Field>
             </div>
-            <Field label="Ubicación">
-              <Input required value={empresa.ubicacion} onChange={(e) => setEmpresa({ ...empresa, ubicacion: e.target.value })} />
-            </Field>
+            <UbicacionSelector
+              ubicacion={empresa.ubicacion}
+              codigoPostal={empresa.codigoPostal}
+              onChange={({ ubicacion, codigoPostal }) => setEmpresa((prev) => ({ ...prev, ubicacion, codigoPostal }))}
+            />
             <div className="grid sm:grid-cols-2 gap-x-4">
               <Field label="Persona de contacto">
                 <Input required value={empresa.contacto} onChange={(e) => setEmpresa({ ...empresa, contacto: e.target.value })} />
@@ -391,8 +411,8 @@ export default function Registro() {
                 <Input type="email" required value={empresa.email} onChange={(e) => setEmpresa({ ...empresa, email: e.target.value })} />
               </Field>
             </div>
-            <Field label="Contraseña" hint="Mínimo 8 caracteres">
-              <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Field label="Contraseña" hint={`Mínimo ${PASSWORD_MIN} caracteres, combinando letras y números`}>
+              <Input type="password" required minLength={PASSWORD_MIN} value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
             <label className="flex items-start gap-2 text-sm text-forest-600 mt-3 mb-4">
               <input
@@ -431,8 +451,8 @@ export default function Registro() {
                 placeholder="Ej: A1B2C3D4"
               />
             </Field>
-            <Field label="Contraseña" hint="Mínimo 8 caracteres">
-              <Input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Field label="Contraseña" hint={`Mínimo ${PASSWORD_MIN} caracteres, combinando letras y números`}>
+              <Input type="password" required minLength={PASSWORD_MIN} value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
             <label className="flex items-start gap-2 text-sm text-forest-600 mt-3 mb-4">
               <input
