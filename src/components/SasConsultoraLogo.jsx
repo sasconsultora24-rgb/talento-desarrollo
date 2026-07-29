@@ -1,14 +1,14 @@
-// Logo real de SAS Consultora (el archivo que Seba compartió, recortado a su
-// contenido y servido tal cual desde /public — no es una recreación en CSS).
-// Como el "SAS" del archivo es siempre verde bosque sobre fondo transparente,
-// en secciones de fondo oscuro hay que ponerlo sobre un chip claro (ver
-// Footer.jsx y Landing.jsx) en vez de recolorear el logo.
-export default function SasConsultoraLogo({ className = "" }) {
+// Logo real de SAS Consultora: el archivo original que Seba compartió
+// ("lgo png fondo trasnparente.png"), servido tal cual desde /public — sin
+// recortar, sin recolorear, sin chip de fondo y sin deformar. Se muestra a su
+// proporción original (el archivo es cuadrado 2000x2000 con fondo transparente),
+// así que sólo se ajusta la altura y el ancho sale solo con w-auto.
+export default function SasConsultoraLogo({ size = "h-16" }) {
   return (
     <img
       src="/sas-consultora-logo.png"
       alt="SAS Consultora"
-      className={`h-8 w-auto ${className}`}
+      className={`${size} w-auto`}
     />
   );
 }
