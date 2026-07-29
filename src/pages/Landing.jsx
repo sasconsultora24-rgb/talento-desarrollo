@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Button, Card, Badge, SectionTitle, StatCard } from "../components/ui.jsx";
+import SasConsultoraLogo from "../components/SasConsultoraLogo.jsx";
 
 export default function Landing() {
   const { vacantes, empresas, candidatos, capacitaciones } = useApp();
@@ -26,10 +27,9 @@ export default function Landing() {
               Impulsamos tu talento,<br /> transformamos <span className="text-gold-300">PYMEs</span>.
             </h1>
             <p className="mt-5 text-forest-200 text-lg leading-relaxed max-w-lg">
-              Talento &amp; Desarrollo es la plataforma de SAS Consultora que va más allá de
-              publicar una vacante: conectamos PYMEs con el talento que necesitan y acompañamos
-              a ambos lados a crecer, con capacitación, mentorías y todo el respaldo de una
-              consultora de RRHH — antes, durante y después de cada contratación.
+              Encontrá el talento que tu PYME necesita, o el próximo paso de tu carrera — con la
+              experiencia de SAS Consultora acompañándote en cada etapa: selección, capacitación
+              y mentorías, todo en un mismo lugar.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/registro">
@@ -44,11 +44,16 @@ export default function Landing() {
               </Link>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <StatCard label="Vacantes activas" value={vacantesAbiertas.length} tone="gold" />
-            <StatCard label="PYMEs registradas" value={empresas.length} tone="terracotta" />
-            <StatCard label="Profesionales en la base" value={candidatos.length} tone="forest" />
-            <StatCard label="Capacitaciones disponibles" value={capacitaciones.length} tone="gold" />
+          <div>
+            <div className="flex justify-end mb-4">
+              <SasConsultoraLogo dark className="items-end" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <StatCard label="Vacantes activas" value={vacantesAbiertas.length} tone="gold" />
+              <StatCard label="PYMEs registradas" value={empresas.length} tone="terracotta" />
+              <StatCard label="Profesionales en la base" value={candidatos.length} tone="forest" />
+              <StatCard label="Capacitaciones disponibles" value={capacitaciones.length} tone="gold" />
+            </div>
           </div>
         </div>
       </section>

@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef } from "react";
 import { Menu, X, LogOut, ChevronDown } from "lucide-react";
 import Logo from "./Logo";
-import SasConsultoraLogo from "./SasConsultoraLogo";
 import { useApp } from "../data/store.jsx";
 import { Button } from "./ui.jsx";
 
@@ -142,9 +141,6 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <div className="hidden xl:block pr-3 mr-1 border-r border-forest-100" title="Unidad de negocios de SAS Consultora">
-            <SasConsultoraLogo compact />
-          </div>
           {usuario ? (
             <>
               <Link to={panelPath} className="text-sm font-semibold text-forest-700 hover:text-gold-600">
