@@ -27,7 +27,7 @@ export default function Landing() {
               Nos conectamos. <span className="text-gold-300">Te acompañamos.</span> Crecés.
             </h1>
             <p className="mt-5 text-forest-200 text-lg leading-relaxed max-w-lg">
-              Ya seas una PYME que busca a la persona correcta o un profesional que busca crecer,
+              Ya seas una PYME que busca a la persona correcta o un PROFESIONAL que busca crecer,
               acá todo empieza con una conexión real — y sigue con capacitación, mentorías y el
               respaldo de SAS Consultora en cada etapa. Registrate gratis y sumate al vínculo.
             </p>
