@@ -245,6 +245,17 @@ export default function AdminPanel() {
 
       {tab === "vacantes" && (
         <div className="space-y-3">
+          <Card className="p-4 bg-gold-50/50 border-gold-200">
+            <p className="text-sm font-bold text-forest-900">Las vacantes se publican solas</p>
+            <p className="text-xs text-forest-600 mt-1 leading-relaxed max-w-3xl">
+              Ya no hay que aprobarlas para que salgan: quedan visibles apenas la PYME las carga
+              (o apenas se acredita el pago, en el plan Por Vacante) y te llega un email por cada
+              una. Esta pantalla es para revisarlas <strong>después</strong>: si alguna tiene los
+              requisitos mal cargados o algo que no corresponde, la despublicás acá y la PYME
+              recibe el aviso automáticamente.
+            </p>
+          </Card>
+
           {vacantes.length === 0 ? (
             <EmptyState text="No hay vacantes cargadas." />
           ) : (
@@ -264,17 +275,25 @@ export default function AdminPanel() {
                   </div>
                   <div className="flex gap-2">
                     {v.estado === "pendiente_pago" ? (
-                      <span className="text-sm text-forest-400">Todavía no se acreditó el pago de esta vacante.</span>
+                      <span className="text-sm text-forest-400">
+                        Todavía no se acreditó el pago. Se publica sola cuando entre.
+                      </span>
                     ) : (
                       <>
-                        {v.estado !== "aprobada" && (
-                          <Button variant="primary" onClick={() => cambiarEstadoVacante(v.id, "aprobada")}>Aprobar</Button>
-                        )}
-                        {v.estado !== "rechazada" && (
-                          <Button variant="outline" onClick={() => cambiarEstadoVacante(v.id, "rechazada")}>Rechazar</Button>
-                        )}
                         {v.estado === "aprobada" && (
-                          <Button variant="ghost" onClick={() => cambiarEstadoVacante(v.id, "cerrada")}>Cerrar</Button>
+                          <>
+                            <Button variant="outline" onClick={() => cambiarEstadoVacante(v.id, "rechazada")}>
+                              Despublicar
+                            </Button>
+                            <Button variant="ghost" onClick={() => cambiarEstadoVacante(v.id, "cerrada")}>
+                              Cerrar búsqueda
+                            </Button>
+                          </>
+                        )}
+                        {v.estado !== "aprobada" && (
+                          <Button variant="primary" onClick={() => cambiarEstadoVacante(v.id, "aprobada")}>
+                            Volver a publicar
+                          </Button>
                         )}
                       </>
                     )}

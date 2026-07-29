@@ -594,6 +594,10 @@ export function AppProvider({ children }) {
   }, [refresh]);
 
   // ---------- Vacantes ----------
+  // La vacante se publica al instante (estado "aprobada"), sin esperar
+  // aprobación manual. Un trigger de base de datos avisa por email a la PYME,
+  // a SAS (que la revisa después) y a los profesionales con buena afinidad.
+  // Si al revisarla hay algo mal, SAS la despublica desde el panel de admin.
   const publicarVacante = useCallback(async (empresaId, vacante) => {
     const payload = {
       empresa_id: empresaId,
@@ -605,7 +609,7 @@ export function AppProvider({ children }) {
       descripcion: vacante.descripcion,
       requisitos: vacante.requisitos || [],
       salario: vacante.salario,
-      estado: "pendiente",
+      estado: "aprobada",
     };
     const { data, error: insertError } = await supabase
       .from("vacantes")
@@ -620,8 +624,9 @@ export function AppProvider({ children }) {
 
   // Plan Básico (pago por vacante): crea la vacante en estado "pendiente_pago"
   // y arranca el pago de $80.000 en el momento. Recién cuando Mercado Pago
-  // aprueba el pago (webhook-pagos) la vacante pasa a "pendiente" (moderación
-  // normal) con 45 días de vigencia desde la aprobación.
+  // aprueba el pago (webhook-pagos) la vacante pasa a "aprobada" —o sea, se
+  // publica— con 45 días de vigencia desde la acreditación. Un trigger de la
+  // base impide que la empresa se saltee el pago publicándola por su cuenta.
   const publicarVacanteConPago = useCallback(async (empresaId, vacante) => {
     const payload = {
       empresa_id: empresaId,

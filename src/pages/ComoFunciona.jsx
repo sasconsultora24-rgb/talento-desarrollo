@@ -32,10 +32,12 @@ const PASOS = [
   {
     n: 2,
     icon: FileText,
-    titulo: "La PYME publica la búsqueda",
-    pyme: "Carga el puesto: descripción, requisitos concretos, nivel buscado, modalidad, ubicación y rango salarial.",
-    profesional: "Todavía no ve nada: la vacante no está publicada.",
-    sas: "Una persona de SAS revisa y aprueba cada vacante a mano antes de que salga publicada. Acá es donde se corrigen los requisitos vagos, que son la causa número uno de recibir postulantes que no encajan.",
+    titulo: "La búsqueda se publica al instante",
+    destacado: true,
+    pyme: "Carga el puesto —descripción, requisitos, nivel, modalidad, ubicación y rango salarial— y queda publicada en el momento, sin esperar que nadie la apruebe. Recibe el mail de confirmación al toque.",
+    profesional:
+      "Ve la vacante enseguida. Y si su perfil encaja con los requisitos, le llega un email avisándole de la nueva búsqueda: no depende de entrar a mirar todos los días.",
+    sas: "Automático. SAS recibe un aviso de cada vacante publicada y la revisa después: si hay requisitos vagos o algo que no corresponde, la despublica y le escribe a la PYME para ajustarla. Se controla la calidad sin frenar la publicación.",
   },
   {
     n: 3,
