@@ -5,6 +5,7 @@ import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
 import { planesEmpresas } from "../../data/seed.js";
 import { candidatoPremiumActivo } from "../../utils/planes.js";
+import { calcularAfinidad, TONO_AFINIDAD } from "../../utils/afinidad.js";
 import MentoriasPaquetes from "../../components/MentoriasPaquetes.jsx";
 import { mensajeError } from "../../utils/errores";
 import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, cuposEfectivos } from "../../utils/capacitaciones.js";
@@ -85,14 +86,6 @@ const estadoBadge = {
   cerrada: "gray",
 };
 
-const postulacionBadge = {
-  nueva: "gray",
-  "en revisión": "terracotta",
-  entrevista: "gold",
-  contratado: "gold",
-  descartado: "gray",
-};
-
 export default function EmpresaPanel() {
   const {
     session, empresas, vacantes, candidatos, postulaciones, capacitaciones, pagos, publicarVacante,
@@ -131,6 +124,7 @@ export default function EmpresaPanel() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroNivel, setFiltroNivel] = useState("");
   const [filtroDisponibilidad, setFiltroDisponibilidad] = useState("");
+  const [filtroAfinidad, setFiltroAfinidad] = useState("");
 
   const candidatosFiltrados = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
@@ -149,19 +143,55 @@ export default function EmpresaPanel() {
       .sort((a, b) => Number(candidatoPremiumActivo(b)) - Number(candidatoPremiumActivo(a)));
   }, [candidatos, busqueda, filtroNivel, filtroDisponibilidad]);
 
+  // Cada postulación se enriquece con el puntaje de afinidad automático contra
+  // los requisitos de SU vacante, para que la PYME no tenga que abrir CV por CV.
+  // Va antes del `if (!empresa) return null` porque los hooks tienen que
+  // ejecutarse en el mismo orden en todos los renders.
+  const postulacionesConAfinidad = useMemo(() => {
+    if (!empresa) return [];
+    const RANGO = { alta: 2, media: 1, baja: 0, "sin datos": 0 };
+    const idsDeMisVacantes = vacantes
+      .filter((v) => v.empresaId === empresa.id)
+      .map((v) => v.id);
+    return postulaciones
+      .filter((p) => idsDeMisVacantes.includes(p.vacanteId))
+      .map((p) => {
+        const cand = candidatos.find((c) => c.id === p.candidatoId);
+        const vac = vacantes.find((v) => v.id === p.vacanteId);
+        return {
+          ...p,
+          cand,
+          vac,
+          afinidad: calcularAfinidad(cand, vac),
+          esPremium: candidatoPremiumActivo(cand),
+        };
+      })
+      .sort((a, b) => {
+        // Primero por franja de afinidad (alta > media > baja): nunca dejamos
+        // que un perfil que no encaja quede arriba de uno que sí, por más
+        // premium que sea. Dentro de la misma franja sí se respeta el
+        // beneficio del plan Desarrollo Profesional, y recién después el
+        // puntaje fino. Así la prioridad premium es real pero no engaña.
+        const franja = RANGO[b.afinidad.nivel] - RANGO[a.afinidad.nivel];
+        if (franja !== 0) return franja;
+        const prem = Number(b.esPremium) - Number(a.esPremium);
+        if (prem !== 0) return prem;
+        return b.afinidad.puntaje - a.afinidad.puntaje;
+      });
+  }, [empresa, postulaciones, candidatos, vacantes]);
+
+  const postulacionesRecibidas = useMemo(
+    () =>
+      postulacionesConAfinidad.filter(
+        (p) => filtroAfinidad === "" || p.afinidad.nivel === filtroAfinidad
+      ),
+    [postulacionesConAfinidad, filtroAfinidad]
+  );
+
   if (!empresa) return null;
 
   const misVacantes = vacantes.filter((v) => v.empresaId === empresa.id);
   const acceso = estadoAcceso(empresa, misVacantes);
-  const idsMisVacantes = misVacantes.map((v) => v.id);
-  // Beneficio real del plan premium de candidato: sus postulaciones aparecen primero.
-  const postulacionesRecibidas = postulaciones
-    .filter((p) => idsMisVacantes.includes(p.vacanteId))
-    .sort((a, b) => {
-      const premA = candidatoPremiumActivo(candidatos.find((c) => c.id === a.candidatoId));
-      const premB = candidatoPremiumActivo(candidatos.find((c) => c.id === b.candidatoId));
-      return Number(premB) - Number(premA);
-    });
 
   async function crearVacante(e) {
     e.preventDefault();
@@ -259,7 +289,7 @@ export default function EmpresaPanel() {
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <StatCard label="Vacantes publicadas" value={misVacantes.length} tone="forest" />
-        <StatCard label="Postulaciones recibidas" value={postulacionesRecibidas.length} tone="gold" />
+        <StatCard label="Postulaciones recibidas" value={postulacionesConAfinidad.length} tone="gold" />
         <StatCard label="Plan actual" value={planesEmpresas.find((p) => p.id === empresa.plan)?.nombre || empresa.plan} tone="terracotta" />
       </div>
 
@@ -355,19 +385,72 @@ export default function EmpresaPanel() {
       {tab === "candidatos" && !acceso.activo && <Paywall />}
       {tab === "candidatos" && acceso.activo && (
         <div className="space-y-4">
+          {postulacionesConAfinidad.length > 0 && (
+            <Card className="p-4">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                <div className="max-w-xl">
+                  <p className="text-sm font-bold text-forest-900">
+                    Ordenadas automáticamente por afinidad con tu vacante
+                  </p>
+                  <p className="text-xs text-forest-500 mt-1 leading-relaxed">
+                    Comparamos el perfil de cada persona con los requisitos, el nivel,
+                    la ubicación y la modalidad que cargaste. Arriba aparecen las que
+                    más encajan, así no revisás CV por CV. El puntaje orienta, no
+                    descarta: siempre ves a todos los postulantes y podés abrir el CV
+                    de cualquiera.
+                  </p>
+                </div>
+                <Field label="Ver">
+                  <Select
+                    value={filtroAfinidad}
+                    onChange={(e) => setFiltroAfinidad(e.target.value)}
+                    className="sm:w-48"
+                  >
+                    <option value="">Todas las postulaciones</option>
+                    <option value="alta">Solo afinidad alta</option>
+                    <option value="media">Solo afinidad media</option>
+                    <option value="baja">Solo afinidad baja</option>
+                  </Select>
+                </Field>
+              </div>
+              {filtroAfinidad && (
+                <p className="text-xs text-forest-400 mt-3">
+                  Mostrando {postulacionesRecibidas.length} de {postulacionesConAfinidad.length} postulaciones.{" "}
+                  <button
+                    type="button"
+                    onClick={() => setFiltroAfinidad("")}
+                    className="text-gold-600 font-semibold hover:underline"
+                  >
+                    Ver todas
+                  </button>
+                </p>
+              )}
+            </Card>
+          )}
+
           {postulacionesRecibidas.length === 0 ? (
-            <EmptyState text="Todavía no recibiste postulaciones." />
+            <EmptyState
+              text={
+                postulacionesConAfinidad.length === 0
+                  ? "Todavía no recibiste postulaciones."
+                  : "Ninguna postulación tiene ese nivel de afinidad. Probá viendo todas."
+              }
+            />
           ) : (
             postulacionesRecibidas.map((p) => {
-              const cand = candidatos.find((c) => c.id === p.candidatoId);
-              const vac = vacantes.find((v) => v.id === p.vacanteId);
+              const cand = p.cand;
+              const vac = p.vac;
+              const af = p.afinidad;
               return (
                 <Card key={p.id} className="p-5">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-bold text-forest-900">{cand?.nombre}</h3>
-                        {candidatoPremiumActivo(cand) && <Badge tone="terracotta">Perfil premium</Badge>}
+                        <Badge tone={TONO_AFINIDAD[af.nivel]}>
+                          {af.puntaje}% de match · afinidad {af.nivel}
+                        </Badge>
+                        {p.esPremium && <Badge tone="terracotta">Perfil premium</Badge>}
                       </div>
                       <p className="text-sm text-forest-500">{cand?.titulo} · {cand?.ubicacion}</p>
                       <p className="text-sm text-forest-400 mt-1">Postulado a: <strong>{vac?.titulo}</strong></p>
@@ -390,6 +473,29 @@ export default function EmpresaPanel() {
                           Referencias: {cand.referencias.map((r) => `${r.nombre}${r.contacto ? ` (${r.contacto})` : ""}`).join(" · ")}
                         </p>
                       )}
+
+                      {/* Por qué dio ese puntaje: mostrarlo siempre evita que el
+                          número se lea como un veredicto y deja decidir a la PYME. */}
+                      <div className="mt-3 rounded-xl bg-forest-50/60 border border-forest-100 p-3">
+                        <p className="text-xs font-bold uppercase tracking-wider text-forest-500 mb-2">
+                          Por qué {af.puntaje}%
+                        </p>
+                        <ul className="grid sm:grid-cols-2 gap-x-4 gap-y-1">
+                          {af.motivos.map((m) => (
+                            <li key={m.texto} className="text-xs text-forest-600 flex items-start gap-1.5">
+                              <span className={m.ok ? "text-gold-600" : "text-forest-300"}>
+                                {m.ok ? "✓" : "·"}
+                              </span>
+                              {m.texto}
+                            </li>
+                          ))}
+                        </ul>
+                        {af.requisitosFaltantes.length > 0 && (
+                          <p className="text-xs text-forest-400 mt-2">
+                            No surge del perfil: {af.requisitosFaltantes.join(" · ")}
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <Select
                       value={p.estado}

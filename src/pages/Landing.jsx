@@ -43,6 +43,12 @@ export default function Landing() {
                 </Button>
               </Link>
             </div>
+            <Link
+              to="/como-funciona"
+              className="mt-5 inline-flex items-center gap-1.5 text-gold-300 font-semibold text-sm hover:gap-2 transition-all"
+            >
+              Ver cómo funciona el proceso, paso a paso <ArrowRight size={16} />
+            </Link>
           </div>
           <div>
             <div className="flex justify-end -mb-2">

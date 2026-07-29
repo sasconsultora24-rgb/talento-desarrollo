@@ -26,7 +26,9 @@ export default function Footer() {
           <ul className="space-y-2 text-sm text-forest-400">
             <li><Link to="/pymes" className="hover:text-gold-300">Nuestros servicios</Link></li>
             <li><Link to="/registro?tipo=empresa" className="hover:text-gold-300">Publicar vacante</Link></li>
+            <li><Link to="/pymes?ver=seleccion-a-medida" className="hover:text-gold-300">Selección a medida</Link></li>
             <li><Link to="/pymes#planes" className="hover:text-gold-300">Planes y precios</Link></li>
+            <li><Link to="/como-funciona" className="hover:text-gold-300">Cómo funciona el proceso</Link></li>
           </ul>
         </div>
         <div>

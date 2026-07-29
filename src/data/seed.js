@@ -238,6 +238,7 @@ export const planesEmpresas = [
     precio: "$250.000/mes",
     incluye: [
       "Vacantes ilimitadas",
+      "Selección a medida: Fase 1 (definición del perfil) y Fase 2 (búsqueda activa y preselección) incluidas, 1 búsqueda por mes",
       "No solo te acercamos candidatos: te acompañamos a elegir e integrar a la persona (selección + inducción)",
       "Diagnóstico de clima laboral",
       "Hasta 5 integrantes de equipo con acceso propio a capacitaciones",
@@ -252,7 +253,8 @@ export const planesEmpresas = [
     precio: "$500.000/mes",
     incluye: [
       "Todo lo del plan Premium",
-      "Selección a medida, diagnóstico de clima e inducción con mayor frecuencia/alcance",
+      "Selección a medida: suma la Fase 3 (evaluación en profundidad y presentación del finalista con informe)",
+      "Diagnóstico de clima e inducción con mayor frecuencia y alcance",
       "Hasta 10 integrantes de equipo, con capacitaciones pagas ilimitadas para cada uno",
       "1 Espacio de Orden Y 1 Mentoría Refoco por mes, para quien vos asignes",
       "1 sesión de consultoría de 45 min por mes, reservable con 7+ días de anticipación",

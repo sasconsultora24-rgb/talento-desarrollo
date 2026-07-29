@@ -6,6 +6,7 @@ import Capacitaciones from "./pages/Capacitaciones.jsx";
 import Mentorias from "./pages/Mentorias.jsx";
 import ParaPymes from "./pages/ParaPymes.jsx";
 import ParaProfesionales from "./pages/ParaProfesionales.jsx";
+import ComoFunciona from "./pages/ComoFunciona.jsx";
 import Registro from "./pages/Registro.jsx";
 import Ingresar from "./pages/Ingresar.jsx";
 import PagoResultado from "./pages/PagoResultado.jsx";
@@ -29,6 +30,7 @@ function App() {
         <Route path="/mentorias" element={<Mentorias />} />
         <Route path="/pymes" element={<ParaPymes />} />
         <Route path="/profesionales" element={<ParaProfesionales />} />
+        <Route path="/como-funciona" element={<ComoFunciona />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/ingresar" element={<Ingresar />} />
         <Route path="/pago/resultado" element={<PagoResultado />} />

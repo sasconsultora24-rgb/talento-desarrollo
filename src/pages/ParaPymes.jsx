@@ -4,6 +4,7 @@ import { Card, Button, SectionTitle, Badge } from "../components/ui.jsx";
 import { planesEmpresas } from "../data/seed.js";
 import { useApp } from "../data/store.jsx";
 import { useScrollToAnchor } from "../utils/useScrollToAnchor.js";
+import ProcesoSeleccionModular from "../components/ProcesoSeleccionModular.jsx";
 
 const areas = [
   {
@@ -21,11 +22,15 @@ const areas = [
       "Plan Por Vacante: pago único de $80.000 por búsqueda, activa 45 días, sin suscripción mensual",
       "Hasta 5 vacantes activas en el plan Avanzado",
       "Vacantes ilimitadas en Premium y Platino",
-      "Entrevistas y shortlisting desde Avanzado",
+      "Ordenamiento automático de postulantes por afinidad con tu vacante, en todos los planes",
+      "Premium: Fase 1 (definición del perfil) y Fase 2 (búsqueda y preselección) incluidas",
+      "Platino: suma la Fase 3 (evaluación y presentación del finalista)",
     ],
     aparte: [
-      "Búsquedas ejecutivas o de alta especialización, cotizadas a medida según el perfil buscado",
-      "Procesos con evaluaciones psicotécnicas, cotizados a medida según el alcance",
+      "Selección a medida completa o por fases, para los puestos clave — ver la sección Selección a medida más abajo",
+      "Búsquedas ejecutivas o de alta especialización, cotizadas según el perfil buscado",
+      "Procesos con evaluaciones psicotécnicas, cotizados según el alcance",
+      "Fase 4 (acompañamiento post-incorporación): siempre se contrata aparte, en todos los planes",
     ],
   },
   {
@@ -207,6 +212,17 @@ export default function ParaPymes() {
           </div>
         </section>
       ))}
+
+      <section id="seleccion-a-medida" className="scroll-mt-24 bg-forest-50/40 border-t border-forest-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+          <SectionTitle
+            eyebrow="Selección a medida"
+            title="Cuando el puesto es clave, no alcanza con publicar la vacante"
+            subtitle="Para roles críticos —un líder, un mando medio, un perfil difícil de conseguir— hacemos la búsqueda nosotros: definimos el perfil, salimos a buscar activamente, evaluamos y te presentamos al finalista con un informe. Contratalo completo o solo las fases que te hagan falta."
+          />
+          <ProcesoSeleccionModular />
+        </div>
+      </section>
 
       <section id="planes" className="bg-white border-t border-forest-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
