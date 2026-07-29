@@ -27,7 +27,7 @@ const PASOS = [
     pyme: "La PYME se registra, carga los datos de la empresa y elige un plan (o arranca con el pago único por vacante).",
     profesional:
       "El profesional crea su perfil gratis: experiencia, habilidades, nivel, ubicación, disponibilidad y CV.",
-    sas: "SAS valida que los datos estén completos. Un perfil a medias no compite bien, y una vacante mal cargada atrae postulantes equivocados.",
+    sas: "La plataforma exige los datos mínimos de forma automática, al instante. Un perfil a medias no compite bien: cuanto más completo, mejor puntúa después en el filtro de afinidad.",
   },
   {
     n: 2,
@@ -35,7 +35,7 @@ const PASOS = [
     titulo: "La PYME publica la búsqueda",
     pyme: "Carga el puesto: descripción, requisitos concretos, nivel buscado, modalidad, ubicación y rango salarial.",
     profesional: "Todavía no ve nada: la vacante no está publicada.",
-    sas: "SAS revisa y aprueba cada vacante antes de que salga. Acá es donde se corrigen los requisitos vagos, que son la causa número uno de recibir postulantes que no encajan.",
+    sas: "Una persona de SAS revisa y aprueba cada vacante a mano antes de que salga publicada. Acá es donde se corrigen los requisitos vagos, que son la causa número uno de recibir postulantes que no encajan.",
   },
   {
     n: 3,
@@ -44,7 +44,7 @@ const PASOS = [
     pyme: "Ve entrar las postulaciones en su panel, en tiempo real.",
     profesional:
       "Busca entre las vacantes activas y se postula con un click. Un solo perfil sirve para todas las búsquedas: no hay que volver a cargar nada.",
-    sas: "La plataforma notifica por email a ambas partes en cada movimiento.",
+    sas: "Automático: la plataforma avisa por email a la PYME cuando entra una postulación, y al profesional cuando cambia el estado de la suya. Nadie tiene que acordarse de mandar el aviso.",
   },
   {
     n: 4,
@@ -54,7 +54,7 @@ const PASOS = [
     pyme: "Cada postulación llega con un porcentaje de match contra TU vacante y las de mayor afinidad aparecen arriba. Podés filtrar y ver solo las de afinidad alta.",
     profesional:
       "Cuanto más completo el perfil, mejor puntúa. Con Desarrollo Profesional, además, tenés prioridad dentro de tu franja de afinidad.",
-    sas: "El puntaje compara el perfil contra los requisitos, el nivel, la ubicación y la modalidad de la vacante, y siempre muestra por qué dio ese número. Ordena y orienta: no descarta a nadie ni oculta postulaciones.",
+    sas: "Automático, sin intervención de nadie: el puntaje compara el perfil contra los requisitos, el nivel, la ubicación y la modalidad de la vacante, y siempre muestra por qué dio ese número. Ordena y orienta: no descarta a nadie ni oculta postulaciones.",
   },
   {
     n: 5,
@@ -63,7 +63,7 @@ const PASOS = [
     pyme: "Mueve a cada persona por los estados: nueva, en revisión, entrevista, contratado o descartado. Siempre sabe en qué punto está cada búsqueda.",
     profesional:
       "Ve el estado de cada una de sus postulaciones desde su panel. No queda esperando sin novedades.",
-    sas: "En los planes Premium y Platino, SAS hace las entrevistas de fondo y presenta un finalista con informe, en vez de dejar todo el trabajo del lado de la PYME.",
+    sas: "En los planes Premium y Platino, SAS hace las entrevistas preliminares y de fondo (según corresponda) y presenta finalistas, en vez de dejar todo el trabajo del lado de la PYME.",
   },
   {
     n: 6,
