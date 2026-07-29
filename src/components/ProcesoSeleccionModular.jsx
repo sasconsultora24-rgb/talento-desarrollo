@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, ArrowRight } from "lucide-react";
+import { Check } from "lucide-react";
 import { Card, Button, Badge } from "./ui.jsx";
 import {
   FASES_SELECCION,
@@ -10,12 +11,41 @@ import {
 } from "../data/procesoSeleccion.js";
 import { formatoPesos } from "../data/mentoriaPaquetes.js";
 import { NOMBRE_PLAN_EMPRESA } from "../utils/capacitaciones.js";
+import { useApp } from "../data/store.jsx";
+import { mensajeError } from "../utils/errores";
+import FormularioSolicitud from "./FormularioSolicitud.jsx";
 
-// Muestra el servicio de Selección a medida en sus dos formatos: completo
-// (Propuesta Integral) o fase por fase (Modular). Se usa en /pymes y también
-// dentro del panel de la empresa, por eso vive en components/ y no en pages/.
+// Servicio de Selección a medida, en sus dos formatos:
+//
+//  - Fases sueltas: se pagan por Mercado Pago, una por una, al inicio de cada
+//    fase contratada (igual que en la propuesta comercial en papel).
+//  - Propuesta Integral: NO se cobra online, porque se abona 50% al inicio y
+//    50% al finalizar, y conviene acordar el alcance antes de cobrar. Entra
+//    como solicitud registrada, que se sigue desde el panel de admin.
+//
+// Si el plan de la PYME ya incluye una fase, no se le cobra: el botón pasa a
+// ser una solicitud para coordinarla.
 export default function ProcesoSeleccionModular({ planEmpresa = null, mostrarCta = true }) {
+  const { session, iniciarPago } = useApp();
+  const esEmpresa = session.role === "empresa";
   const ahorro = ahorroIntegral();
+
+  const [pagando, setPagando] = useState(null);
+  const [error, setError] = useState("");
+  // Qué formulario de solicitud está abierto: "integral" o el id de una fase.
+  const [solicitando, setSolicitando] = useState(null);
+
+  async function contratarFase(faseId) {
+    setError("");
+    setPagando(faseId);
+    try {
+      await iniciarPago("fase_seleccion", faseId);
+    } catch (err) {
+      setError(mensajeError(err, "No se pudo iniciar el pago de la fase."));
+    } finally {
+      setPagando(null);
+    }
+  }
 
   return (
     <div>
@@ -24,9 +54,7 @@ export default function ProcesoSeleccionModular({ planEmpresa = null, mostrarCta
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
             <Badge tone="gold">Recomendado</Badge>
-            <h3 className="text-2xl font-extrabold text-forest-900 mt-3">
-              {PAQUETE_INTEGRAL.nombre}
-            </h3>
+            <h3 className="text-2xl font-extrabold text-forest-900 mt-3">{PAQUETE_INTEGRAL.nombre}</h3>
             <p className="text-sm text-forest-500 leading-relaxed mt-2 max-w-2xl">
               {PAQUETE_INTEGRAL.resumen}
             </p>
@@ -40,9 +68,7 @@ export default function ProcesoSeleccionModular({ planEmpresa = null, mostrarCta
             </ul>
           </div>
           <div className="rounded-2xl bg-forest-50/70 border border-forest-100 p-5 flex flex-col">
-            <span className="text-xs font-bold uppercase tracking-wider text-forest-500">
-              Desde
-            </span>
+            <span className="text-xs font-bold uppercase tracking-wider text-forest-500">Desde</span>
             <div className="text-3xl font-extrabold text-forest-900 mt-1">
               {formatoPesos(PAQUETE_INTEGRAL.precio)}
             </div>
@@ -68,25 +94,44 @@ export default function ProcesoSeleccionModular({ planEmpresa = null, mostrarCta
                 <dd>{PAQUETE_INTEGRAL.formaPago}</dd>
               </div>
             </dl>
-            {mostrarCta && (
-              <Link to="/pymes#contacto-seleccion" className="mt-auto pt-5">
-                <Button variant="primary" className="w-full">
-                  Pedir esta propuesta
-                </Button>
-              </Link>
-            )}
+            <div className="mt-auto pt-5">
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={() => setSolicitando(solicitando === "integral" ? null : "integral")}
+              >
+                {solicitando === "integral" ? "Cerrar" : "Pedir esta propuesta"}
+              </Button>
+              <p className="text-xs text-forest-400 mt-2 leading-relaxed">
+                Se acuerda el alcance antes de cobrar. El pago va 50% al inicio y 50% al final,
+                por transferencia o factura.
+              </p>
+            </div>
           </div>
         </div>
+
+        {solicitando === "integral" && (
+          <div className="mt-6 pt-6 border-t border-forest-100">
+            <FormularioSolicitud
+              servicio="integral"
+              titulo="Pedir la Propuesta Integral de Selección"
+            />
+          </div>
+        )}
       </Card>
 
       {/* PROPUESTA MODULAR */}
       <div className="mb-5">
         <h3 className="text-xl font-extrabold text-forest-900">O contratá solo las fases que necesitás</h3>
         <p className="text-sm text-forest-500 mt-1 max-w-3xl leading-relaxed">
-          Si tu equipo ya resuelve parte del proceso, tomá únicamente las etapas donde
-          te hace falta ayuda. {FORMA_PAGO_MODULAR}.
+          Si tu equipo ya resuelve parte del proceso, tomá únicamente las etapas donde te hace
+          falta ayuda. {FORMA_PAGO_MODULAR}, y las podés pagar directo desde acá.
         </p>
       </div>
+
+      {error && (
+        <p className="text-sm text-terracotta-600 font-semibold mb-4">{error}</p>
+      )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {FASES_SELECCION.map((f) => {
@@ -109,9 +154,19 @@ export default function ProcesoSeleccionModular({ planEmpresa = null, mostrarCta
                   </li>
                 ))}
               </ul>
+
               <div className="mt-4 pt-4 border-t border-forest-100">
                 {incluida ? (
-                  <Badge tone="gold">Ya incluida en tu plan</Badge>
+                  <>
+                    <Badge tone="gold">Ya incluida en tu plan</Badge>
+                    <Button
+                      variant="outline"
+                      className="w-full mt-3"
+                      onClick={() => setSolicitando(solicitando === f.id ? null : f.id)}
+                    >
+                      {solicitando === f.id ? "Cerrar" : "Coordinar esta fase"}
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <div className="text-lg font-extrabold text-forest-900">
@@ -119,39 +174,57 @@ export default function ProcesoSeleccionModular({ planEmpresa = null, mostrarCta
                     </div>
                     {f.incluidaEn.length > 0 && (
                       <p className="text-xs text-forest-400 mt-1">
-                        Incluida en{" "}
-                        {f.incluidaEn.map((p) => NOMBRE_PLAN_EMPRESA[p] || p).join(" y ")}
+                        Incluida en {f.incluidaEn.map((p) => NOMBRE_PLAN_EMPRESA[p] || p).join(" y ")}
                       </p>
+                    )}
+                    <p className="text-xs text-forest-400 mt-1">{f.duracion}</p>
+                    {esEmpresa ? (
+                      <Button
+                        variant="primary"
+                        className="w-full mt-3"
+                        disabled={pagando === f.id}
+                        onClick={() => contratarFase(f.id)}
+                      >
+                        {pagando === f.id ? "Abriendo pago..." : "Contratar esta fase"}
+                      </Button>
+                    ) : (
+                      <Link to="/registro?tipo=empresa" className="block mt-3">
+                        <Button variant="outline" className="w-full">
+                          Registrate para contratarla
+                        </Button>
+                      </Link>
                     )}
                   </>
                 )}
-                <p className="text-xs text-forest-400 mt-1">{f.duracion}</p>
               </div>
             </Card>
           );
         })}
       </div>
 
+      {/* Formulario de coordinación de una fase incluida en el plan */}
+      {solicitando && solicitando !== "integral" && (
+        <div className="mt-6">
+          <FormularioSolicitud
+            servicio={solicitando}
+            titulo={`Coordinar ${FASES_SELECCION.find((f) => f.id === solicitando)?.nombre || "la fase"}`}
+          />
+        </div>
+      )}
+
       <p className="text-xs text-forest-400 mt-5 leading-relaxed max-w-3xl">
-        Los valores se publican como referencia y pueden ajustarse según la complejidad
-        del perfil buscado (seniority, especialización, urgencia y alcance geográfico de
-        la búsqueda). Te confirmamos el precio final antes de arrancar, siempre por escrito.
+        Los valores se publican como referencia y pueden ajustarse según la complejidad del perfil
+        buscado (seniority, especialización, urgencia y alcance geográfico de la búsqueda). Si por
+        la complejidad del puesto corresponde otro valor, te lo confirmamos por escrito antes de
+        arrancar y no se cobra ninguna diferencia sin tu acuerdo.
       </p>
 
       {mostrarCta && (
         <div id="contacto-seleccion" className="scroll-mt-24 mt-8">
-          <Card className="p-6 bg-forest-50/60">
-            <h4 className="font-bold text-forest-900">¿Arrancamos con una búsqueda?</h4>
-            <p className="text-sm text-forest-500 mt-1 leading-relaxed max-w-2xl">
-              Escribinos con el puesto que necesitás cubrir y te devolvemos una propuesta
-              concreta, con precio cerrado y plazos, en 48 horas hábiles.
-            </p>
-            <a href="mailto:sasconsultora24@gmail.com?subject=Quiero%20cotizar%20una%20b%C3%BAsqueda%20de%20personal">
-              <Button variant="primary" className="mt-4">
-                Pedir propuesta <ArrowRight size={16} />
-              </Button>
-            </a>
-          </Card>
+          <FormularioSolicitud
+            servicio="consulta-general"
+            titulo="¿No sabés cuál te conviene? Escribinos"
+          />
         </div>
       )}
     </div>

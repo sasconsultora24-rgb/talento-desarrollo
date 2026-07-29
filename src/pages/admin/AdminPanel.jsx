@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download, CalendarClock } from "lucide-react";
+import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download, CalendarClock, Inbox } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, StatCard, EmptyState, Field, Input, Select, Textarea } from "../../components/ui.jsx";
 import { descargarCSV } from "../../utils/exportarCsv.js";
@@ -10,6 +10,7 @@ import { NOMBRE_PLAN_EMPRESA, precioEfectivo, enPeriodoPromocional } from "../..
 
 const TABS = [
   { id: "metricas", label: "Métricas", icon: LayoutDashboard },
+  { id: "solicitudes", label: "Solicitudes", icon: Inbox },
   { id: "vacantes", label: "Moderar vacantes", icon: Briefcase },
   { id: "formacion", label: "Capacitaciones y mentorías", icon: GraduationCap },
   { id: "empresas", label: "PYMEs", icon: Building2 },
@@ -20,13 +21,35 @@ const TABS = [
 const estadoBadge = { pendiente: "terracotta", aprobada: "gold", rechazada: "gray", cerrada: "gray" };
 const estadoConsultoriaBadge = { solicitada: "terracotta", confirmada: "gold", realizada: "gray", cancelada: "gray" };
 
+// Embudo comercial de las solicitudes de servicio (Propuesta Integral, fases
+// incluidas en plan, consultas generales). El orden importa: es el pipeline.
+const ESTADOS_SOLICITUD = ["nueva", "contactada", "cotizada", "ganada", "perdida"];
+const estadoSolicitudBadge = {
+  nueva: "terracotta",
+  contactada: "gold",
+  cotizada: "gold",
+  ganada: "gold",
+  perdida: "gray",
+};
+const NOMBRE_SERVICIO_SOLICITUD = {
+  integral: "Propuesta Integral de Selección",
+  "fase-1": "Fase 1: Definición del Perfil",
+  "fase-2": "Fase 2: Búsqueda y Preselección",
+  "fase-3": "Fase 3: Evaluación y Finalista",
+  "fase-4": "Fase 4: Post-Incorporación",
+  "consulta-general": "Consulta general",
+};
+
 export default function AdminPanel() {
   const {
     vacantes, empresas, candidatos, postulaciones, capacitaciones, pagos,
     cambiarEstadoVacante, crearCapacitacion, actualizarEnlaceCapacitacion,
     consultorias, cambiarEstadoConsultoria,
+    solicitudes, cambiarEstadoSolicitud,
   } = useApp();
   const [errorConsultoria, setErrorConsultoria] = useState("");
+  const [errorSolicitud, setErrorSolicitud] = useState("");
+  const [filtroSolicitud, setFiltroSolicitud] = useState("abiertas");
   const [tab, setTab] = useState("metricas");
   const [nuevaCap, setNuevaCap] = useState({
     titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
@@ -240,6 +263,126 @@ export default function AdminPanel() {
               </Button>
             </div>
           </Card>
+        </div>
+      )}
+
+      {tab === "solicitudes" && (
+        <div className="space-y-3">
+          <Card className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+              <div className="max-w-2xl">
+                <p className="text-sm font-bold text-forest-900">Consultas por servicios que no se pagan online</p>
+                <p className="text-xs text-forest-600 mt-1 leading-relaxed">
+                  Acá caen los pedidos de la Propuesta Integral de Selección, las fases que un plan
+                  ya incluye y las consultas generales. Cada una ya recibió un acuse automático:
+                  lo que falta es que la contactes y cotices. Movela de estado para no perderle
+                  el rastro.
+                </p>
+              </div>
+              <Field label="Ver">
+                <Select
+                  value={filtroSolicitud}
+                  onChange={(e) => setFiltroSolicitud(e.target.value)}
+                  className="sm:w-52"
+                >
+                  <option value="abiertas">Abiertas (sin cerrar)</option>
+                  <option value="">Todas</option>
+                  {ESTADOS_SOLICITUD.map((es) => (
+                    <option key={es} value={es}>{es}</option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4">
+              {ESTADOS_SOLICITUD.map((es) => (
+                <div key={es} className="rounded-xl bg-forest-50/60 border border-forest-100 px-3 py-2">
+                  <div className="text-lg font-extrabold text-forest-900">
+                    {solicitudes.filter((s) => s.estado === es).length}
+                  </div>
+                  <div className="text-xs text-forest-500 capitalize">{es}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {errorSolicitud && (
+            <p className="text-sm text-terracotta-600 font-semibold">{errorSolicitud}</p>
+          )}
+
+          {(() => {
+            const visibles = solicitudes.filter((s) => {
+              if (filtroSolicitud === "") return true;
+              if (filtroSolicitud === "abiertas") return s.estado !== "ganada" && s.estado !== "perdida";
+              return s.estado === filtroSolicitud;
+            });
+            if (visibles.length === 0) {
+              return (
+                <EmptyState
+                  text={
+                    solicitudes.length === 0
+                      ? "Todavía no entró ninguna solicitud."
+                      : "No hay solicitudes con ese estado."
+                  }
+                />
+              );
+            }
+            return visibles.map((s) => (
+              <Card key={s.id} className="p-5">
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-forest-900">
+                        {NOMBRE_SERVICIO_SOLICITUD[s.servicio] || s.servicio}
+                      </h3>
+                      <Badge tone={estadoSolicitudBadge[s.estado] || "gray"}>{s.estado}</Badge>
+                      <span className="text-xs text-forest-400">
+                        {new Date(s.createdAt).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-forest-700 font-semibold mt-2">
+                      {s.nombre}
+                      {s.empresaNombre ? ` · ${s.empresaNombre}` : ""}
+                    </p>
+                    <p className="text-sm text-forest-500">
+                      <a href={`mailto:${s.email}`} className="text-gold-600 font-semibold hover:underline">
+                        {s.email}
+                      </a>
+                      {s.telefono ? ` · ${s.telefono}` : ""}
+                    </p>
+                    {s.puesto && (
+                      <p className="text-sm text-forest-600 mt-1">
+                        Puesto a cubrir: <strong>{s.puesto}</strong>
+                      </p>
+                    )}
+                    {s.mensaje && (
+                      <p className="text-sm text-forest-500 mt-2 leading-relaxed whitespace-pre-line">
+                        {s.mensaje}
+                      </p>
+                    )}
+                  </div>
+                  <div className="lg:w-52 shrink-0">
+                    <Field label="Estado">
+                      <Select
+                        value={s.estado}
+                        onChange={async (e) => {
+                          setErrorSolicitud("");
+                          try {
+                            await cambiarEstadoSolicitud(s.id, { estado: e.target.value });
+                          } catch (err) {
+                            setErrorSolicitud(mensajeError(err, "No se pudo cambiar el estado."));
+                          }
+                        }}
+                      >
+                        {ESTADOS_SOLICITUD.map((es) => (
+                          <option key={es} value={es}>{es}</option>
+                        ))}
+                      </Select>
+                    </Field>
+                  </div>
+                </div>
+              </Card>
+            ));
+          })()}
         </div>
       )}
 

@@ -134,6 +134,26 @@ function mapConsultoria(row) {
   };
 }
 
+// Solicitud de un servicio que no se paga online: la Propuesta Integral de
+// selección (se abona 50/50, no entra en un checkout único), una fase que el
+// plan ya incluye, o cualquier servicio cotizado a medida.
+function mapSolicitud(row) {
+  return {
+    id: row.id,
+    empresaId: row.empresa_id,
+    servicio: row.servicio,
+    nombre: row.nombre,
+    email: row.email,
+    telefono: row.telefono,
+    empresaNombre: row.empresa_nombre,
+    puesto: row.puesto,
+    mensaje: row.mensaje,
+    estado: row.estado,
+    notasInternas: row.notas_internas,
+    createdAt: row.created_at,
+  };
+}
+
 function mapPago(row) {
   return {
     id: row.id,
@@ -162,6 +182,7 @@ export function AppProvider({ children }) {
   const [pagos, setPagos] = useState([]);
   // RLS: cada empresa ve solo las suyas, el admin las ve todas.
   const [consultorias, setConsultorias] = useState([]);
+  const [solicitudes, setSolicitudes] = useState([]);
   // RLS filtra esto: el dueño de la PYME ve a todo su equipo, un integrante
   // solo se ve a sí mismo (y el admin, a todos).
   const [integrantes, setIntegrantes] = useState([]);
@@ -192,6 +213,7 @@ export function AppProvider({ children }) {
         { data: integrantesRows, error: e8 },
         { data: codigoRows, error: e9 },
         { data: consultoriasRows, error: e10 },
+        { data: solicitudesRows, error: e11 },
       ] = await Promise.all([
         supabase.from("empresas").select("*").order("created_at"),
         supabase.from("candidatos").select("*").order("created_at"),
@@ -206,9 +228,11 @@ export function AppProvider({ children }) {
         supabase.from("empresa_integrantes").select("*").order("created_at"),
         supabase.from("empresa_codigos").select("*"),
         supabase.from("consultorias_reservadas").select("*").order("fecha_hora"),
+        // RLS: el admin ve todas; una empresa ve solo las suyas; el resto, nada.
+        supabase.from("solicitudes_servicio").select("*").order("created_at", { ascending: false }),
       ]);
 
-      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9 || e10;
+      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9 || e10 || e11;
       if (firstError) throw firstError;
 
       const inscriptosPorCap = {};
@@ -227,6 +251,7 @@ export function AppProvider({ children }) {
       setPagos((pagosRows || []).map(mapPago));
       setIntegrantes((integrantesRows || []).map(mapIntegrante));
       setConsultorias((consultoriasRows || []).map(mapConsultoria));
+      setSolicitudes((solicitudesRows || []).map(mapSolicitud));
       // RLS acota esto a lo sumo a una fila (la de la propia empresa) para
       // dueños, o vacío para cualquier otro rol.
       setCodigoEmpresa(codigoRows?.[0]?.codigo || null);
@@ -727,6 +752,45 @@ export function AppProvider({ children }) {
     setConsultorias((prev) => prev.map((c) => (c.id === consultoriaId ? actualizada : c)));
   }, []);
 
+  // ---------- Solicitudes de servicio ----------
+  // Deja registrada una consulta por un servicio que no se paga online. Funciona
+  // con o sin sesión: un visitante sin cuenta también puede pedir presupuesto
+  // (la política de RLS permite el insert público). Un trigger avisa por email a
+  // SAS y le manda un acuse al solicitante.
+  const crearSolicitudServicio = useCallback(async (datos) => {
+    const payload = {
+      servicio: datos.servicio,
+      nombre: datos.nombre,
+      email: datos.email,
+      telefono: datos.telefono || null,
+      empresa_nombre: datos.empresaNombre || null,
+      puesto: datos.puesto || null,
+      mensaje: datos.mensaje || null,
+      empresa_id: datos.empresaId || null,
+    };
+    const { error: insError } = await supabase.from("solicitudes_servicio").insert(payload);
+    if (insError) throw insError;
+    // No devolvemos la fila: la RLS de SELECT puede no dejar leerla de vuelta
+    // (por ejemplo si la dejó un visitante sin cuenta), y eso daría un error
+    // engañoso cuando en realidad la solicitud se guardó bien.
+    await refresh();
+  }, [refresh]);
+
+  const cambiarEstadoSolicitud = useCallback(async (solicitudId, cambios) => {
+    const payload = {};
+    if ("estado" in cambios) payload.estado = cambios.estado;
+    if ("notasInternas" in cambios) payload.notas_internas = cambios.notasInternas;
+    const { data, error: updError } = await supabase
+      .from("solicitudes_servicio")
+      .update(payload)
+      .eq("id", solicitudId)
+      .select()
+      .single();
+    if (updError) throw updError;
+    const actualizada = mapSolicitud(data);
+    setSolicitudes((prev) => prev.map((s) => (s.id === solicitudId ? actualizada : s)));
+  }, []);
+
   // ---------- Capacitaciones ----------
   // tipo: "candidato" (default), "empresa" o "integrante" — una PYME puede
   // anotar a la persona de contacto / a su equipo, un profesional se anota a
@@ -839,6 +903,9 @@ export function AppProvider({ children }) {
     eliminarIntegrante,
     consultorias,
     cambiarEstadoConsultoria,
+    solicitudes,
+    crearSolicitudServicio,
+    cambiarEstadoSolicitud,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
