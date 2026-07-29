@@ -770,11 +770,21 @@ export function AppProvider({ children }) {
     };
     const { error: insError } = await supabase.from("solicitudes_servicio").insert(payload);
     if (insError) throw insError;
-    // No devolvemos la fila: la RLS de SELECT puede no dejar leerla de vuelta
-    // (por ejemplo si la dejó un visitante sin cuenta), y eso daría un error
-    // engañoso cuando en realidad la solicitud se guardó bien.
-    await refresh();
-  }, [refresh]);
+
+    // Importante: NO llamar a refresh() acá. refresh() pone loading=true y el
+    // Layout reemplaza toda la página por un spinner, lo que desmonta el
+    // formulario y se pierde el mensaje de "consulta registrada". En vez de eso
+    // se recarga solo esta tabla, sin tocar el estado de carga global.
+    //
+    // El select puede fallar por RLS si la solicitud la dejó un visitante sin
+    // cuenta (solo el admin y la propia empresa pueden leerlas). Ese fallo se
+    // ignora a propósito: la solicitud ya quedó guardada, que es lo que importa.
+    const { data: filas } = await supabase
+      .from("solicitudes_servicio")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (filas) setSolicitudes(filas.map(mapSolicitud));
+  }, []);
 
   const cambiarEstadoSolicitud = useCallback(async (solicitudId, cambios) => {
     const payload = {};
