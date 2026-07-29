@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef } from "react";
 import { Menu, X, LogOut, ChevronDown } from "lucide-react";
 import Logo from "./Logo";
+import SasConsultoraLogo from "./SasConsultoraLogo";
 import { useApp } from "../data/store.jsx";
 import { Button } from "./ui.jsx";
 
@@ -140,7 +141,11 @@ export default function Navbar() {
           <NavDropdown label="Para PYMEs" enlaces={ENLACES_PYMES} />
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-2 pr-4 border-r border-forest-100">
+            <span className="text-[10px] text-forest-300 uppercase tracking-wider">Unidad de</span>
+            <SasConsultoraLogo compact />
+          </div>
           {usuario ? (
             <>
               <Link to={panelPath} className="text-sm font-semibold text-forest-700 hover:text-gold-600">

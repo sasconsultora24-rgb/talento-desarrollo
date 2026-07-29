@@ -26,9 +26,10 @@ export default function Landing() {
               Impulsamos tu talento,<br /> transformamos <span className="text-gold-300">PYMEs</span>.
             </h1>
             <p className="mt-5 text-forest-200 text-lg leading-relaxed max-w-lg">
-              No somos una bolsa de trabajo más. Conectamos PYMEs con el talento que necesitan
-              y acompañamos el crecimiento de ambos lados con capacitación, mentorías y todo
-              el respaldo de SAS Consultora — antes, durante y después de cada contratación.
+              Talento &amp; Desarrollo es la plataforma de SAS Consultora que va más allá de
+              publicar una vacante: conectamos PYMEs con el talento que necesitan y acompañamos
+              a ambos lados a crecer, con capacitación, mentorías y todo el respaldo de una
+              consultora de RRHH — antes, durante y después de cada contratación.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/registro">
