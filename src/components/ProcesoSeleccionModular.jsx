@@ -47,10 +47,15 @@ export default function ProcesoSeleccionModular({ planEmpresa = null, mostrarCta
               {formatoPesos(PAQUETE_INTEGRAL.precio)}
             </div>
             <p className="text-xs text-forest-400 mt-1">por búsqueda</p>
-            {ahorro > 0 && (
+            {ahorro > 0 ? (
               <p className="text-xs text-gold-700 font-semibold mt-3">
                 {formatoPesos(ahorro)} menos que contratar las 4 fases por separado
                 ({formatoPesos(totalFasesSueltas())}).
+              </p>
+            ) : (
+              <p className="text-xs text-forest-500 mt-3 leading-relaxed">
+                Mismo valor que las 4 fases por separado ({formatoPesos(totalFasesSueltas())}),
+                pero con la negociación de la oferta incluida y un solo plazo cerrado.
               </p>
             )}
             <dl className="mt-4 space-y-2 text-xs text-forest-500">

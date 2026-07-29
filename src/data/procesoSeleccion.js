@@ -71,8 +71,13 @@ export const FASES_SELECCION = [
 export const PAQUETE_INTEGRAL = {
   id: "integral",
   nombre: "Propuesta Integral",
+  // Ojo: las 4 fases sueltas suman exactamente lo mismo que el integral
+  // ($750.000). La ventaja del integral NO es el precio sino que suma el
+  // acompañamiento en la negociación de la oferta —que no existe como fase
+  // suelta—, un solo proceso coordinado y un plazo total cerrado. No decir
+  // que "sale más barato": sería falso.
   resumen:
-    "Todo el proceso de punta a punta, de la definición del perfil al seguimiento post-incorporación. Sale menos que contratar las fases por separado.",
+    "Todo el proceso de punta a punta, de la definición del perfil al seguimiento post-incorporación, coordinado por un mismo equipo y con un plazo total cerrado. Suma el acompañamiento en la negociación de la oferta, que no se vende por separado.",
   precio: 750000,
   duracion: "35 a 45 días",
   formaPago: "50% al inicio y 50% al finalizar el proceso",
