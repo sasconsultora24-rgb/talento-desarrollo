@@ -24,12 +24,12 @@ export default function Landing() {
           <div>
             <Badge tone="gold">Unidad de RRHH de SAS Consultora</Badge>
             <h1 className="mt-4 text-4xl md:text-5xl font-extrabold font-display leading-tight">
-              Impulsamos tu talento,<br /> transformamos <span className="text-gold-300">PYMEs</span>.
+              Nos conectamos. <span className="text-gold-300">Te acompañamos.</span> Crecés.
             </h1>
             <p className="mt-5 text-forest-200 text-lg leading-relaxed max-w-lg">
-              Encontrá el talento que tu PYME necesita, o el próximo paso de tu carrera — con la
-              experiencia de SAS Consultora acompañándote en cada etapa: selección, capacitación
-              y mentorías, todo en un mismo lugar.
+              Ya seas una PYME que busca a la persona correcta o un profesional que busca crecer,
+              acá todo empieza con una conexión real — y sigue con capacitación, mentorías y el
+              respaldo de SAS Consultora en cada etapa. Registrate gratis y sumate al vínculo.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/registro">
