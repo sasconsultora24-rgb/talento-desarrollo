@@ -6,7 +6,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="SAS Talento & Desarrollo — Conectamos PYMEs con el mejor talento humano." />
     <meta name="theme-color" content="#0F251B" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>SAS Talento & Desarrollo</title>
+
+    <!--
+      Anti-pantalla-en-blanco: cada deploy genera bundles con hash nuevo y borra
+      los viejos. Si el navegador tiene cacheado un index.html anterior, pide un
+      .js que ya no existe (404) y la pagina queda en blanco. Este guard detecta
+      ese fallo de carga y recarga una unica vez salteando la cache.
+    -->
+    <script>
+      (function () {
+        var CLAVE = "sas-recarga-cache";
+        window.addEventListener(
+          "error",
+          function (e) {
+            var el = e.target;
+            if (!el || (el.tagName !== "SCRIPT" && el.tagName !== "LINK")) return;
+            // Solo nos importan nuestros propios bundles (/assets/...), no las
+            // fuentes de Google ni ningun recurso externo.
+            var url = el.src || el.href || "";
+            if (url.indexOf(location.origin + "/assets/") !== 0) return;
+            if (sessionStorage.getItem(CLAVE)) return;
+            sessionStorage.setItem(CLAVE, "1");
+            location.replace(
+              location.pathname + "?recarga=" + Date.now() + location.hash
+            );
+          },
+          true
+        );
+        window.addEventListener("load", function () {
+          setTimeout(function () {
+            var root = document.getElementById("root");
+            if (root && root.children.length > 0) sessionStorage.removeItem(CLAVE);
+          }, 3000);
+        });
+      })();
+    </script>
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="SAS Talento & Desarrollo" />
