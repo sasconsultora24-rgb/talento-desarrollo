@@ -30,7 +30,9 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <SasConsultoraLogo dark className="mb-3" />
+          <div className="inline-block bg-white rounded-lg px-3 py-2 mb-3">
+            <SasConsultoraLogo />
+          </div>
           <ul className="space-y-2 text-sm text-forest-400">
             <li>Unidad de negocios de RRHH</li>
             <li>sasconsultora24@gmail.com</li>

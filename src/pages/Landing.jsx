@@ -46,7 +46,9 @@ export default function Landing() {
           </div>
           <div>
             <div className="flex justify-end mb-4">
-              <SasConsultoraLogo dark className="items-end" />
+              <div className="inline-block bg-white rounded-lg px-4 py-2.5">
+                <SasConsultoraLogo />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <StatCard label="Vacantes activas" value={vacantesAbiertas.length} tone="gold" />

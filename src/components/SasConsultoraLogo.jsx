@@ -1,20 +1,14 @@
-// Logo real de la empresa madre (SAS Consultora), reconstruido en código a
-// partir del isologo que Seba compartió: "SAS" en verde bosque, línea
-// dorada, "CONSULTORA" en gris con tracking. Se hace en código (no como
-// imagen) para que quede nítido en cualquier tamaño de pantalla y coincida
-// exacto con la paleta forest/gold ya usada en el logo de Talento & Desarrollo.
-// Sobre fondos oscuros (variante `dark`) el "SAS" pasa a blanco: el verde
-// original se pierde contra el fondo forest-900, que es del mismo tono.
-export default function SasConsultoraLogo({ dark = false, className = "" }) {
+// Logo real de SAS Consultora (el archivo que Seba compartió, recortado a su
+// contenido y servido tal cual desde /public — no es una recreación en CSS).
+// Como el "SAS" del archivo es siempre verde bosque sobre fondo transparente,
+// en secciones de fondo oscuro hay que ponerlo sobre un chip claro (ver
+// Footer.jsx y Landing.jsx) en vez de recolorear el logo.
+export default function SasConsultoraLogo({ className = "" }) {
   return (
-    <div className={`inline-flex flex-col ${className}`}>
-      <span className={`font-display font-extrabold text-xl leading-none tracking-tight ${dark ? "text-white" : "text-forest"}`}>
-        SAS
-      </span>
-      <span className="w-full h-px bg-gold my-1.5" />
-      <span className={`font-display font-semibold text-[10px] tracking-[0.2em] ${dark ? "text-gray-300" : "text-gray-400"}`}>
-        CONSULTORA
-      </span>
-    </div>
+    <img
+      src="/sas-consultora-logo.png"
+      alt="SAS Consultora"
+      className={`h-8 w-auto ${className}`}
+    />
   );
 }
