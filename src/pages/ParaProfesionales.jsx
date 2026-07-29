@@ -21,7 +21,7 @@ const areas = [
       "Perfil en la base de datos y postulación ilimitada, sin costo",
     ],
     aparte: [
-      "Con Desarrollo Profesional tu perfil aparece primero en el buscador de las PYMEs y en el orden de postulaciones recibidas — más visibilidad, no más trámite.",
+      "Con Desarrollo Profesional tu perfil tiene prioridad en el buscador de las PYMEs y en el orden de postulaciones recibidas — más visibilidad, no más trámite.",
     ],
   },
   {

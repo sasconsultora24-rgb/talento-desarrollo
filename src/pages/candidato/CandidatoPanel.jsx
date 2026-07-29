@@ -313,7 +313,7 @@ export default function CandidatoPanel() {
           )}
           {candidatoPremiumActivo(candidato) && (
             <div className="mb-4 text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-4 py-2">
-              Con tu membresía activa, tu perfil aparece primero en el buscador de las empresas y tus postulaciones se muestran primero en su bandeja.
+              Con tu membresía activa, tu perfil tiene prioridad en el buscador de las empresas y tus postulaciones aparecen con prioridad en su bandeja.
             </div>
           )}
           <div className="grid sm:grid-cols-2 gap-6">
