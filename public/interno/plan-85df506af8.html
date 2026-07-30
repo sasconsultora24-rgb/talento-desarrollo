@@ -1,0 +1,1542 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!-- Documento interno: no queremos que aparezca en buscadores ni que lo
+     indexen si alguien lo enlaza por error. -->
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet"/>
+<meta name="referrer" content="no-referrer"/>
+<title>Plan de lanzamiento · SAS Talento &amp; Desarrollo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --forest:#1F4D3D; --forest900:#0F251B; --forest700:#1F4D3D; --forest500:#497D57;
+  --forest300:#8FB596; --forest100:#DCE7DE; --forest50:#F0F5F1;
+  --gold:#C9A227; --gold600:#A9821D; --gold100:#F8EBC4; --gold50:#FDF8EA;
+  --terra:#C1652F; --terra50:#FBEEE6; --sand:#FBF7EE; --white:#fff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sand);color:var(--forest900);
+  font-family:Inter,system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6}
+h1,h2,h3,h4{font-family:Sora,Inter,sans-serif;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+header{background:linear-gradient(135deg,var(--forest900),var(--forest700));color:#fff;padding:34px 0 26px}
+header h1{font-size:30px;font-weight:800;line-height:1.15}
+header .sub{color:#B7D0BC;margin-top:8px;max-width:760px}
+.pill{display:inline-block;background:var(--gold100);color:#634B10;font-size:12px;font-weight:700;
+  padding:5px 12px;border-radius:999px;margin-bottom:12px}
+.barra-acciones{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+button.act{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);
+  padding:9px 15px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+button.act:hover{background:rgba(255,255,255,.22)}
+button.act.primary{background:var(--gold);border-color:var(--gold);color:#fff}
+button.act.primary:hover{background:var(--gold600)}
+
+.progreso-global{background:#fff;border-bottom:1px solid var(--forest100);padding:14px 0;position:sticky;top:0;z-index:50}
+.pg-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.pg-bar{flex:1;min-width:200px;height:10px;background:var(--forest50);border-radius:999px;overflow:hidden}
+.pg-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--terra));width:0%;transition:width .3s}
+.pg-txt{font-size:13px;font-weight:700;color:var(--forest)}
+
+nav.tabs{background:#fff;border-bottom:1px solid var(--forest100);overflow-x:auto}
+nav.tabs .inner{display:flex;gap:2px;min-width:max-content}
+nav.tabs button{background:none;border:none;padding:14px 16px;font-size:13px;font-weight:600;
+  color:var(--forest500);cursor:pointer;border-bottom:3px solid transparent;font-family:inherit;white-space:nowrap}
+nav.tabs button:hover{color:var(--forest900)}
+nav.tabs button.on{color:var(--gold600);border-bottom-color:var(--gold)}
+
+section.panel{display:none;padding:28px 0 60px}
+section.panel.on{display:block}
+
+.card{background:#fff;border:1px solid var(--forest100);border-radius:16px;padding:22px;margin-bottom:16px}
+.card.destacada{border:2px solid var(--gold);box-shadow:0 4px 24px rgba(15,37,27,.08)}
+.card.hoy{border:2px solid var(--terra)}
+.card.listo{background:var(--forest50);border-color:var(--forest100);opacity:.85}
+.card h3{font-size:18px;font-weight:800;margin-bottom:6px}
+.card h4{font-size:15px;font-weight:700;margin:16px 0 6px}
+.meta{font-size:12px;color:var(--forest500);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+.nota{background:var(--gold50);border-left:3px solid var(--gold);padding:12px 14px;border-radius:0 10px 10px 0;
+  font-size:14px;margin:14px 0}
+.alerta{background:var(--terra50);border-left:3px solid var(--terra);padding:12px 14px;border-radius:0 10px 10px 0;
+  font-size:14px;margin:14px 0}
+
+.tarea{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--forest50)}
+.tarea:last-child{border-bottom:none}
+.tarea input[type=checkbox]{margin-top:3px;width:17px;height:17px;accent-color:var(--gold600);cursor:pointer;flex-shrink:0}
+.tarea .cuerpo{flex:1}
+.tarea .titulo{font-weight:600;font-size:14.5px}
+.tarea .detalle{font-size:13px;color:var(--forest500);margin-top:2px}
+.tarea.hecha .titulo{text-decoration:line-through;color:var(--forest300)}
+.dia{display:inline-block;background:var(--forest50);color:var(--forest);font-size:11px;font-weight:700;
+  padding:2px 8px;border-radius:6px;margin-right:7px}
+.dia.hoy{background:var(--terra);color:#fff}
+.dia.finde{background:var(--gold100);color:#634B10}
+
+.texto-box{background:var(--forest50);border:1px solid var(--forest100);border-radius:12px;padding:16px;
+  margin:10px 0;position:relative}
+.texto-box .contenido{white-space:pre-wrap;font-size:14px;line-height:1.65;outline:none}
+.texto-box .contenido:focus{background:#fff;border-radius:8px}
+.copiar{position:absolute;top:10px;right:10px;background:var(--gold);color:#fff;border:none;
+  padding:5px 11px;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
+.copiar:hover{background:var(--gold600)}
+.copiar.ok{background:var(--forest)}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--forest50)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--forest500);font-weight:700}
+td input{width:100%;border:1px solid var(--forest100);border-radius:7px;padding:6px 8px;font-family:inherit;font-size:14px}
+td input:focus{outline:2px solid var(--gold);border-color:transparent}
+.kpi{background:var(--forest50);border-radius:12px;padding:14px}
+.kpi .num{font-size:24px;font-weight:800;color:var(--forest)}
+.kpi .lab{font-size:12px;color:var(--forest500);margin-top:2px}
+
+[contenteditable=true]:hover{background:#fffdf5;border-radius:6px}
+.editable-hint{font-size:11.5px;color:var(--forest300);font-style:italic}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;margin-right:5px}
+.tag.li{background:#e8f0fb;color:#0a66c2}
+.tag.ig{background:#fdecf3;color:#c13584}
+.tag.tk{background:#eee;color:#111}
+.tag.mail{background:var(--gold50);color:#866516}
+.tag.wa{background:#e7f6ec;color:#1c7c3e}
+.tag.ok{background:var(--forest50);color:var(--forest)}
+footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;text-align:center}
+@media print{
+  nav.tabs,.barra-acciones,.copiar,.progreso-global{display:none!important}
+  section.panel{display:block!important;page-break-before:always}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="pill">Plan de lanzamiento comercial · actualizado 30/7</span>
+    <h1>SAS Talento &amp; Desarrollo<br/>De cero a las primeras ventas</h1>
+    <p class="sub">Del jueves 30 de julio al miércoles 30 de septiembre de 2026. Todo el documento es
+      editable: hacé clic en cualquier texto y escribí encima. Se guarda solo en este navegador.</p>
+    <div class="barra-acciones">
+      <button class="act primary" id="btnSync" onclick="abrirSync()">Conectar para sincronizar</button>
+      <button class="act" onclick="exportar()">Descargar copia de seguridad</button>
+      <button class="act" onclick="document.getElementById('importar').click()">Restaurar copia</button>
+      <button class="act" onclick="window.print()">Imprimir / PDF</button>
+      <button class="act" onclick="reiniciar()">Reiniciar todo</button>
+      <input type="file" id="importar" accept=".json" style="display:none" onchange="importar(event)"/>
+    </div>
+  </div>
+</header>
+
+<!-- Ventana de conexión para sincronizar entre dispositivos -->
+<div id="capaSync" style="display:none;position:fixed;inset:0;background:rgba(15,37,27,.55);
+     z-index:200;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:18px;padding:28px;max-width:420px;width:100%;
+       box-shadow:0 10px 50px rgba(0,0,0,.3)">
+    <h3 style="font-family:Sora,sans-serif;font-size:19px;font-weight:800;margin-bottom:6px">
+      Sincronizar entre dispositivos</h3>
+    <p style="font-size:14px;color:var(--forest500);margin:0 0 16px">
+      Entrá con el mismo usuario de administrador de la plataforma. Lo hacés una vez por
+      dispositivo: después queda la sesión guardada y todo lo que marques se ve en el celular
+      y en la computadora.</p>
+    <div id="msgSync" style="display:none;font-size:13px;padding:10px 12px;border-radius:9px;margin-bottom:12px"></div>
+    <input id="syncEmail" type="email" placeholder="Tu email" autocomplete="username"
+      style="width:100%;padding:11px 13px;border:1px solid var(--forest100);border-radius:10px;
+      font-family:inherit;font-size:15px;margin-bottom:9px"/>
+    <input id="syncPass" type="password" placeholder="Contraseña" autocomplete="current-password"
+      style="width:100%;padding:11px 13px;border:1px solid var(--forest100);border-radius:10px;
+      font-family:inherit;font-size:15px;margin-bottom:14px"/>
+    <div style="display:flex;gap:8px">
+      <button onclick="entrarSync()" id="btnEntrar"
+        style="flex:1;background:var(--gold);color:#fff;border:none;padding:12px;border-radius:10px;
+        font-weight:700;font-size:14px;cursor:pointer;font-family:inherit">Conectar</button>
+      <button onclick="cerrarSync()"
+        style="background:var(--forest50);color:var(--forest);border:none;padding:12px 18px;
+        border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit">Ahora no</button>
+    </div>
+    <p style="font-size:12px;color:var(--forest300);margin:14px 0 0">
+      Sin conectar el plan funciona igual, pero lo que marques queda solo en este navegador.</p>
+  </div>
+</div>
+
+<div class="progreso-global">
+  <div class="wrap pg-row">
+    <span class="pg-txt" id="pgTexto">0 de 0 tareas</span>
+    <div class="pg-bar"><div class="pg-fill" id="pgFill"></div></div>
+    <span class="pg-txt" id="pgPct">0%</span>
+    <span style="font-size:12px;color:var(--forest300)" id="guardadoEn"></span>
+  </div>
+</div>
+
+<nav class="tabs">
+  <div class="wrap inner">
+    <button class="on" data-p="ahora">Qué hago ahora</button>
+    <button data-p="estrategia">Estrategia</button>
+    <button data-p="cronograma">Cronograma</button>
+    <button data-p="testimonios">Testimonios</button>
+    <button data-p="oferta">Oferta fundadora</button>
+    <button data-p="mensajes">Mensajes directos</button>
+    <button data-p="encuentro">Encuentro en vivo</button>
+    <button data-p="linkedin">LinkedIn</button>
+    <button data-p="instagram">Instagram</button>
+    <button data-p="tiktok">TikTok</button>
+    <button data-p="ads">Meta Ads</button>
+    <button data-p="kpi">Números</button>
+  </div>
+</nav>
+
+<!-- ================= AHORA ================= -->
+<section class="panel on" id="p-ahora">
+<div class="wrap">
+
+  <div class="card listo">
+    <span class="tag ok">Hecho</span><span class="meta">Jueves 30/7</span>
+    <h3>Lo que ya quedó resuelto hoy</h3>
+    <p style="font-size:14px">· La plataforma está publicada y funcionando en talento.sasconsultora.com<br/>
+    · Cuatro materiales gratuitos cargados y descargables (2 nuevos + 2 tuyos)<br/>
+    · Email de bienvenida automático con un ebook adjunto<br/>
+    · Segundo material automático a los 20 días del registro<br/>
+    · Aviso automático de vacantes por afinidad, con baja incluida<br/>
+    · Los cobros configurados: planes, vacante única, mentorías y las 4 fases de selección</p>
+    <p style="font-size:14px;margin-top:10px"><strong>Traducción:</strong> la máquina está lista. Lo que
+    falta de acá en adelante es conseguir gente, y eso no lo hace el software.</p>
+  </div>
+
+  <div class="card hoy">
+    <span class="meta" style="color:var(--terra)">Mañana · Viernes 31 de julio</span>
+    <h3>Día de teléfono y listas</h3>
+    <p style="font-size:14px;color:var(--forest500)">Es día hábil: aprovechá para lo que necesita que
+    alguien te atienda. Empezá por los testimonios, que son lo más urgente y lo que menos tarda.</p>
+    <div data-tareas>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">VIE 31/7</span>Elegir 5 profesionales que colocaste en búsquedas anteriores</span><span class="detalle">Los que quedaron seleccionados y siguen contentos. Son los que mejor van a hablar de vos.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">VIE 31/7</span>Pedirles el testimonio por WhatsApp, uno por uno</span><span class="detalle">Texto listo en la solapa Testimonios. No pidas "un testimonio": hacé 3 preguntas concretas, es lo que hace que respondan.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">VIE 31/7</span>Pedirle testimonio a 2 o 3 PYMEs para las que hiciste la búsqueda</span><span class="detalle">Estos valen el doble: son los que le hablan a tu cliente que paga.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">VIE 31/7</span>Armar la lista A: profesionales que ya te conocen</span><span class="detalle">CV de búsquedas pasadas + agenda. Nombre, email, rubro. Meta: 40 a 60. Una planilla simple alcanza.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">VIE 31/7</span>Mandar las primeras 10 invitaciones, a los que más confianza te tienen</span><span class="detalle">De a 10, no más. Si el texto no funciona, lo corregís antes de quemar la lista entera.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">VIE 31/7</span>Publicar el primer posteo en LinkedIn (Post 1: el jugador que rompía el equipo)</span><span class="detalle">Entre 8 y 9 de la mañana. No vende nada todavía: instala el tema y avisa que estás activo.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">VIE 31/7</span>Armar la lista B: PYMEs conocidas</span><span class="detalle">Clientes actuales, ex clientes, quienes te compraron capacitación. Meta: 15 a 20. Si te queda para el lunes, no pasa nada.</span></span></label>
+    </div>
+  </div>
+
+  <div class="card destacada">
+    <span class="meta">Sábado 1 de agosto</span>
+    <h3>Día de producción, sin llamadas</h3>
+    <p style="font-size:14px;color:var(--forest500)">Sábado no atiende nadie, así que no gastes el día en
+    prospección. Es el mejor día para grabar y dejar contenido listo para toda la semana.</p>
+    <div data-tareas>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">SÁB 1/8</span>Grabar 3 videos cortos de una sentada</span><span class="detalle">Los guiones están en la solapa TikTok. Grabá los tres seguidos: cambiás de remera entre uno y otro y parecen días distintos.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">SÁB 1/8</span>Subir el primero a TikTok y como Reel de Instagram</span><span class="detalle">El mismo video sirve para los dos. Vertical, con subtítulos: el 80% lo mira sin sonido.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">SÁB 1/8</span>Armar en Canva el carrusel 1 para Instagram</span><span class="detalle">Las 6 placas están escritas en la solapa Instagram, solo hay que maquetarlas.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">SÁB 1/8</span>Contestar y agradecer los testimonios que hayan llegado</span><span class="detalle">Contestá el mismo día. El que te hizo el favor tiene que sentir que sirvió.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">SÁB 1/8</span>Mandar 10 invitaciones más de la lista A</span><span class="detalle">Se pueden mandar sábado sin problema: es un mail personal, no una campaña.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">SÁB 1/8</span>Corregir en Canva los 3 ebooks pendientes</span><span class="detalle">Sacar el dominio viejo .store (tapa + 2 páginas del final) y en Gestión del Tiempo borrar el cuadro de texto con el nombre de la autora de plantilla. Pasámelos y yo los publico.</span></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="meta">Domingo 2 de agosto</span>
+    <h3>Opcional y liviano</h3>
+    <div data-tareas>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">DOM 2/8</span>Dejar programados los posteos de la semana</span><span class="detalle">Media hora. Te saca el tema de encima hasta el viernes.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">DOM 2/8</span>Pensar a qué 5 PYMEs vas a llamar el lunes</span><span class="detalle">Nombre y qué les vas a decir. Cinco minutos el domingo evitan una hora de duda el lunes.</span></span></label>
+    </div>
+  </div>
+
+  <div class="alerta">
+    <strong>Lo que sacamos del plan original, y por qué.</strong><br/>
+    · <em>Publicar las búsquedas que estás gestionando por fuera:</em> no se puede, ya están cerradas.
+    En su lugar vamos por los <strong>testimonios</strong> de esas mismas búsquedas, que sirven igual
+    o más.<br/>
+    · <em>Probar un pago real:</em> lo diste por verificado.<br/>
+    · <em>Publicar 3 a 5 vacantes esta semana:</em> no tenés ninguna todavía. Las cargamos apenas
+    aparezca la primera búsqueda nueva — me pasás los datos y la publico yo.
+  </div>
+
+</div>
+</section>
+
+<!-- ================= ESTRATEGIA ================= -->
+<section class="panel" id="p-estrategia">
+<div class="wrap">
+
+  <div class="card destacada">
+    <h3>La idea central</h3>
+    <p contenteditable="true">No estamos vendiendo una plataforma. Estamos vendiendo <strong>dejar de perder
+    tiempo con la gente equivocada</strong>: a la PYME, tiempo revisando CV que no sirven; al profesional,
+    tiempo mandando currículums a un pozo sin fondo. La plataforma es cómo lo resolvemos, no lo que vendemos.</p>
+    <p contenteditable="true">De eso se desprende una regla para todo lo que sigue: <strong>en ningún mensaje
+    empezamos hablando de la plataforma.</strong> Empezamos por el problema de quien nos lee.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>El problema real, y con qué lo resolvemos</h3>
+      <p>Un marketplace nuevo tiene un problema de credibilidad: está vacío. La solución obvia sería
+      llenarlo de vacantes, pero hoy no hay ninguna abierta.</p>
+      <p style="margin-top:10px"><strong>Entonces lo resolvemos con lo otro que sí tenés: pruebas de que
+      esto ya funcionó.</strong> Búsquedas cerradas, gente colocada, empresas conformes. Eso existe y
+      está sin usar.</p>
+      <div class="nota">Un testimonio de una PYME que dice "me presentaron 3 candidatos y contraté al
+      segundo" vale más que 20 vacantes publicadas. Porque la vacante demuestra actividad; el testimonio
+      demuestra resultado.</div>
+    </div>
+
+    <div class="card">
+      <h3>Qué se lleva un profesional hoy, sin pagar nada</h3>
+      <p>Esta es la lista que hace creíble el "te sirve igual aunque haya pocas búsquedas":</p>
+      <p style="margin-top:10px"><strong>1.</strong> Perfil cargado una sola vez y postulaciones
+      ilimitadas, para siempre.<br/>
+      <strong>2.</strong> Aviso automático por email cuando aparece una búsqueda que encaja con su perfil.<br/>
+      <strong>3.</strong> Cuatro materiales de formación completos, sin costo.<br/>
+      <strong>4.</strong> El encuentro en vivo del 27 de agosto.<br/>
+      <strong>5.</strong> Mentorías y coaching a precio de socio.</p>
+      <div class="nota">El punto 2 es el que da vuelta la conversación. No le pedís que entre a un sitio
+      vacío: le ofrecés <strong>no tener que volver a entrar nunca</strong>.</div>
+    </div>
+  </div>
+
+  <div class="card destacada">
+    <h3>El riesgo que hay que cubrir: el silencio</h3>
+    <p>Decir "estamos empezando" resuelve la expectativa del primer día. Pero el que se registra y no
+    recibe nada durante seis semanas se olvida de vos, y cuando por fin le llega el aviso de una vacante
+    ya no se acuerda de haberse anotado.</p>
+    <p style="margin-top:10px">Eso ya está resuelto y corre solo:</p>
+    <table style="margin-top:12px">
+      <tr><th style="width:150px">Cuándo</th><th>Qué recibe</th><th style="width:110px">Estado</th></tr>
+      <tr><td>Al registrarse</td><td>Bienvenida + el ebook "Crecer sin ascender"</td><td><span class="tag ok">Automático</span></td></tr>
+      <tr><td>A los 20 días</td><td>Segundo material: "Los primeros 90 días"</td><td><span class="tag ok">Automático</span></td></tr>
+      <tr><td contenteditable="true">Segunda semana de agosto</td><td contenteditable="true">Invitación al encuentro del 27/8</td><td>a mano</td></tr>
+      <tr><td>Cuando haya vacante afín</td><td>Aviso con el detalle del puesto</td><td><span class="tag ok">Automático</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Lo que NO hacemos</h3>
+    <p><strong>No inventamos vacantes ni perfiles.</strong> Cuando alguien se postula a una búsqueda
+    fantasma perdés exactamente la reputación que estás construyendo.</p>
+    <p style="margin-top:8px"><strong>No importamos CV a la base sin permiso.</strong> Los invitamos a
+    registrarse ellos. Es lo correcto y te cubre legalmente: los datos se dieron para una búsqueda
+    puntual, usarlos para otra cosa requiere consentimiento (Ley 25.326).</p>
+    <p style="margin-top:8px"><strong>No publicamos la oferta gratis en el sitio.</strong> Si la publicás,
+    deja de ser un regalo y pasa a ser el precio esperado. Se ofrece uno a uno.</p>
+    <p style="margin-top:8px"><strong>No arrancamos con Meta Ads.</strong> Pagar tráfico hacia un sitio
+    sin vacantes es tirar la plata. Va en septiembre.</p>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= CRONOGRAMA ================= -->
+<section class="panel" id="p-cronograma">
+<div class="wrap">
+
+  <div class="card">
+    <h3>Las cuatro fases</h3>
+    <table>
+      <tr><th style="width:120px">Fase</th><th style="width:140px">Cuándo</th><th>Objetivo único</th><th style="width:170px">Cómo sabés que salió bien</th></tr>
+      <tr><td><strong>0. Munición</strong></td><td contenteditable="true">30/7 al 2/8</td>
+        <td contenteditable="true">Juntar testimonios y armar las listas. Primeros contactos y primer contenido.</td>
+        <td contenteditable="true">5 testimonios · 20 invitaciones enviadas</td></tr>
+      <tr><td><strong>1. Los tibios</strong></td><td contenteditable="true">3/8 al 9/8</td>
+        <td contenteditable="true">Activar tu base conocida: el resto de los profesionales y las PYMEs clientes.</td>
+        <td contenteditable="true">25 profesionales registrados · 3 PYMEs</td></tr>
+      <tr><td><strong>2. Ruido</strong></td><td contenteditable="true">10/8 al 23/8</td>
+        <td contenteditable="true">Contenido, prospección y convocatoria al encuentro.</td>
+        <td contenteditable="true">40 profesionales · 60 inscriptos al encuentro</td></tr>
+      <tr><td><strong>3. El encuentro</strong></td><td contenteditable="true">24/8 al 30/8</td>
+        <td contenteditable="true">Encuentro del 27/8 y las llamadas de cierre que vienen después.</td>
+        <td contenteditable="true">35 asistentes · 8 conversaciones abiertas</td></tr>
+      <tr><td><strong>4. Escalar</strong></td><td contenteditable="true">31/8 al 30/9</td>
+        <td contenteditable="true">Meta Ads sobre una base que ya funciona.</td>
+        <td contenteditable="true">3 PYMEs pagando · 1 selección vendida</td></tr>
+    </table>
+    <div class="nota">Las tareas del 31/7 y del 1/8 están en la primera solapa, "Qué hago ahora".
+    Acá abajo sigue el resto.</div>
+  </div>
+
+  <div class="card">
+    <span class="meta">Fase 1</span>
+    <h3>Lunes 3/8 al domingo 9/8 — Los tibios</h3>
+    <div data-tareas>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 3/8</span>Llamar a las 5 PYMEs más cercanas con la oferta fundadora</span><span class="detalle">Por teléfono, nunca por mail. Un mail con una oferta gratis parece publicidad y se borra.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 3/8</span>Revisar cómo respondieron las primeras 20 invitaciones</span><span class="detalle">Menos de 5 registros sobre 20 significa que hay que cambiar el mensaje, no la lista.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 4/8</span>Post 2 en LinkedIn: lo que cuesta contratar mal</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 4/8</span>Mandar el resto de la lista A</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 5/8</span>Publicar el primer testimonio en LinkedIn e Instagram</span><span class="detalle">Con nombre y empresa si te dieron permiso. Es el contenido que más confianza genera de todos.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 6/8</span>Contactar a las 10 PYMEs restantes de la lista B</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 6/8</span>Segundo video en TikTok e Instagram</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">Todos los días</span>10 solicitudes de conexión en LinkedIn</span><span class="detalle">Dueños de PYME y mandos medios de Paraná y la región. Ya lo venías haciendo: ahora tenés a dónde mandarlos.</span></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="meta">Fase 2</span>
+    <h3>Lunes 10/8 al domingo 23/8 — Ruido con sentido</h3>
+    <div data-tareas>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 10/8</span>Abrir la inscripción al encuentro del 27/8</span><span class="detalle">Cupo de 40 lugares. El cupo no es un truco: hace que se anoten ahora y no después.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 10/8</span>Invitación PERSONAL al encuentro a 15 dueños de PYME</span><span class="detalle">Uno por uno, por WhatsApp o llamada. Los dueños van cuando los invita una persona, no una campaña.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 11/8</span>Convocatoria masiva al encuentro por email a los profesionales</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 12/8</span>Post 3: el ebook como imán</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 14/8</span>Post 4: verdad incómoda sobre los CV</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 17/8</span>Segundo testimonio publicado</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 18/8</span>Recordatorio del encuentro a los inscriptos</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 20/8</span>Post 5: invitación abierta al encuentro</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 21/8</span>Grabar y subir videos 3, 4 y 5</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">SÁB 22/8</span>Última convocatoria al encuentro</span></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="meta">Fase 3</span>
+    <h3>Lunes 24/8 al domingo 30/8 — El encuentro</h3>
+    <div data-tareas>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 25/8</span>Ensayo: probar audio, pantalla y el link</span><span class="detalle">Cinco minutos que evitan arrancar 10 minutos tarde.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 26/8</span>Recordatorio 24 horas antes</span><span class="detalle">Sin recordatorio asiste el 25% de los inscriptos. Con recordatorio, el 45%.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 27/8</span>Encuentro en vivo, 19:00 a 19:45</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 28/8</span>Email a los que asistieron: grabación + ebook + agenda abierta</span><span class="detalle">Dentro de las 24 horas, mientras te tienen fresco.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 28/8</span>Email distinto a los que se anotaron y no fueron</span><span class="detalle">Sin reproche. Se anotaron: eso ya es interés.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">SÁB 29/8</span>Post 6: qué pasó en el encuentro</span><span class="detalle">El posteo que más conversaciones de venta genera, porque muestra que ya hay gente adentro.</span></span></label>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="meta">Fase 4</span>
+    <h3>Lunes 31/8 al miércoles 30/9 — Escalar</h3>
+    <div data-tareas>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 31/8</span>Llamar uno por uno a los dueños que asistieron</span><span class="detalle">Acá se cierra. El encuentro no vende: abre la puerta para esta llamada.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 31/8</span>Vence la oferta fundadora. Avisar a los indecisos</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 2/9</span>Lanzar campaña A (profesionales) en Meta Ads</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 7/9</span>Lanzar campaña B (PYMEs)</span><span class="detalle">Escalonadas, no juntas: así sabés cuál funciona.</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 10/9</span>Primera lectura de resultados: apagar el peor anuncio, duplicar el mejor</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 14/9</span>Activar retargeting a quienes visitaron y no se registraron</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">Todas las semanas</span>3 posteos en LinkedIn, 3 en Instagram, 2 en TikTok</span></span></label>
+      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 30/9</span>Cierre del trimestre: revisar números y decidir el paso siguiente</span></span></label>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= TESTIMONIOS ================= -->
+<section class="panel" id="p-testimonios">
+<div class="wrap">
+
+  <div class="card destacada">
+    <h3>Por qué esto es lo más urgente de todo</h3>
+    <p>Es lo único que tenés que compensa la falta de vacantes. Una búsqueda cerrada con las dos partes
+    conformes prueba que el servicio funciona; una vacante abierta solo prueba que hay actividad.</p>
+    <p style="margin-top:10px">Y tiene fecha de vencimiento: cuanto más tiempo pasa desde que colocaste a
+    alguien, menos ganas tiene de escribirte. <strong>Los de este año todavía te contestan.</strong></p>
+    <div class="nota">Regla de oro: <strong>nunca pidas "un testimonio"</strong>. La gente se congela
+    frente a la hoja en blanco y te dice que sí, que después te lo manda, y nunca lo manda. Hacé dos o
+    tres preguntas concretas y armá vos el texto con lo que te respondan, para que lo aprueben.</div>
+  </div>
+
+  <div class="card">
+    <span class="tag wa">WhatsApp</span><span class="meta">A un profesional que colocaste</span>
+    <h3>Pedido de testimonio — lado profesional</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Hola [NOMBRE], ¿cómo va todo por [EMPRESA]?
+
+Te escribo por algo cortito y medio egoísta. Armamos una plataforma en SAS para conectar profesionales de la zona con PYMEs que están contratando, y estamos arrancando.
+
+Me vendría bárbaro poder contar cómo fue tu experiencia con nosotros. No hace falta que escribas nada armado: si me contestás estas tres preguntas con lo primero que se te venga, yo lo ordeno y te lo paso para que lo apruebes antes de publicar nada.
+
+1. ¿Cómo estabas antes de entrar a [EMPRESA]? (buscando hace rato, mal en el trabajo anterior, lo que sea)
+2. ¿Qué fue lo que más te sirvió del proceso con nosotros?
+3. ¿Cómo estás hoy en el puesto?
+
+Con dos renglones por pregunta me alcanza. Y si preferís mandarme un audio, mejor todavía.
+
+Gracias!</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag wa">WhatsApp</span><span class="meta">A una PYME para la que hiciste la búsqueda</span>
+    <h3>Pedido de testimonio — lado PYME</h3>
+    <p class="editable-hint">Este vale el doble: es el que le habla a tu cliente que paga.</p>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Hola [NOMBRE], ¿cómo andás? ¿Cómo viene funcionando [PERSONA] en el puesto?
+
+Te hago una consulta corta. Armamos una plataforma en SAS para que las PYMEs de la zona publiquen sus búsquedas y les lleguen los candidatos ya filtrados. Estamos empezando y necesito mostrar que esto no es nuevo, que ya lo venimos haciendo.
+
+¿Me tirás dos o tres líneas sobre cómo fue la búsqueda con nosotros? Te dejo tres preguntas para que sea rápido:
+
+1. ¿Cómo venían resolviendo las búsquedas antes?
+2. ¿Qué les cambió trabajando con nosotros?
+3. ¿Se lo recomendarías a otro dueño de PYME?
+
+Contestame como te salga, aunque sea por audio, y yo lo ordeno. Antes de publicar nada te lo paso para que lo apruebes, con tu nombre y el de la empresa o sin ellos, como prefieras.
+
+Gracias!</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag wa">WhatsApp</span><span class="meta">Cuando te contestan</span>
+    <h3>Devolverles el texto armado para que lo aprueben</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">[NOMBRE], gracias! Con lo que me contaste armé esto:
+
+"[TEXTO ARMADO, 2 o 3 ORACIONES, CON SUS PALABRAS]"
+
+¿Está bien así o querés que cambie algo? Si te parece, lo publico con tu nombre y [EMPRESA]. Si preferís que vaya sin nombre, también me sirve.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Qué hago yo cuando los tengas</h3>
+    <p>Pasámelos como te lleguen —texto, audio, captura— y me ocupo del resto:</p>
+    <p style="margin-top:10px">· Armo el texto final de cada uno, corto y creíble<br/>
+    · Agrego una sección de testimonios en el sitio, en la página de PYMEs y en la de profesionales<br/>
+    · Preparo las placas para Instagram y el texto para LinkedIn<br/>
+    · Los sumo al mail de invitación, que es donde más pesan</p>
+    <div class="nota">Con tres testimonios ya alcanza para que el sitio deje de parecer recién nacido.
+    Con cinco, empieza a parecer una consultora con recorrido.</div>
+  </div>
+
+  <div class="card">
+    <h3>Seguimiento de los pedidos</h3>
+    <p class="editable-hint">Anotá a quién le pediste y cómo viene. Todo editable.</p>
+    <table>
+      <tr><th>Persona</th><th>Empresa</th><th>Lado</th><th>Pedido</th><th>Estado</th></tr>
+      <tr><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+    </table>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= OFERTA ================= -->
+<section class="panel" id="p-oferta">
+<div class="wrap">
+
+  <div class="card destacada">
+    <h3>Programa Fundadores — las primeras 10 PYMEs</h3>
+    <p contenteditable="true">Publicamos tu primera búsqueda <strong>sin cargo</strong>. Normalmente son
+    $80.000 por publicación; a las primeras 10 empresas se la bonificamos completa.</p>
+    <h4>Qué incluye</h4>
+    <p contenteditable="true">· Publicación de una búsqueda por 45 días<br/>
+    · Los postulantes ordenados automáticamente por afinidad con esa búsqueda<br/>
+    · Aviso por email a los profesionales de la base cuyo perfil encaje<br/>
+    · Panel para mover a cada candidato por el proceso</p>
+    <h4>Qué pedimos a cambio</h4>
+    <p contenteditable="true">Que nos digas con franqueza qué funcionó y qué no. Y si el resultado es
+    bueno, que nos dejes contarlo.</p>
+    <h4>Condiciones</h4>
+    <p contenteditable="true">Vence el <strong>31 de agosto de 2026</strong>. Solo 10 empresas. Una
+    búsqueda por empresa.</p>
+  </div>
+
+  <div class="card">
+    <h3>Por qué está armada así</h3>
+    <p><strong>Nombra el precio que no van a pagar.</strong> Si no decís "$80.000", el número que les queda
+    en la cabeza es cero, y cobrarles después se vuelve una discusión.</p>
+    <p style="margin-top:10px"><strong>Tiene fecha de vencimiento.</strong> Una oferta sin plazo no se
+    rechaza: se posterga, que es peor porque no te enterás.</p>
+    <p style="margin-top:10px"><strong>Tiene cupo.</strong> "Las primeras 10" convierte la decisión de
+    "¿me sirve?" en "¿llego?".</p>
+    <p style="margin-top:10px"><strong>Pide algo a cambio.</strong> Un regalo puro se percibe como
+    desesperación; un intercambio, como acuerdo entre pares. Y te llevás el testimonio, que es lo que te
+    va a hacer falta en octubre.</p>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= MENSAJES ================= -->
+<section class="panel" id="p-mensajes">
+<div class="wrap">
+  <div class="nota">Todos los textos son editables. El botón "Copiar" copia la versión editada.</div>
+
+  <div class="card">
+    <span class="tag mail">Email</span><span class="meta">Lista A · Profesionales de búsquedas pasadas</span>
+    <h3>Invitación a quienes ya te mandaron el CV</h3>
+    <p class="editable-hint">Reemplazá [NOMBRE] y [PUESTO] en cada envío. Personalizado uno por uno rinde
+    cinco veces más que un mailing. Si son 40, son 40 minutos.</p>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Asunto: [NOMBRE], me acordé de vos
+
+Hola [NOMBRE], ¿cómo va?
+
+Te escribo porque hace un tiempo me mandaste tu CV para la búsqueda de [PUESTO]. Esa quedó cerrada, pero tu perfil me quedó dando vueltas.
+
+Armamos algo en SAS y quiero que lo tengas de primera mano: una plataforma donde las PYMEs de la región publican sus búsquedas y vos cargás tu perfil una sola vez.
+
+Te soy sincero: recién arrancamos. Hoy hay pocas búsquedas publicadas y van a ir apareciendo de a poco, porque no todas las empresas necesitan incorporar al mismo tiempo.
+
+Por eso el sentido de anotarse ahora es otro: cuando salga una búsqueda que encaje con lo tuyo, te llega un mail automático. No tenés que estar entrando a mirar. Cargás el perfil una vez y te olvidás.
+
+Y mientras tanto tenés, sin costo:
+· Cuatro guías de formación que escribimos nosotros (liderazgo, trabajo en equipo, carrera, gestión del tiempo)
+· Un encuentro en vivo que hago el jueves 27 de agosto
+· Mentorías y coaching a precio de socio, si en algún momento querés ordenar tu rumbo profesional
+
+Son cinco minutos:
+https://talento.sasconsultora.com/#/registro
+
+Te lo mando a vos primero porque ya conozco tu perfil y sé para qué tipo de búsquedas servís.
+
+Un abrazo,
+Sebastián Svetliza
+SAS Consultora</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag mail">Email</span><span class="meta">Lista A · Contactos de agenda</span>
+    <h3>Invitación a gente que te conoce pero no pasó por una búsqueda</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Asunto: Algo que armamos y quería que veas
+
+Hola [NOMBRE], ¿cómo andás?
+
+Te cuento algo en lo que vengo trabajando. En SAS armamos una plataforma para conectar profesionales de la región con PYMEs que están contratando.
+
+La diferencia con los portales grandes es que atrás hay una consultora: las búsquedas las gestionamos nosotros, y cuando entrás a un equipo el acompañamiento sigue con capacitación y mentorías.
+
+Estamos empezando, así que todavía hay pocas búsquedas publicadas. Pero no hace falta esperar: cargás el perfil ahora y el sistema te avisa por mail cuando aparezca una que encaje con lo tuyo.
+
+Y hay cosas que ya podés usar desde hoy: cuatro guías de formación gratuitas, un encuentro en vivo el 27 de agosto, y mentorías a precio de socio.
+
+Es gratis:
+https://talento.sasconsultora.com/#/registro
+
+Si conocés a alguien que le pueda servir, pasásela.
+
+Abrazo,
+Sebastián</div>
+    </div>
+  </div>
+
+  <div class="card destacada">
+    <span class="tag wa">WhatsApp / Llamada</span><span class="meta">Lista B · PYMEs conocidas</span>
+    <h3>La oferta fundadora — guion para llamar</h3>
+    <div class="alerta">Esto se ofrece <strong>hablando</strong>, no por mail. Un mail con una oferta gratis
+    parece publicidad. La misma frase dicha por teléfono es un favor entre conocidos.</div>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">[APERTURA — que no parezca venta]
+Hola [NOMBRE], ¿cómo andás? Te llamo por algo puntual, son dos minutos.
+
+[EL CONTEXTO]
+Armamos en SAS una plataforma donde las PYMEs publican sus búsquedas y les llegan los postulantes ya ordenados por cuánto encaja cada uno con el puesto. En vez de recibir 60 CV y revisarlos de a uno.
+
+[LA OFERTA]
+Estamos arrancando y elegimos 10 empresas para entrar sin cargo. La publicación normalmente sale $80.000; a ustedes se la bonificamos completa.
+
+[EL PEDIDO — esto es lo que la hace creíble]
+Lo único que te pido a cambio es que después me digas con franqueza qué te sirvió y qué no. Necesitamos eso más que la plata.
+
+[EL CIERRE]
+¿Tenés alguna búsqueda abierta ahora o alguna que se venga en los próximos meses?
+
+[SI DICE QUE NO TIENE BÚSQUEDA]
+Ningún problema. ¿Te dejo el lugar reservado igual? Vence el 31 de agosto, pero si me avisás antes te lo guardo.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag wa">WhatsApp</span><span class="meta">Seguimiento a las 48 horas</span>
+    <h3>Para la PYME que dijo que sí pero no publicó</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Hola [NOMBRE], ¿pudiste entrar?
+
+Si querés te la cargo yo y vos me la revisás antes de que salga. Pasame el puesto, qué necesitás que sepa hacer y el rango de sueldo, y en diez minutos la tenés publicada.
+
+Así no te ocupa tiempo a vos.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag li">LinkedIn</span><span class="meta">Prospección en frío</span>
+    <h3>Mensaje de conexión (máximo 300 caracteres)</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Hola [NOMBRE], veo que estás al frente de [EMPRESA]. Trabajo con PYMEs de la región en temas de equipo y contratación. Me interesa conectar y ver en qué andan por [CIUDAD]. Saludos, Sebastián — SAS Consultora</div>
+    </div>
+    <h4>Seguimiento, cuatro días después de que acepta</h4>
+    <div class="alerta">Nunca vendas en el primer mensaje después de aceptar. Es la forma más rápida de que
+    te bloqueen.</div>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Gracias por conectar, [NOMBRE].
+
+Te hago una pregunta corta, más por curiosidad profesional que por otra cosa: cuando tenés que sumar a alguien al equipo, ¿cómo lo venís resolviendo? ¿Por recomendación, publicando, o lo dejás para cuando ya no da más?
+
+Lo pregunto porque en casi todas las PYMEs con las que trabajo la respuesta es la tercera, y ahí es donde se contrata apurado y sale mal.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag mail">Email</span><span class="meta">Post-encuentro · 24 horas después</span>
+    <h3>A quienes asistieron</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Asunto: Lo que quedó del encuentro de anoche
+
+Hola [NOMBRE],
+
+Gracias por estar ayer. Te dejo lo que prometí:
+
+· La grabación: [LINK]
+· El material que mencioné: [LINK]
+
+Y una cosa más. Si algo de lo que hablamos te resonó con lo que está pasando en tu equipo, tengo la agenda abierta para conversarlo sin cargo, 30 minutos, sin ninguna intención de venderte nada.
+
+No es una cortesía: la mayoría de los problemas de equipo se resuelven ordenando lo que ya está, y eso se ve en media hora de charla.
+
+Si querés, respondeme con dos o tres horarios que te sirvan.
+
+Abrazo,
+Sebastián</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= ENCUENTRO ================= -->
+<section class="panel" id="p-encuentro">
+<div class="wrap">
+
+  <div class="card destacada">
+    <h3>El problema que planteaste, y cómo lo resolvemos</h3>
+    <p>Dijiste algo importante: <em>"por experiencia los dueños no se suman a webinars gratuitos"</em>.
+    Es cierto, y la razón es que un webinar gratuito le dice al dueño "esto es marketing masivo, te van a
+    vender algo". Tiene razón en no ir.</p>
+    <p style="margin-top:10px">Cinco cambios que lo dan vuelta:</p>
+    <p style="margin-top:8px"><strong>1. No se llama webinar.</strong> Se llama <em>encuentro</em>. La
+    palabra "webinar" ya perdió.</p>
+    <p style="margin-top:6px"><strong>2. Los dueños se invitan uno por uno.</strong> Por WhatsApp o
+    llamada, nunca por formulario masivo.</p>
+    <p style="margin-top:6px"><strong>3. Se vende el "quién", no el "qué".</strong> "Van a estar otros
+    dueños de la zona" convoca más que cualquier temario.</p>
+    <p style="margin-top:6px"><strong>4. Cupo real y chico.</strong> 40 lugares. Con 200 inscriptos ningún
+    dueño va, porque sabe que es una charla masiva.</p>
+    <p style="margin-top:6px"><strong>5. Cuarenta y cinco minutos.</strong> "Una hora y media" es un "no"
+    automático para alguien que tiene una empresa.</p>
+  </div>
+
+  <div class="card">
+    <h3>El tema, que le sirve a los dos lados</h3>
+    <p class="meta">Título</p>
+    <p style="font-size:20px;font-weight:800;margin:4px 0 10px" contenteditable="true">El talento no alcanza</p>
+    <p class="meta">Bajada</p>
+    <p contenteditable="true" style="margin-top:4px">Por qué los mejores equipos no son los que tienen las
+    mejores individualidades. Una conversación para dueños de PYME y para profesionales que quieren crecer.</p>
+    <div class="grid2" style="margin-top:16px">
+      <div><h4>Qué escucha el dueño</h4><p style="font-size:14px">"Tengo gente capaz y el equipo igual no funciona. ¿Por qué?"</p></div>
+      <div><h4>Qué escucha el profesional</h4><p style="font-size:14px">"Soy bueno en lo mío y no termino de crecer. ¿Qué me falta?"</p></div>
+    </div>
+    <div class="nota">Es la misma charla respondiendo dos preguntas distintas. Por eso convoca a los dos, y
+    por eso vale que estén juntos: el dueño escucha lo que piensa un empleado y viceversa.</div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Los datos</h3>
+      <table>
+        <tr><td><strong>Fecha</strong></td><td contenteditable="true">Jueves 27 de agosto de 2026</td></tr>
+        <tr><td><strong>Hora</strong></td><td contenteditable="true">19:00 a 19:45</td></tr>
+        <tr><td><strong>Dónde</strong></td><td contenteditable="true">Zoom (link a los inscriptos)</td></tr>
+        <tr><td><strong>Cupo</strong></td><td contenteditable="true">40 lugares</td></tr>
+      </table>
+      <p style="margin-top:12px;font-size:13.5px">El jueves a las 19:00 es el mejor horario: la semana ya
+      pasó lo peor, todavía no es fin de semana, y a esa hora el dueño ya salió del quilombo del día.</p>
+    </div>
+    <div class="card">
+      <h3>Guion de los 45 minutos</h3>
+      <p contenteditable="true"><strong>0 a 5 —</strong> Una historia del deporte. Un equipo con la mejor
+      individualidad que perdía igual. Sin presentarte todavía.<br/><br/>
+      <strong>5 a 10 —</strong> Recién ahí quién sos y por qué hablás de esto.<br/><br/>
+      <strong>10 a 25 —</strong> El paralelo con la PYME: roles sin definir, expectativas no dichas,
+      contratar apurado.<br/><br/>
+      <strong>25 a 35 —</strong> Qué hacer. Concreto y aplicable el lunes.<br/><br/>
+      <strong>35 a 43 —</strong> Preguntas.<br/><br/>
+      <strong>43 a 45 —</strong> Cierre. Una sola invitación clara, sin insistir.</p>
+      <div class="alerta">No vendas durante los 45 minutos. La venta pasa el lunes siguiente, en la
+      llamada uno a uno.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag wa">WhatsApp</span>
+    <h3>Invitación personal a un dueño</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Hola [NOMBRE], ¿cómo andás?
+
+El jueves 27 a las 19 hago un encuentro por Zoom con dueños de PYME de la zona. Se llama "El talento no alcanza" y va sobre algo que veo todo el tiempo: equipos con gente capaz que igual no terminan de funcionar.
+
+Son 45 minutos, no hay presentación de nada, y somos pocos a propósito: dejamos 40 lugares para que se pueda conversar de verdad.
+
+Te quería invitar directamente porque me interesa que estés vos. ¿Te reservo un lugar?</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= LINKEDIN ================= -->
+<section class="panel" id="p-linkedin">
+<div class="wrap">
+  <div class="nota"><strong>Ritmo:</strong> 3 posteos por semana, entre las 8 y las 9 de la mañana.
+  <strong>Regla:</strong> ningún posteo lleva link en el cuerpo. LinkedIn castiga los links; el link va en
+  el primer comentario, escrito por vos apenas publicás.</div>
+
+  <div class="card">
+    <span class="tag li">Post 1</span><span class="meta">Viernes 31/7 · el primero</span>
+    <h3>El jugador que rompía el equipo</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">El mejor jugador del equipo era el problema.
+
+No porque fuera malo. Al revés: era el más talentoso de todos.
+
+Pero nadie le había dicho cuál era su rol. Entonces jugaba donde se le ocurría, y los otros diez tenían que acomodarse a él.
+
+El equipo perdía. Con el mejor jugador adentro.
+
+Lo vi en una cancha hace años y lo veo todas las semanas en las PYMEs con las que trabajo.
+
+El vendedor estrella que se lleva la cartera puesta. El técnico que sabe todo y no documenta nada. El encargado que resuelve cualquier cosa y por eso nadie más aprende a resolver.
+
+No es un problema de talento. Es un problema de estructura.
+
+Y la diferencia no la hace contratar mejor. La hace ordenar primero.
+
+Una pregunta para el dueño que esté leyendo esto: si te tomás dos semanas de vacaciones, ¿tu equipo funciona?
+
+Si la respuesta es no, no tenés un equipo. Tenés gente esperando que vuelvas.
+
+#pymes #liderazgo #equipos #entrerios</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag li">Post 2</span><span class="meta">Martes 4/8</span>
+    <h3>Lo que cuesta contratar mal</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Una PYME me dijo la semana pasada: "publiqué el puesto y me llegaron 80 currículums".
+
+Sonaba a buena noticia. No lo era.
+
+Porque de esos 80, sirven 5. Y para encontrar esos 5 hay que abrir los 80.
+
+Hice la cuenta con ella: 80 CV, tres minutos cada uno con suerte, son cuatro horas. Cuatro horas del dueño, que es la persona más cara de la empresa, haciendo una tarea que no requiere que sea el dueño.
+
+Y eso es solo el primer filtro. Después vienen las entrevistas con los que no había que entrevistar.
+
+El costo real de contratar mal no es el sueldo que pagás de más. Son las semanas que perdés antes de darte cuenta, y las que perdés después buscando el reemplazo.
+
+¿Cuánto tiempo te llevó la última búsqueda que hiciste?
+
+#pymes #reclutamiento #rrhh</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag li">Post 3</span><span class="meta">Miércoles 12/8 · imán</span>
+    <h3>El ebook, sin parecer publicidad</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">"Mi equipo no se compromete."
+
+Es la frase que más escucho de dueños de PYME. Y casi siempre esconde otra cosa.
+
+Cuando pregunto un poco más aparece esto:
+
+→ Nadie sabe con precisión qué se espera de él.
+→ Las expectativas están en la cabeza del dueño, no dichas.
+→ Se corrige el error, nunca se reconoce el acierto.
+→ El que se equivoca se entera; el que hace bien las cosas, no.
+
+Eso no es falta de compromiso. Es falta de claridad.
+
+Y la buena noticia es que la claridad se construye. No hace falta cambiar la gente.
+
+Escribí sobre esto en una guía que dejo gratis para quien la quiera: link en el primer comentario.
+
+Si estás con un equipo que no termina de arrancar, empezá por ahí antes de pensar en contratar a otro.
+
+#pymes #cultura #liderazgo #equipos</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag li">Post 4</span><span class="meta">Viernes 14/8 · lado profesional</span>
+    <h3>Verdad incómoda sobre los CV</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Leo currículums todas las semanas. Te digo la verdad que nadie te dice:
+
+Tu CV tiene 40 segundos. No más.
+
+Y en esos 40 segundos, el que lee busca tres cosas: si hiciste antes algo parecido a lo que necesita, si vivís cerca, y si estás disponible.
+
+Todo lo demás es decoración.
+
+Los cinco errores que veo siempre:
+
+1. Un CV genérico que sirve para cualquier puesto. Y por eso no gana ninguno.
+2. Lista de tareas en vez de resultados. "Atendía clientes" no dice nada. "Sostuve una cartera de 40 clientes con 90% de renovación" dice todo.
+3. No aclarar dónde vivís. Suena menor: descarta más CV de los que te imaginás.
+4. Usar palabras distintas a las del aviso. Si el aviso dice "control de calidad" y vos escribiste "aseguramiento de procesos", para el filtro no existís.
+5. Tres páginas. Nadie llega a la tercera.
+
+Ninguna de las cinco tiene que ver con tu talento. Todas tienen que ver con cómo lo mostrás.
+
+#busquedalaboral #cv #empleo #entrerios</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag li">Post 5</span><span class="meta">Miércoles 5/8 · testimonio</span>
+    <h3>El primer testimonio publicado</h3>
+    <p class="editable-hint">Se completa con el testimonio real que consigas. Es el posteo que más
+    confianza genera de todos.</p>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Hace [TIEMPO] [EMPRESA] necesitaba cubrir un puesto de [PUESTO].
+
+Habían intentado por su cuenta. Les llegaron currículums, entrevistaron a algunos, y no aparecía.
+
+Nos llamaron. Hicimos la búsqueda completa: definimos bien el perfil, salimos a buscar, entrevistamos, y les presentamos tres finalistas con un informe de cada uno.
+
+Contrataron a [PERSONA]. Hoy, [TIEMPO] después, sigue en el puesto.
+
+Le pregunté a [NOMBRE DEL DUEÑO] qué le había cambiado. Me dijo:
+
+"[TESTIMONIO TEXTUAL]"
+
+Cuento esto porque estamos arrancando con la plataforma y mucha gente me pregunta si esto es nuevo. La plataforma sí. El trabajo, no: lo venimos haciendo hace años.
+
+#pymes #reclutamiento #entrerios</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= INSTAGRAM ================= -->
+<section class="panel" id="p-instagram">
+<div class="wrap">
+  <div class="nota"><strong>Ritmo:</strong> 3 publicaciones por semana + historias casi todos los días.
+  En Instagram la gente no lee: la primera placa del carrusel tiene que entenderse sola.</div>
+
+  <div class="card">
+    <span class="tag ig">Carrusel 1</span><span class="meta">Armar el sábado 1/8 · 6 placas</span>
+    <h3>El talento no alcanza</h3>
+    <table>
+      <tr><th style="width:70px">Placa</th><th>Qué va</th></tr>
+      <tr><td><strong>1</strong></td><td contenteditable="true">"El mejor jugador del equipo era el problema." (fondo verde oscuro, tipografía grande)</td></tr>
+      <tr><td><strong>2</strong></td><td contenteditable="true">"No porque fuera malo. Porque nadie le dijo cuál era su rol."</td></tr>
+      <tr><td><strong>3</strong></td><td contenteditable="true">"En el deporte el entrenador no juega. Ordena."</td></tr>
+      <tr><td><strong>4</strong></td><td contenteditable="true">"En tu PYME pasa lo mismo."</td></tr>
+      <tr><td><strong>5</strong></td><td contenteditable="true">"La diferencia no es la gente. Es la estructura." (en dorado, la placa más grande)</td></tr>
+      <tr><td><strong>6</strong></td><td contenteditable="true">"¿Tu equipo puede funcionar sin vos esta semana?" + @sas.consultora</td></tr>
+    </table>
+    <h4>Pie de foto</h4>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">El jugador más talentoso puede romper un equipo.
+
+No porque sea malo. Porque nadie le explicó su rol.
+
+En el deporte lo aprendí rápido: el problema casi nunca es la gente. Es la falta de estructura.
+
+En la PYME pasa exactamente lo mismo.
+
+El dueño que resuelve todo, apaga incendios y no puede irse de vacaciones no tiene un equipo. Tiene empleados esperando instrucciones.
+
+La diferencia no es contratar mejor. Es ordenar primero.
+
+¿Tu equipo puede funcionar sin vos esta semana?
+
+#pymes #liderazgoempresarial #gestiondeequipos #empresaargentina #consultoriaempresarial #parana #entrerios</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag ig">Carrusel 2</span><span class="meta">Lado profesional · 8 placas</span>
+    <h3>Tu CV tiene 40 segundos</h3>
+    <table>
+      <tr><td><strong>1</strong></td><td contenteditable="true">"Tu CV tiene 40 segundos. No más."</td></tr>
+      <tr><td><strong>2</strong></td><td contenteditable="true">"Leo currículums todas las semanas. Esto es lo que pasa de verdad."</td></tr>
+      <tr><td><strong>3</strong></td><td contenteditable="true">"Error 1: un CV que sirve para cualquier puesto. Y por eso no gana ninguno."</td></tr>
+      <tr><td><strong>4</strong></td><td contenteditable="true">"Error 2: 'atendía clientes' no dice nada. 'Cartera de 40 clientes, 90% de renovación' lo dice todo."</td></tr>
+      <tr><td><strong>5</strong></td><td contenteditable="true">"Error 3: no aclarar dónde vivís. Descarta más CV de los que creés."</td></tr>
+      <tr><td><strong>6</strong></td><td contenteditable="true">"Error 4: si el aviso dice 'control de calidad' y vos escribiste otra cosa, no existís."</td></tr>
+      <tr><td><strong>7</strong></td><td contenteditable="true">"Error 5: tres páginas. Nadie llega a la tercera."</td></tr>
+      <tr><td><strong>8</strong></td><td contenteditable="true">"Ninguno tiene que ver con tu talento. Todos, con cómo lo mostrás."</td></tr>
+    </table>
+    <h4>Pie de foto</h4>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">Guardá este post antes de mandar el próximo CV.
+
+Los cinco errores que veo todas las semanas del lado del que filtra.
+
+Ninguno tiene que ver con lo que sabés hacer. Todos tienen que ver con cómo lo contás.
+
+Si querés que tu perfil le llegue directo a PYMEs que están contratando de verdad, dejámelo en el link de la bio. Es gratis.
+
+#busquedalaboral #cv #empleoargentina #trabajo #parana #entrerios #rrhh</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag ig">Historias</span>
+    <h3>Secuencia de 5 historias — se usa 2 veces por semana</h3>
+    <p contenteditable="true"><strong>1.</strong> Encuesta: "¿Tu equipo funciona si te tomás una semana?" (Sí / Ni en pedo)<br/>
+    <strong>2.</strong> Mostrar el resultado al día siguiente. La gente vuelve a ver qué votaron los demás.<br/>
+    <strong>3.</strong> Detrás de escena: vos armando una búsqueda, la pantalla de la plataforma.<br/>
+    <strong>4.</strong> Caja de preguntas: "¿Qué es lo que más te cuesta de contratar?"<br/>
+    <strong>5.</strong> Responder una de esas preguntas en video, nombrando a quien la hizo.</p>
+    <div class="nota">Las historias no venden, pero hacen que después te lean los posteos. La caja de
+    preguntas además te da temas de contenido gratis para las semanas siguientes.</div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= TIKTOK ================= -->
+<section class="panel" id="p-tiktok">
+<div class="wrap">
+  <div class="nota"><strong>Grabá los 3 primeros el sábado 1/8, de una sentada.</strong> Cambiás de remera
+  entre uno y otro y parecen días distintos. <strong>Regla de oro:</strong> los primeros 2 segundos definen
+  todo. Nada de "hola, soy Sebastián y hoy les traigo".</div>
+
+  <div class="card">
+    <span class="tag tk">Video 1</span><span class="meta">25 a 35 segundos</span>
+    <h3>El mejor empleado</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">[0-2s · GANCHO]
+Tu mejor empleado puede ser tu peor problema.
+
+[2-10s]
+Y no porque haga las cosas mal.
+Al revés: porque las hace todas.
+
+[10-20s]
+Resuelve cualquier cosa. Sabe dónde está todo. Si falta, se nota al toque.
+
+Eso no es un buen empleado. Eso es un riesgo.
+
+[20-30s]
+Porque el día que se va, se lleva la empresa adentro de la cabeza.
+
+[CIERRE]
+Un equipo que depende de una persona no es un equipo. Es una apuesta.
+
+[TEXTO EN PANTALLA]
+"Si falta, se para todo" ← eso es un problema</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag tk">Video 2</span><span class="meta">30 segundos</span>
+    <h3>Lo que miro en 40 segundos</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">[0-2s · GANCHO]
+Tengo tu CV abierto 40 segundos. Esto es lo que miro.
+
+[2-12s]
+Primero: ¿hiciste antes algo parecido a esto? Diez segundos.
+
+Segundo: ¿dónde vivís? Cinco segundos.
+
+Tercero: ¿desde cuándo podés arrancar? Tres segundos.
+
+[12-25s]
+El resto —el diseño, la foto, la frase motivacional del principio— no lo miro.
+No porque sea mala onda. Porque tengo 60 CV más abajo.
+
+[CIERRE]
+Si esas tres cosas no se ven en la primera pantalla, tu CV no compite.
+Y no es por falta de talento.
+
+[TEXTO EN PANTALLA]
+40 segundos. 3 preguntas. Nada más.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag tk">Video 3</span><span class="meta">30 segundos · formato lista</span>
+    <h3>Tres frases que escucho antes de que todo salga mal</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">[0-2s · GANCHO]
+Tres frases que cuando las escucho ya sé cómo termina.
+
+[2-10s]
+Uno: "necesito a alguien para ayer".
+Contratar apurado sale caro dos veces: cuando entra y cuando se va.
+
+[10-18s]
+Dos: "que sea proactivo".
+Eso no es un requisito, es un deseo. Nadie sabe qué significa, ni el que lo pide.
+
+[18-27s]
+Tres: "ya va a aprender sobre la marcha".
+A veces sí. La mayoría de las veces, sobre la marcha se frustra y se va.
+
+[CIERRE]
+Si dijiste alguna de las tres esta semana, frená un segundo antes de publicar el aviso.
+
+[TEXTO EN PANTALLA]
+1. "Para ayer" · 2. "Proactivo" · 3. "Aprende sobre la marcha"</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag tk">Video 4</span><span class="meta">25 segundos · el más personal</span>
+    <h3>Del deporte a las empresas</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">[0-2s · GANCHO]
+Aprendí más de equipos en una cancha que en cualquier libro de management.
+
+[2-12s]
+En el deporte el error se ve al toque. Perdés el partido y sabés por qué.
+
+En una empresa el error tarda seis meses en aparecer. Y cuando aparece, ya no sabés de dónde vino.
+
+[12-22s]
+Pero es el mismo error: nadie sabe con exactitud qué se espera de él.
+
+[CIERRE]
+La diferencia es que en la cancha lo corregís el martes.
+En la empresa te enterás cuando renuncia.
+
+[TEXTO EN PANTALLA]
+El error tarda 6 meses en verse</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="tag tk">Video 5</span><span class="meta">20 segundos · convocatoria al encuentro</span>
+    <h3>Invitación al encuentro</h3>
+    <div class="texto-box">
+      <button class="copiar" onclick="copiar(this)">Copiar</button>
+      <div class="contenido" contenteditable="true">[0-3s · GANCHO]
+Voy a juntar en la misma sala a dueños de PYME y a gente que busca trabajo.
+
+[3-12s]
+Porque se hacen la misma pregunta y no lo saben.
+
+El dueño pregunta: "tengo gente capaz, ¿por qué el equipo no funciona?"
+El empleado pregunta: "soy bueno en lo mío, ¿por qué no crezco?"
+
+Es la misma pregunta desde dos sillas.
+
+[CIERRE]
+Jueves 27, 19 horas, 45 minutos. 40 lugares.
+Link en el perfil.
+
+[TEXTO EN PANTALLA]
+Jueves 27 · 19hs · 40 lugares</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= ADS ================= -->
+<section class="panel" id="p-ads">
+<div class="wrap">
+
+  <div class="card destacada">
+    <h3>Antes de gastar un peso</h3>
+    <p><strong>No arranques antes del 2 de septiembre.</strong> Pagar por traer gente a un sitio sin
+    vacantes es tirar la plata: entran, no ven nada, se van, y encima pagaste por eso.</p>
+    <p style="margin-top:10px">El Pixel de Meta ya lo tenés. Hay que instalarlo en el sitio <strong>dos
+    semanas antes</strong> de la primera campaña, no el mismo día: Meta necesita acumular datos para poder
+    optimizar. Pasámelo cuando quieras y lo dejo puesto.</p>
+  </div>
+
+  <div class="card">
+    <h3>Cómo repartir el presupuesto</h3>
+    <p class="meta">Sobre $80.000 por mes (editá los números si cambia)</p>
+    <table>
+      <tr><th>Campaña</th><th style="width:110px">Por mes</th><th style="width:100px">Por día</th><th>Para qué</th></tr>
+      <tr><td><strong>A · Profesionales</strong></td><td contenteditable="true">$28.000</td><td contenteditable="true">$930</td><td contenteditable="true">Llenar la base de candidatos. Es lo que hace vendible el lado PYME.</td></tr>
+      <tr><td><strong>B · PYMEs</strong></td><td contenteditable="true">$37.000</td><td contenteditable="true">$1.230</td><td contenteditable="true">Traer dueños. Cuesta más el clic pero es donde está la plata.</td></tr>
+      <tr><td><strong>C · Retargeting</strong></td><td contenteditable="true">$15.000</td><td contenteditable="true">$500</td><td contenteditable="true">A los que ya entraron y no se registraron. Siempre es lo más rentable.</td></tr>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Campaña A · Profesionales</h3>
+      <p><strong>Ubicación:</strong> <span contenteditable="true">Paraná + 60 km · Santa Fe capital · Concordia · Gualeguaychú</span></p>
+      <p><strong>Edad:</strong> <span contenteditable="true">22 a 45</span></p>
+      <p><strong>Intereses:</strong> <span contenteditable="true">Búsqueda de empleo · Currículum · Desarrollo profesional · LinkedIn</span></p>
+      <h4>Texto del anuncio</h4>
+      <div class="texto-box">
+        <button class="copiar" onclick="copiar(this)">Copiar</button>
+        <div class="contenido" contenteditable="true">Cargá tu perfil una vez. Nosotros te avisamos.
+
+Cuando una PYME de la zona publique una búsqueda que encaje con lo tuyo, te llega un mail. No tenés que estar mirando todos los días.
+
+Gratis, y atrás hay una consultora de RRHH de verdad.
+
+→ Crear mi perfil</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Campaña B · PYMEs</h3>
+      <p><strong>Ubicación:</strong> <span contenteditable="true">Paraná + 100 km · Santa Fe capital</span></p>
+      <p><strong>Edad:</strong> <span contenteditable="true">30 a 60</span></p>
+      <p><strong>Segmentación:</strong> <span contenteditable="true">Cargos de propietario · administradores de página de empresa · intereses de emprendimiento y gestión</span></p>
+      <h4>Texto del anuncio</h4>
+      <div class="texto-box">
+        <button class="copiar" onclick="copiar(this)">Copiar</button>
+        <div class="contenido" contenteditable="true">Publicaste el puesto y te llegaron 80 currículums.
+
+De esos, te sirven 5. Y para encontrarlos hay que abrir los 80: cuatro horas tuyas, que sos el más caro de la empresa.
+
+Nosotros te los mandamos ordenados por cuánto encaja cada uno con tu búsqueda. Y te mostramos por qué.
+
+Somos la unidad de RRHH de SAS Consultora, en Paraná.
+
+→ Quiero saber más</div>
+      </div>
+      <div class="nota">Para PYMEs conviene el formulario dentro de Meta antes que mandarlos al sitio: el
+      dueño no completa formularios largos, pero sí deja el teléfono en dos toques.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Creativos: qué imagen usar</h3>
+    <p><strong>Lo que funciona:</strong> tu cara. En una consultora chica de una ciudad chica, la foto del
+    consultor real rinde más que cualquier imagen de banco. Video vertical con subtítulos.</p>
+    <p style="margin-top:8px"><strong>Lo que no:</strong> fotos de stock de gente en traje dándose la mano.
+    Se leen como publicidad y el ojo las saltea.</p>
+    <p style="margin-top:8px"><strong>Reciclá:</strong> los videos de TikTok de este plan sirven de
+    creativo. No hace falta producir nada aparte.</p>
+  </div>
+
+</div>
+</section>
+
+<!-- ================= KPI ================= -->
+<section class="panel" id="p-kpi">
+<div class="wrap">
+
+  <div class="card destacada">
+    <h3>Metas al 30 de septiembre</h3>
+    <div class="grid4">
+      <div class="kpi"><div class="num" contenteditable="true">40</div><div class="lab">Profesionales registrados</div></div>
+      <div class="kpi"><div class="num" contenteditable="true">10</div><div class="lab">PYMEs registradas</div></div>
+      <div class="kpi"><div class="num" contenteditable="true">6</div><div class="lab">Vacantes publicadas</div></div>
+      <div class="kpi"><div class="num" contenteditable="true">3</div><div class="lab">PYMEs pagando</div></div>
+    </div>
+    <div class="nota">Son metas de arranque, no de crecimiento. El objetivo de estos dos meses es
+    <strong>probar que el circuito completo funciona con gente real</strong>: que una PYME publique, que
+    entren postulantes, que la afinidad sirva y que alguien pague.</div>
+  </div>
+
+  <div class="card">
+    <h3>Seguimiento semanal</h3>
+    <p class="editable-hint">Completá los números los lunes. Cinco minutos por semana. Los cuatro primeros
+    salen del panel de administración; las visitas, de la solapa Analítica.</p>
+    <table>
+      <tr><th>Semana</th><th>Profesionales</th><th>PYMEs</th><th>Vacantes</th><th>Postulaciones</th><th>Testimonios</th><th>$ cobrado</th></tr>
+      <tr><td><strong>al 2/8</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><strong>al 9/8</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><strong>al 16/8</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><strong>al 23/8</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><strong>al 30/8</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><strong>al 6/9</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><strong>al 13/9</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><strong>al 20/9</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+      <tr><td><strong>al 30/9</strong></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td><td><input type="text"/></td></tr>
+    </table>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Señales de que va bien</h3>
+      <p>· Más de 5 registros por cada 20 invitaciones enviadas<br/>
+      · Alguien te manda un testimonio sin que se lo recuerdes<br/>
+      · Una PYME pregunta por el servicio sin que se lo ofrecieras<br/>
+      · Entran postulaciones sin que hayas empujado la vacante<br/>
+      · Un candidato te agradece el aviso automático</p>
+    </div>
+    <div class="card">
+      <h3>Señales de alarma, y qué hacer</h3>
+      <p><strong>Se registran y no vuelven:</strong> normal al principio. Por eso están los materiales y el
+      aviso automático. Recién preocuparse si a los 30 días nadie abrió nada.</p>
+      <p style="margin-top:8px"><strong>Las PYMEs publican y no reciben postulantes:</strong> falta base.
+      Frená la captación de PYMEs y volvé a la lista A.</p>
+      <p style="margin-top:8px"><strong>Nadie abre los mails:</strong> el asunto. Probá con el nombre
+      propio adentro.</p>
+      <p style="margin-top:8px"><strong>Entran al sitio y se van:</strong> mirá la Analítica para ver en
+      qué página se van. Ahí está el problema, no en el tráfico.</p>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Plan de lanzamiento · SAS Talento &amp; Desarrollo · Actualizado el 30 de julio de 2026<br/>
+    Documento editable. Se guarda automáticamente en este navegador. Descargá una copia de seguridad de vez en cuando.
+  </div>
+</footer>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// Datos públicos: son los mismos que ya viajan en el bundle de la plataforma.
+// Lo que protege el contenido no es la clave, sino la política de la base:
+// solo un administrador puede leer y escribir la fila del plan.
+const SUPA_URL = "https://valncabvniutalzhovuc.supabase.co";
+const SUPA_KEY = "sb_publishable_EEYtzBPhDrCNle7wLtQO4Q_2JsICxYt";
+const FILA = "plan-lanzamiento";
+
+const sb = createClient(SUPA_URL, SUPA_KEY);
+let conectado = false;
+
+// Todo lo que la página necesita llamar desde onclick tiene que colgar de
+// window, porque un <script type="module"> tiene su propio ámbito.
+window.abrirSync = () => {
+  if (conectado) { desconectarSync(); return; }
+  document.getElementById("capaSync").style.display = "flex";
+  document.getElementById("syncEmail").focus();
+};
+window.cerrarSync = () => { document.getElementById("capaSync").style.display = "none"; };
+
+function avisoSync(texto, ok) {
+  const m = document.getElementById("msgSync");
+  m.style.display = "block";
+  m.style.background = ok ? "#F0F5F1" : "#FBEEE6";
+  m.style.color = ok ? "#1F4D3D" : "#9C4F24";
+  m.textContent = texto;
+}
+
+window.entrarSync = async () => {
+  const email = document.getElementById("syncEmail").value.trim();
+  const pass = document.getElementById("syncPass").value;
+  const btn = document.getElementById("btnEntrar");
+  if (!email || !pass) { avisoSync("Completá el email y la contraseña.", false); return; }
+  btn.disabled = true; btn.textContent = "Conectando...";
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = "Conectar";
+  if (error) { avisoSync("No pudimos entrar. Revisá el email y la contraseña.", false); return; }
+  document.getElementById("syncPass").value = "";
+  const ok = await activarSync();
+  if (ok) { window.cerrarSync(); }
+};
+
+async function desconectarSync() {
+  if (!confirm("Se corta la sincronización en este dispositivo. Lo que ya marcaste queda guardado igual.\n\n¿Seguro?")) return;
+  await sb.auth.signOut();
+  conectado = false;
+  document.getElementById("btnSync").textContent = "Conectar para sincronizar";
+  marcarEstadoSync("Sin sincronizar");
+}
+
+function marcarEstadoSync(texto) {
+  document.getElementById("guardadoEn").textContent = texto;
+}
+
+// Trae lo guardado en la base. Si hay algo, pisa lo local: la base es la
+// versión compartida entre todos los dispositivos.
+async function activarSync() {
+  const { data, error } = await sb.from("plan_estado").select("datos, updated_at").eq("id", FILA).maybeSingle();
+  if (error) {
+    avisoSync("Entraste, pero esa cuenta no tiene permiso para sincronizar el plan.", false);
+    await sb.auth.signOut();
+    return false;
+  }
+  conectado = true;
+  document.getElementById("btnSync").textContent = "Sincronizado ✓";
+  if (data?.datos && Object.keys(data.datos).length) {
+    aplicar(data.datos);
+    const h = new Date(data.updated_at).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" });
+    marcarEstadoSync("Sincronizado · última edición " + h);
+  } else {
+    // Primera vez: sube lo que haya en este dispositivo para no perderlo.
+    await subir();
+    marcarEstadoSync("Sincronizado");
+  }
+  return true;
+}
+
+async function subir() {
+  if (!conectado) return;
+  const { error } = await sb.from("plan_estado").upsert({ id: FILA, datos: estado() });
+  if (error) { marcarEstadoSync("No se pudo sincronizar (guardado en este equipo)"); return; }
+  marcarEstadoSync("Sincronizado · " + new Date().toLocaleTimeString("es-AR", { timeStyle: "short" }));
+}
+
+// Si ya había sesión de una visita anterior, se reconecta solo.
+(async () => {
+  const { data } = await sb.auth.getSession();
+  if (data?.session) await activarSync();
+})();
+
+const CLAVE = "sas-plan-lanzamiento-v2";
+
+document.querySelectorAll("nav.tabs button").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.remove("on"));
+    document.querySelectorAll("section.panel").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    document.getElementById("p-"+b.dataset.p).classList.add("on");
+    window.scrollTo({top:0,behavior:"smooth"});
+  };
+});
+
+function copiar(btn){
+  const txt = btn.parentElement.querySelector(".contenido").innerText;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const antes = btn.textContent;
+    btn.textContent = "Copiado";
+    btn.classList.add("ok");
+    setTimeout(()=>{btn.textContent=antes;btn.classList.remove("ok")},1600);
+  }).catch(()=>{
+    const r = document.createRange();
+    r.selectNodeContents(btn.parentElement.querySelector(".contenido"));
+    const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    btn.textContent = "Seleccionado, copiá con Ctrl+C";
+    setTimeout(()=>{btn.textContent="Copiar"},2600);
+  });
+}
+
+function actualizarProgreso(){
+  const todas = document.querySelectorAll('[data-tareas] input[type=checkbox]');
+  const hechas = [...todas].filter(c=>c.checked).length;
+  const pct = todas.length ? Math.round(hechas/todas.length*100) : 0;
+  document.getElementById("pgTexto").textContent = hechas+" de "+todas.length+" tareas";
+  document.getElementById("pgPct").textContent = pct+"%";
+  document.getElementById("pgFill").style.width = pct+"%";
+  todas.forEach(c=>c.closest(".tarea").classList.toggle("hecha", c.checked));
+}
+
+function estado(){
+  return {
+    checks: [...document.querySelectorAll('input[type=checkbox]')].map(c=>c.checked),
+    inputs: [...document.querySelectorAll('td input[type=text]')].map(i=>i.value),
+    editables: [...document.querySelectorAll('[contenteditable=true]')].map(e=>e.innerHTML),
+    guardado: new Date().toISOString()
+  };
+}
+// Siempre se guarda local (funciona sin conexión y sin cuenta) y, si está
+// conectado, además se sube. El local es la red de seguridad; la base es lo
+// que hace que se vea igual desde otro dispositivo.
+function guardar(){
+  try{
+    localStorage.setItem(CLAVE, JSON.stringify(estado()));
+    if(!conectado){
+      const h = new Date().toLocaleString("es-AR",{dateStyle:"short",timeStyle:"short"});
+      document.getElementById("guardadoEn").textContent = "Guardado en este equipo · "+h;
+    }
+  }catch(e){
+    document.getElementById("guardadoEn").textContent = "No se pudo guardar automáticamente";
+  }
+  subir();
+}
+function aplicar(d){
+  if(!d) return;
+  const ch=[...document.querySelectorAll('input[type=checkbox]')];
+  (d.checks||[]).forEach((v,i)=>{ if(ch[i]) ch[i].checked=v; });
+  const inp=[...document.querySelectorAll('td input[type=text]')];
+  (d.inputs||[]).forEach((v,i)=>{ if(inp[i]) inp[i].value=v; });
+  const ed=[...document.querySelectorAll('[contenteditable=true]')];
+  (d.editables||[]).forEach((v,i)=>{ if(ed[i]) ed[i].innerHTML=v; });
+  actualizarProgreso();
+}
+function cargar(){
+  try{
+    const raw = localStorage.getItem(CLAVE);
+    if(raw){
+      aplicar(JSON.parse(raw));
+      document.getElementById("guardadoEn").textContent = "Sin sincronizar";
+    }
+  }catch(e){}
+}
+
+function exportar(){
+  const blob = new Blob([JSON.stringify(estado(),null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "plan-lanzamiento-sas-"+new Date().toISOString().slice(0,10)+".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importar(ev){
+  const f = ev.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = e=>{
+    try{ aplicar(JSON.parse(e.target.result)); guardar(false); alert("Copia restaurada."); }
+    catch(err){ alert("El archivo no se pudo leer. ¿Es el JSON que descargaste desde acá?"); }
+  };
+  r.readAsText(f);
+  ev.target.value = "";
+}
+async function reiniciar(){
+  if(!confirm("Esto borra todas las tareas marcadas y los textos editados, en todos tus dispositivos.\n\n¿Seguro?")) return;
+  localStorage.removeItem(CLAVE);
+  if(conectado){ await sb.from("plan_estado").upsert({ id: FILA, datos: {} }); }
+  location.reload();
+}
+
+// Expuestas al onclick del HTML: dentro de un módulo no son globales solas.
+window.exportar = exportar;
+window.importar = importar;
+window.reiniciar = reiniciar;
+window.copiar = copiar;
+window.guardar = guardar;
+
+document.addEventListener("change", e=>{
+  if(e.target.matches('input[type=checkbox], td input[type=text]')){ actualizarProgreso(); guardar(); }
+});
+let temporizador;
+document.addEventListener("input", e=>{
+  if(e.target.isContentEditable || e.target.matches('td input[type=text]')){
+    clearTimeout(temporizador);
+    temporizador = setTimeout(guardar, 1200);
+  }
+});
+// Al volver a la pestaña, trae lo que se haya cambiado desde otro dispositivo.
+document.addEventListener("visibilitychange", async ()=>{
+  if(document.visibilityState !== "visible" || !conectado) return;
+  const { data } = await sb.from("plan_estado").select("datos, updated_at").eq("id", FILA).maybeSingle();
+  if(data?.datos && Object.keys(data.datos).length) aplicar(data.datos);
+});
+
+cargar();
+actualizarProgreso();
+</script>
+</body>
+</html>

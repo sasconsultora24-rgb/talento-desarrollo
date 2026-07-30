@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /interno/
+
+Sitemap: https://talento.sasconsultora.com/sitemap.xml
