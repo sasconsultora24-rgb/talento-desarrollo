@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -9,13 +9,29 @@ export default function Layout() {
   const { loading, error, session } = useApp();
   const location = useLocation();
 
-  // Una visita por cambio de ruta. Se espera a que termine la carga inicial
-  // para que el rol ya esté resuelto y la métrica no diga "anónimo" cuando en
-  // realidad la persona estaba logueada.
+  // Una visita por cambio de ruta, ni una más.
+  //
+  // El rol tarda un momento en resolverse (arranca en null y después pasa a
+  // "empresa"/"candidato"). Si el efecto dependiera del rol, cada navegación
+  // registraría DOS visitas: una como anónimo y otra ya con el rol, duplicando
+  // todas las métricas. Por eso se espera un instante a que la sesión se
+  // asiente y se lee el rol desde un ref, que siempre tiene el valor actual
+  // sin volver a disparar el efecto.
+  const rolRef = useRef(session.role);
+  rolRef.current = session.role;
+  const rutaRegistrada = useRef(null);
+
   useEffect(() => {
     if (loading) return;
-    registrarEvento("pageview", { rol: session.role || "anonimo" });
-  }, [location.pathname, location.search, loading, session.role]);
+    const ruta = location.pathname + location.search;
+    if (rutaRegistrada.current === ruta) return;
+
+    const t = setTimeout(() => {
+      rutaRegistrada.current = ruta;
+      registrarEvento("pageview", { rol: rolRef.current || "anonimo" });
+    }, 900);
+    return () => clearTimeout(t);
+  }, [location.pathname, location.search, loading]);
 
   return (
     <div className="min-h-screen flex flex-col bg-sand-50">
