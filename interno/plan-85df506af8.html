@@ -1370,22 +1370,35 @@ function marcarEstadoSync(texto) {
 
 // Trae lo guardado en la base. Si hay algo, pisa lo local: la base es la
 // versión compartida entre todos los dispositivos.
+//
+// Ojo con cómo se comprueba el permiso: una política de seguridad que no deja
+// leer NO devuelve error, devuelve vacío. Si solo miráramos el SELECT, una
+// cuenta sin permiso vería "Sincronizado" y no se guardaría nada en ningún
+// lado. Por eso el permiso se verifica intentando escribir de verdad.
 async function activarSync() {
-  const { data, error } = await sb.from("plan_estado").select("datos, updated_at").eq("id", FILA).maybeSingle();
-  if (error) {
-    avisoSync("Entraste, pero esa cuenta no tiene permiso para sincronizar el plan.", false);
-    await sb.auth.signOut();
+  const { data } = await sb.from("plan_estado").select("datos, updated_at").eq("id", FILA).maybeSingle();
+
+  const hayRemoto = data?.datos && Object.keys(data.datos).length > 0;
+  const aGuardar = hayRemoto ? data.datos : estado();
+
+  const { error: errEscritura } = await sb.from("plan_estado").upsert({ id: FILA, datos: aGuardar });
+  if (errEscritura) {
+    const { data: sesion } = await sb.auth.getSession();
+    if (sesion?.session) await sb.auth.signOut();
+    conectado = false;
+    document.getElementById("btnSync").textContent = "Conectar para sincronizar";
+    marcarEstadoSync("Sin sincronizar");
+    avisoSync("Entraste, pero esa cuenta no es administradora y no puede sincronizar el plan. Probá con la cuenta de admin.", false);
     return false;
   }
+
   conectado = true;
   document.getElementById("btnSync").textContent = "Sincronizado ✓";
-  if (data?.datos && Object.keys(data.datos).length) {
+  if (hayRemoto) {
     aplicar(data.datos);
     const h = new Date(data.updated_at).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" });
     marcarEstadoSync("Sincronizado · última edición " + h);
   } else {
-    // Primera vez: sube lo que haya en este dispositivo para no perderlo.
-    await subir();
     marcarEstadoSync("Sincronizado");
   }
   return true;
