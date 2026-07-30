@@ -169,7 +169,35 @@ export default function PoliticaPrivacidad() {
         sesión iniciada. No usamos cookies de publicidad ni de seguimiento de terceros.
       </P>
 
-      <H2>11. Cambios a esta política</H2>
+      <H2>11. Estadísticas de uso del sitio</H2>
+      <P>
+        Medimos el uso de la Plataforma con un sistema propio, alojado en nuestra propia base de
+        datos. No usamos Google Analytics ni ninguna herramienta de terceros, y por lo tanto no
+        compartimos datos de navegación con otras empresas.
+      </P>
+      <P>
+        De cada visita registramos únicamente: la sección visitada, el dominio desde el que
+        llegaste (por ejemplo, un buscador o una red social) y si estabas navegando con una cuenta
+        de PYME, de profesional o sin cuenta. <strong>No guardamos tu dirección IP, ni tu nombre,
+        ni tu email, ni ningún identificador que permita reconocerte entre una visita y otra.</strong>{" "}
+        Son datos agregados y anónimos, que usamos solo para entender qué secciones resultan útiles
+        y cuáles hay que mejorar.
+      </P>
+
+      <H2>12. Avisos de vacantes y cómo darte de baja</H2>
+      <P>
+        Si tenés un perfil de profesional, podemos enviarte un email cuando se publique una
+        búsqueda cuyos requisitos coincidan con tu perfil. Podés desactivar estos avisos en
+        cualquier momento desde tu panel, en la solapa "Mi perfil", o con el enlace de baja que
+        aparece al pie de cada uno de esos emails, sin necesidad de iniciar sesión.
+      </P>
+      <P>
+        Darte de baja de los avisos de vacantes no elimina tu perfil ni afecta tu visibilidad ante
+        las PYMEs. Los emails sobre tus propias postulaciones se siguen enviando, porque forman
+        parte del proceso que iniciaste vos.
+      </P>
+
+      <H2>13. Cambios a esta política</H2>
       <P>
         Podemos actualizar esta Política de Privacidad para reflejar cambios en la Plataforma o
         en la normativa aplicable. Vamos a publicar cualquier cambio en esta misma página con su

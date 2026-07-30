@@ -254,6 +254,39 @@ export default function CandidatoPanel() {
         </Card>
       )}
 
+      {tab === "perfil" && (
+        <Card className="p-6 mt-6">
+          <h3 className="font-bold text-forest-900">Avisos por email</h3>
+          <p className="text-sm text-forest-500 mt-1 leading-relaxed max-w-2xl">
+            Cuando se publica una búsqueda que encaja con tu perfil, te avisamos por email para
+            que no tengas que entrar a mirar todos los días.
+          </p>
+          <label className="flex items-start gap-3 mt-4 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={candidato.avisosVacantes !== false}
+              onChange={async (e) => {
+                try {
+                  await actualizarCandidato(candidato.id, { avisosVacantes: e.target.checked });
+                  setMensaje(e.target.checked ? "Avisos activados." : "Avisos desactivados.");
+                } catch (err) {
+                  setMensaje(mensajeError(err, "No se pudo guardar la preferencia."));
+                }
+              }}
+              className="mt-1 w-4 h-4 accent-gold-600"
+            />
+            <span className="text-sm text-forest-700">
+              Quiero recibir avisos de vacantes nuevas que coincidan con mi perfil
+            </span>
+          </label>
+          <p className="text-xs text-forest-400 mt-3 leading-relaxed max-w-2xl">
+            Si lo desactivás, tu perfil sigue publicado y las PYMEs lo siguen viendo: solo dejás
+            de recibir esos emails. Los avisos sobre <strong>tus propias postulaciones</strong>
+            {" "}se siguen enviando siempre, porque son parte del proceso.
+          </p>
+        </Card>
+      )}
+
       {tab === "postulaciones" && (
         <div className="space-y-4">
           {misPostulaciones.length === 0 ? (

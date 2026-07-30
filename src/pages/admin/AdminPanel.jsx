@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download, CalendarClock, Inbox } from "lucide-react";
+import { useState, useEffect } from "react";
+import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download, CalendarClock, Inbox, BarChart3 } from "lucide-react";
+import { supabase } from "../../data/supabaseClient";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, StatCard, EmptyState, Field, Input, Select, Textarea } from "../../components/ui.jsx";
 import { descargarCSV } from "../../utils/exportarCsv.js";
@@ -16,6 +17,7 @@ const TABS = [
   { id: "empresas", label: "PYMEs", icon: Building2 },
   { id: "candidatos", label: "Candidatos", icon: Users },
   { id: "consultorias", label: "Consultorías", icon: CalendarClock },
+  { id: "analitica", label: "Analítica", icon: BarChart3 },
 ];
 
 const estadoBadge = { pendiente: "terracotta", aprobada: "gold", rechazada: "gray", cerrada: "gray" };
@@ -50,6 +52,12 @@ export default function AdminPanel() {
   const [errorConsultoria, setErrorConsultoria] = useState("");
   const [errorSolicitud, setErrorSolicitud] = useState("");
   const [filtroSolicitud, setFiltroSolicitud] = useState("abiertas");
+
+  // Analítica: se consulta solo al abrir la pestaña, para no cargar eventos en
+  // cada render del panel (la tabla puede crecer mucho más que las demás).
+  const [eventos, setEventos] = useState(null);
+  const [diasAnalitica, setDiasAnalitica] = useState(30);
+  const [cargandoEventos, setCargandoEventos] = useState(false);
   const [tab, setTab] = useState("metricas");
   const [nuevaCap, setNuevaCap] = useState({
     titulo: "", categoria: "Liderazgo", modalidad: "Online en vivo", fecha: "", cupos: 20, descripcion: "",
@@ -63,6 +71,29 @@ export default function AdminPanel() {
   const [enlaceEditando, setEnlaceEditando] = useState(null);
   const [enlaceValor, setEnlaceValor] = useState("");
   const [errorEnlace, setErrorEnlace] = useState("");
+
+  useEffect(() => {
+    if (tab !== "analitica") return;
+    let vigente = true;
+    setCargandoEventos(true);
+    const desde = new Date();
+    desde.setDate(desde.getDate() - diasAnalitica);
+    supabase
+      .from("eventos")
+      .select("tipo, ruta, referrer, rol, meta, created_at")
+      .gte("created_at", desde.toISOString())
+      .order("created_at", { ascending: false })
+      .limit(5000)
+      .then(({ data, error: errEv }) => {
+        if (!vigente) return;
+        if (errEv) console.error("Error cargando eventos", errEv);
+        setEventos(data || []);
+        setCargandoEventos(false);
+      });
+    return () => {
+      vigente = false;
+    };
+  }, [tab, diasAnalitica]);
 
   const comprasMentorias = pagos
     .filter((p) => p.tipo === "mentoria")
@@ -263,6 +294,139 @@ export default function AdminPanel() {
               </Button>
             </div>
           </Card>
+        </div>
+      )}
+
+      {tab === "analitica" && (
+        <div className="space-y-4">
+          <Card className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+              <div className="max-w-2xl">
+                <p className="text-sm font-bold text-forest-900">Qué hace la gente que entra al sitio</p>
+                <p className="text-xs text-forest-600 mt-1 leading-relaxed">
+                  Medición propia, sin cookies ni Google: no se guarda IP, ni nombre, ni nada que
+                  permita seguir a una persona entre visitas. Solo qué páginas se ven y qué acciones
+                  se hacen. Por eso el sitio no necesita cartel de consentimiento.
+                </p>
+              </div>
+              <Field label="Período">
+                <Select
+                  value={diasAnalitica}
+                  onChange={(e) => setDiasAnalitica(Number(e.target.value))}
+                  className="sm:w-40"
+                >
+                  <option value={7}>Últimos 7 días</option>
+                  <option value={30}>Últimos 30 días</option>
+                  <option value={90}>Últimos 90 días</option>
+                </Select>
+              </Field>
+            </div>
+          </Card>
+
+          {cargandoEventos && <EmptyState text="Cargando datos..." />}
+
+          {!cargandoEventos && eventos && eventos.length === 0 && (
+            <EmptyState text="Todavía no hay visitas registradas en este período. Los datos empiezan a acumularse desde ahora." />
+          )}
+
+          {!cargandoEventos && eventos && eventos.length > 0 && (() => {
+            const visitas = eventos.filter((e) => e.tipo === "pageview");
+            const conteo = (arr, campo) => {
+              const m = {};
+              arr.forEach((e) => {
+                const k = e[campo] || "(directo)";
+                m[k] = (m[k] || 0) + 1;
+              });
+              return Object.entries(m).sort((a, b) => b[1] - a[1]);
+            };
+            const porRuta = conteo(visitas, "ruta").slice(0, 12);
+            const porReferrer = conteo(visitas, "referrer").slice(0, 8);
+            const porRol = conteo(visitas, "rol");
+            const acciones = eventos.filter((e) => e.tipo !== "pageview");
+            const porAccion = conteo(acciones, "tipo");
+            const maxRuta = porRuta[0]?.[1] || 1;
+
+            return (
+              <>
+                <div className="grid sm:grid-cols-4 gap-4">
+                  <StatCard label="Páginas vistas" value={visitas.length} tone="forest" />
+                  <StatCard label="Pagos iniciados" value={acciones.filter((e) => e.tipo === "pago_iniciado").length} tone="gold" />
+                  <StatCard label="Solicitudes enviadas" value={acciones.filter((e) => e.tipo === "solicitud_enviada").length} tone="terracotta" />
+                  <StatCard label="Visitas de anónimos" value={porRol.find((r) => r[0] === "anonimo")?.[1] || 0} tone="gold" />
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-4">
+                  <Card className="p-5">
+                    <h3 className="font-bold text-forest-900 mb-3">Páginas más vistas</h3>
+                    <div className="space-y-2">
+                      {porRuta.map(([ruta, n]) => (
+                        <div key={ruta}>
+                          <div className="flex justify-between text-sm text-forest-600">
+                            <span className="truncate pr-3">{ruta}</span>
+                            <span className="font-bold shrink-0">{n}</span>
+                          </div>
+                          <div className="h-1.5 bg-forest-50 rounded-full mt-1 overflow-hidden">
+                            <div
+                              className="h-full bg-gold-500 rounded-full"
+                              style={{ width: `${Math.round((n / maxRuta) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <div className="space-y-4">
+                    <Card className="p-5">
+                      <h3 className="font-bold text-forest-900 mb-3">De dónde llegan</h3>
+                      {porReferrer.length === 0 ? (
+                        <p className="text-sm text-forest-400">Sin datos todavía.</p>
+                      ) : (
+                        <ul className="space-y-1.5">
+                          {porReferrer.map(([ref, n]) => (
+                            <li key={ref} className="flex justify-between text-sm text-forest-600">
+                              <span className="truncate pr-3">{ref}</span>
+                              <span className="font-bold shrink-0">{n}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </Card>
+
+                    <Card className="p-5">
+                      <h3 className="font-bold text-forest-900 mb-3">Acciones registradas</h3>
+                      {porAccion.length === 0 ? (
+                        <p className="text-sm text-forest-400">
+                          Todavía nadie inició un pago ni envió una solicitud en este período.
+                        </p>
+                      ) : (
+                        <ul className="space-y-1.5">
+                          {porAccion.map(([tipo, n]) => (
+                            <li key={tipo} className="flex justify-between text-sm text-forest-600">
+                              <span className="capitalize">{tipo.replace(/_/g, " ")}</span>
+                              <span className="font-bold">{n}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </Card>
+
+                    <Card className="p-5">
+                      <h3 className="font-bold text-forest-900 mb-3">Quién navega</h3>
+                      <ul className="space-y-1.5">
+                        {porRol.map(([rol, n]) => (
+                          <li key={rol} className="flex justify-between text-sm text-forest-600">
+                            <span className="capitalize">{rol}</span>
+                            <span className="font-bold">{n}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </Card>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 

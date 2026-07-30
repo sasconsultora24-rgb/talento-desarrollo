@@ -1,10 +1,21 @@
-import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { useApp } from "../data/store.jsx";
+import { registrarEvento } from "../utils/analitica.js";
 
 export default function Layout() {
-  const { loading, error } = useApp();
+  const { loading, error, session } = useApp();
+  const location = useLocation();
+
+  // Una visita por cambio de ruta. Se espera a que termine la carga inicial
+  // para que el rol ya esté resuelto y la métrica no diga "anónimo" cuando en
+  // realidad la persona estaba logueada.
+  useEffect(() => {
+    if (loading) return;
+    registrarEvento("pageview", { rol: session.role || "anonimo" });
+  }, [location.pathname, location.search, loading, session.role]);
 
   return (
     <div className="min-h-screen flex flex-col bg-sand-50">

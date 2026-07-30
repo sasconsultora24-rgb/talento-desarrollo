@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase, CV_BUCKET } from "./supabaseClient";
+import { registrarEvento } from "../utils/analitica.js";
 
 const AppContext = createContext(null);
 
@@ -39,6 +40,7 @@ function mapCandidato(row) {
     disponibilidad: row.disponibilidad,
     membresia: row.membresia,
     membresiaVencimiento: row.membresia_vencimiento,
+    avisosVacantes: row.avisos_vacantes ?? true,
     cvUrl: row.cv_url,
     cvNombre: row.cv_nombre,
     referencias: row.referencias || [],
@@ -553,6 +555,7 @@ export function AppProvider({ children }) {
     if ("cvUrl" in cambios) payload.cv_url = cambios.cvUrl;
     if ("cvNombre" in cambios) payload.cv_nombre = cambios.cvNombre;
     if ("referencias" in cambios) payload.referencias = cambios.referencias;
+    if ("avisosVacantes" in cambios) payload.avisos_vacantes = cambios.avisosVacantes;
 
     const { data, error: updateError } = await supabase
       .from("candidatos")
@@ -594,6 +597,9 @@ export function AppProvider({ children }) {
   // de pago a la que hay que redirigir. El precio se calcula del lado del
   // servidor, nunca se manda desde acá.
   const iniciarPago = useCallback(async (tipo, planId, opciones = {}) => {
+    // Métrica: cuántos llegan a intentar pagar (el embudo se cierra recién
+    // cuando el webhook confirma, pero este es el paso que mide la intención).
+    registrarEvento("pago_iniciado", { meta: { tipo, planId } });
     const { data, error: fnError } = await supabase.functions.invoke("crear-preferencia-pago", {
       body: { tipo, planId, asignadoA: opciones.asignadoA || null },
     });
@@ -770,6 +776,7 @@ export function AppProvider({ children }) {
     };
     const { error: insError } = await supabase.from("solicitudes_servicio").insert(payload);
     if (insError) throw insError;
+    registrarEvento("solicitud_enviada", { meta: { servicio: datos.servicio } });
 
     // Importante: NO llamar a refresh() acá. refresh() pone loading=true y el
     // Layout reemplaza toda la página por un spinner, lo que desmonta el
