@@ -9,6 +9,24 @@ const RANK_EMPRESA = { basico: 0, avanzado: 1, premium: 2, platino: 3 };
 
 export const NOMBRE_PLAN_EMPRESA = { avanzado: "Avanzado", premium: "Premium", platino: "Platino" };
 
+// Un ebook o guía en PDF no se "inscribe": se descarga. La inscripción se
+// registra igual por detrás (así el perfil queda en la base y sale el email con
+// el enlace), pero para la persona el botón dice "Descargar" y el archivo se
+// abre en el momento. Sin esto, quien ya se había inscripto veía "Ya estás
+// inscripto" y se quedaba sin forma de abrir el material.
+export const MODALIDAD_MATERIAL = "Material descargable";
+
+export function esMaterialDescargable(capacitacion) {
+  return capacitacion?.modalidad === MODALIDAD_MATERIAL;
+}
+
+// Abre el material o la sala en una pestaña nueva. El rel evita que la página
+// destino pueda manipular la nuestra a través de window.opener.
+export function abrirEnlaceAcceso(url) {
+  if (!url) return;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 export function empresaCumplePlanMinimo(empresa, planMinimo) {
   if (!planMinimo || !empresa) return false;
   if (!empresa.planVencimiento || new Date(empresa.planVencimiento) < new Date()) return false;

@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, CheckCircle2, Clock, Lock, LogOut, Users2 } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, Lock, LogOut, Users2, Download, ExternalLink } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, SectionTitle, EmptyState } from "../../components/ui.jsx";
 import PrecioCapacitacion from "../../components/PrecioCapacitacion.jsx";
-import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, cuposEfectivos } from "../../utils/capacitaciones.js";
+import {
+  accesoCapacitacion, NOMBRE_PLAN_EMPRESA, cuposEfectivos,
+  esMaterialDescargable as esMaterial, abrirEnlaceAcceso as abrirEnlace,
+} from "../../utils/capacitaciones.js";
 import { formatoPesos } from "../../data/mentoriaPaquetes.js";
 
 // Panel liviano para integrantes de equipo: solo capacitaciones incluidas en
@@ -89,17 +92,35 @@ export default function IntegrantePanel() {
                 <p className="text-sm text-forest-500 mt-1">{c.categoria}</p>
                 <p className="text-sm text-forest-400 mt-3 leading-relaxed">{c.descripcion}</p>
                 <div className="flex flex-wrap gap-4 text-sm text-forest-500 mt-3">
-                  <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
-                  <span className="inline-flex items-center gap-1"><Users2 size={14} />{cuposLibres} cupos disponibles</span>
+                  {esMaterial(c) ? (
+                    <span className="inline-flex items-center gap-1"><Download size={14} /> PDF · descarga inmediata</span>
+                  ) : (
+                    <>
+                      <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
+                      <span className="inline-flex items-center gap-1"><Users2 size={14} />{cuposLibres} cupos disponibles</span>
+                    </>
+                  )}
                 </div>
                 {acceso.estado !== "inscripto" && (
                   <PrecioCapacitacion c={c} totalInscriptos={totalInscriptos} className="mt-3" />
                 )}
                 <div className="mt-4">
                   {acceso.estado === "inscripto" ? (
-                    <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
-                      <CheckCircle2 size={18} /> Ya estás inscripto/a
-                    </span>
+                    c.enlaceAcceso ? (
+                      <div>
+                        <Button onClick={() => abrirEnlace(c.enlaceAcceso)} className="w-full sm:w-auto">
+                          {esMaterial(c) ? <><Download size={16} /> Descargar de nuevo</> : <><ExternalLink size={16} /> Entrar</>}
+                        </Button>
+                        <p className="text-xs text-forest-400 mt-2 inline-flex items-center gap-1.5">
+                          <CheckCircle2 size={13} className="text-gold-600" />
+                          {esMaterial(c) ? "Ya lo tenés. También te lo mandamos por email." : "Ya estás inscripto/a."}
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
+                        <CheckCircle2 size={18} /> Ya estás inscripto/a
+                      </span>
+                    )
                   ) : cuposLibres <= 0 ? (
                     <Button disabled className="w-full sm:w-auto">Sin cupos</Button>
                   ) : acceso.estado === "pago_pendiente" ? (
@@ -124,9 +145,12 @@ export default function IntegrantePanel() {
                   ) : (
                     <Button
                       className="w-full sm:w-auto"
-                      onClick={() => inscribirCapacitacion(c.id, integrante.id, "integrante")}
+                      onClick={async () => {
+                        await inscribirCapacitacion(c.id, integrante.id, "integrante");
+                        if (c.enlaceAcceso) abrirEnlace(c.enlaceAcceso);
+                      }}
                     >
-                      Inscribirme
+                      {esMaterial(c) ? <><Download size={16} /> Descargar gratis</> : "Inscribirme"}
                     </Button>
                   )}
                 </div>

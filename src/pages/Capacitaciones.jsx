@@ -1,11 +1,14 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { Calendar, Users2, CheckCircle2, Clock, Lock } from "lucide-react";
+import { Calendar, Users2, CheckCircle2, Clock, Lock, Download, ExternalLink } from "lucide-react";
 import { useApp } from "../data/store.jsx";
 import { Card, Badge, Button, SectionTitle, EmptyState, Input, Select } from "../components/ui.jsx";
 import MentoriasPaquetes from "../components/MentoriasPaquetes.jsx";
 import PrecioCapacitacion from "../components/PrecioCapacitacion.jsx";
-import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, cuposEfectivos, candidatoEsPremiumVigente } from "../utils/capacitaciones.js";
+import {
+  accesoCapacitacion, NOMBRE_PLAN_EMPRESA, cuposEfectivos, candidatoEsPremiumVigente,
+  esMaterialDescargable as esMaterial, abrirEnlaceAcceso as abrirEnlace,
+} from "../utils/capacitaciones.js";
 import { formatoPesos } from "../data/mentoriaPaquetes.js";
 import { useScrollToAnchor } from "../utils/useScrollToAnchor.js";
 
@@ -40,8 +43,12 @@ export default function Capacitaciones() {
       return;
     }
     setError("");
+    const cap = capacitaciones.find((c) => c.id === id);
     try {
       await inscribirCapacitacion(id, session.userId, session.role);
+      // Si hay material cargado, se entrega en el acto. El email con el enlace
+      // sale igual, pero nadie tiene que esperarlo para poder leerlo.
+      if (cap?.enlaceAcceso) abrirEnlace(cap.enlaceAcceso);
     } catch (err) {
       console.error(err);
       setError("No pudimos completar la inscripción. Probá de nuevo en unos segundos.");
@@ -137,18 +144,39 @@ export default function Capacitaciones() {
               </div>
               <p className="text-sm text-forest-500 mt-3 leading-relaxed">{c.descripcion}</p>
               <div className="flex flex-wrap gap-4 text-sm text-forest-500 mt-4">
-                <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
-                <span className="inline-flex items-center gap-1"><Users2 size={14} />{cuposLibres} cupos disponibles</span>
-                <span>{c.modalidad}</span>
+                {/* Un PDF no tiene fecha de dictado ni cupos: mostrarlos confunde. */}
+                {esMaterial(c) ? (
+                  <span className="inline-flex items-center gap-1"><Download size={14} /> PDF · descarga inmediata</span>
+                ) : (
+                  <>
+                    <span className="inline-flex items-center gap-1"><Calendar size={14} />{c.fecha}</span>
+                    <span className="inline-flex items-center gap-1"><Users2 size={14} />{cuposLibres} cupos disponibles</span>
+                    <span>{c.modalidad}</span>
+                  </>
+                )}
               </div>
               {acceso.estado !== "inscripto" && acceso.estado !== "incluida_en_plan" && (
                 <PrecioCapacitacion c={c} totalInscriptos={totalInscriptos} className="mt-4" />
               )}
               <div className="mt-5">
                 {acceso.estado === "inscripto" ? (
-                  <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
-                    <CheckCircle2 size={18} /> Ya estás inscripto/a
-                  </span>
+                  c.enlaceAcceso ? (
+                    // Ya lo tiene: lo importante es que pueda volver a abrirlo
+                    // cuando quiera, no que le confirmemos que está inscripto.
+                    <div>
+                      <Button onClick={() => abrirEnlace(c.enlaceAcceso)} className="w-full sm:w-auto">
+                        {esMaterial(c) ? <><Download size={16} /> Descargar de nuevo</> : <><ExternalLink size={16} /> Entrar</>}
+                      </Button>
+                      <p className="text-xs text-forest-400 mt-2 inline-flex items-center gap-1.5">
+                        <CheckCircle2 size={13} className="text-gold-600" />
+                        {esMaterial(c) ? "Ya lo tenés. También te lo mandamos por email." : "Ya estás inscripto/a. El enlace también está en tu email."}
+                      </p>
+                    </div>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-gold-600 text-sm font-semibold">
+                      <CheckCircle2 size={18} /> Ya estás inscripto/a
+                    </span>
+                  )
                 ) : cuposLibres <= 0 ? (
                   <Button disabled className="w-full sm:w-auto">Sin cupos</Button>
                 ) : acceso.estado === "pago_pendiente" ? (
@@ -180,7 +208,13 @@ export default function Capacitaciones() {
                   </div>
                 ) : (
                   <Button onClick={() => handleInscribir(c.id)} className="w-full sm:w-auto">
-                    {acceso.estado === "incluida_en_plan" ? "Inscribirme (incluida en tu plan)" : "Inscribirme"}
+                    {esMaterial(c) ? (
+                      <><Download size={16} /> Descargar gratis</>
+                    ) : acceso.estado === "incluida_en_plan" ? (
+                      "Inscribirme (incluida en tu plan)"
+                    ) : (
+                      "Inscribirme"
+                    )}
                   </Button>
                 )}
               </div>
