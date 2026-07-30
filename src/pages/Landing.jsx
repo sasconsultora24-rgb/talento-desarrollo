@@ -12,9 +12,41 @@ import { useApp } from "../data/store.jsx";
 import { Button, Card, Badge, SectionTitle, StatCard } from "../components/ui.jsx";
 import SasConsultoraLogo from "../components/SasConsultoraLogo.jsx";
 
+// Razones para entrar, que se muestran mientras la plataforma todavía no tiene
+// volumen. Son afirmaciones verificables sobre lo que la plataforma ya hace hoy,
+// no promesas: cada una se corresponde con algo implementado y explicado en
+// /como-funciona.
+const RAZONES = [
+  {
+    icon: Sparkles,
+    titulo: "Tu perfil, sin costo",
+    texto: "Cargás tu perfil gratis y te postulás a todas las búsquedas. Sin cargar los datos de nuevo cada vez.",
+  },
+  {
+    icon: TrendingUp,
+    titulo: "Postulantes ordenados por afinidad",
+    texto: "La PYME no recibe una pila de CV: los ve ordenados por cuánto encaja cada uno con su búsqueda.",
+  },
+  {
+    icon: Users,
+    titulo: "No termina al contratar",
+    texto: "Capacitación, mentorías y acompañamiento en la adaptación. Ahí empieza la otra mitad del trabajo.",
+  },
+  {
+    icon: ShieldCheck,
+    titulo: "Detrás hay una consultora",
+    texto: "No es un tablón de avisos: es la unidad de RRHH de SAS Consultora, con procesos de selección reales.",
+  },
+];
+
+// A partir de acá los números hablan mejor que las promesas. Con menos que
+// esto, un contador en cero espanta más de lo que atrae.
+const MINIMO_VACANTES_PARA_MOSTRAR_NUMEROS = 3;
+
 export default function Landing() {
   const { vacantes, empresas, candidatos, capacitaciones } = useApp();
   const vacantesAbiertas = vacantes.filter((v) => v.estado === "aprobada");
+  const hayVolumen = vacantesAbiertas.length >= MINIMO_VACANTES_PARA_MOSTRAR_NUMEROS;
 
   return (
     <div>
@@ -54,12 +86,34 @@ export default function Landing() {
             <div className="flex justify-end -mb-2">
               <SasConsultoraLogo size="h-32" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <StatCard label="Vacantes activas" value={vacantesAbiertas.length} tone="gold" />
-              <StatCard label="PYMEs registradas" value={empresas.length} tone="terracotta" />
-              <StatCard label="Profesionales en la base" value={candidatos.length} tone="forest" />
-              <StatCard label="Capacitaciones disponibles" value={capacitaciones.length} tone="gold" />
-            </div>
+            {/* Con poca actividad todavía, mostrar contadores en cero es el peor
+                cartel posible: le dice al visitante que acá no hay nada. Hasta
+                llegar a un volumen que hable bien solo, se muestran las razones
+                para entrar. Después el cambio es automático: no hay que
+                acordarse de volver a tocarlo. */}
+            {hayVolumen ? (
+              <div className="grid grid-cols-2 gap-4">
+                <StatCard label="Vacantes activas" value={vacantesAbiertas.length} tone="gold" />
+                <StatCard label="PYMEs registradas" value={empresas.length} tone="terracotta" />
+                <StatCard label="Profesionales en la base" value={candidatos.length} tone="forest" />
+                <StatCard label="Capacitaciones disponibles" value={capacitaciones.length} tone="gold" />
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {RAZONES.map((r) => (
+                  <div
+                    key={r.titulo}
+                    className="bg-white/10 border border-white/15 rounded-2xl p-5 backdrop-blur-sm"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gold-500/20 flex items-center justify-center text-gold-300 mb-3">
+                      <r.icon size={20} />
+                    </div>
+                    <h3 className="font-bold text-white text-sm leading-snug">{r.titulo}</h3>
+                    <p className="text-xs text-forest-200 mt-1.5 leading-relaxed">{r.texto}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
