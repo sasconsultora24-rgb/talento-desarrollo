@@ -84,10 +84,30 @@ export function enPeriodoPromocional(c) {
   return hoy <= c.promocionHasta;
 }
 
+const DIA_MS = 24 * 60 * 60 * 1000;
+
+// Cuántos materiales "con ritmo" van desbloqueados a hoy para quien se
+// registró en fechaRegistro: el 1° desde el día 0, el 2° a los 30 días, el 3°
+// a los 60, etc. Espejo exacto de orden_desbloqueado() en Supabase — el
+// bloqueo real está en esa función vía RLS, esto es solo para la UI.
+export function ordenDesbloqueado(fechaRegistro) {
+  if (!fechaRegistro) return Infinity;
+  const dias = (Date.now() - new Date(fechaRegistro).getTime()) / DIA_MS;
+  return Math.floor(dias / 30) + 1;
+}
+
+// Fecha (YYYY-MM-DD) en la que se desbloquea un orden dado, a partir de la
+// fecha de registro. Solo para mostrarla en la UI ("disponible el ...").
+export function fechaDesbloqueo(fechaRegistro, orden) {
+  if (!fechaRegistro) return null;
+  const base = new Date(fechaRegistro).getTime();
+  return new Date(base + (orden - 1) * 30 * DIA_MS).toISOString().slice(0, 10);
+}
+
 // `integrante` es la fila propia de empresa_integrantes (con su id); `empresa`
 // para role "integrante" debe ser la EMPRESA MADRE (de la que depende su
 // plan), resuelta por quien llama accesoCapacitacion — no una empresa propia.
-// Devuelve: { estado: "inscripto" | "gratis" | "incluida_en_plan" | "requiere_plan" | "pago_pendiente" | "requiere_pago", ... }
+// Devuelve: { estado: "inscripto" | "gratis" | "incluida_en_plan" | "requiere_plan" | "pago_pendiente" | "requiere_pago" | "bloqueado_ritmo", ... }
 export function accesoCapacitacion(c, { role, empresa, candidato, integrante, pagos }) {
   const yaInscripto =
     (role === "candidato" && c.inscriptosCandidatos.includes(candidato?.id)) ||
@@ -98,7 +118,25 @@ export function accesoCapacitacion(c, { role, empresa, candidato, integrante, pa
 
   const tipo = c.accesoTipo || "gratis";
 
-  if (tipo === "gratis") return { estado: "gratis" };
+  if (tipo === "gratis") {
+    // Los materiales gratis con "orden" asignado se liberan de a uno por mes
+    // (ver ordenDesbloqueado arriba) para que no se puedan bajar los 8 juntos.
+    // Sin "orden" (o tipo distinto de material descargable) siguen sin límite.
+    if (c.orden != null && esMaterialDescargable(c)) {
+      // Para "integrante" la fecha propia es fechaAlta (su alta en el equipo),
+      // no la de la empresa madre — así cada persona tiene su propio ritmo.
+      const fechaRegistro =
+        role === "candidato" ? candidato?.fechaRegistro
+        : role === "integrante" ? integrante?.fechaAlta
+        : role === "empresa" ? empresa?.fechaRegistro
+        : null;
+      if (!fechaRegistro) return { estado: "gratis" }; // sin sesión: se resuelve al registrarse
+      if (c.orden > ordenDesbloqueado(fechaRegistro)) {
+        return { estado: "bloqueado_ritmo", fechaDesbloqueo: fechaDesbloqueo(fechaRegistro, c.orden) };
+      }
+    }
+    return { estado: "gratis" };
+  }
 
   if (tipo === "plan") {
     if (role === "empresa" || role === "integrante") {

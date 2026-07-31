@@ -177,6 +177,16 @@ export default function Capacitaciones() {
                       <CheckCircle2 size={18} /> Ya estás inscripto/a
                     </span>
                   )
+                ) : acceso.estado === "bloqueado_ritmo" ? (
+                  <div className="text-sm text-forest-500">
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-forest-600">
+                      <Lock size={16} /> Todavía no disponible
+                    </span>
+                    <p className="mt-1">
+                      Vas subiendo un material por mes desde que te registraste. Este se habilita el{" "}
+                      <strong>{new Date(acceso.fechaDesbloqueo).toLocaleDateString("es-AR")}</strong>.
+                    </p>
+                  </div>
                 ) : cuposLibres <= 0 ? (
                   <Button disabled className="w-full sm:w-auto">Sin cupos</Button>
                 ) : acceso.estado === "pago_pendiente" ? (

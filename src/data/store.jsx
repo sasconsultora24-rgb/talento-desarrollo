@@ -107,6 +107,9 @@ function mapCapacitacion(row, inscriptos) {
     enlaceAcceso: row.enlace_acceso,
     planMinimoEmpresa: row.plan_minimo_empresa,
     planMinimoCandidato: row.plan_minimo_candidato,
+    // Solo los materiales gratis "con ritmo" lo tienen: se desbloquean de a
+    // uno por mes desde el registro de cada usuario. Ver utils/capacitaciones.js.
+    orden: row.orden ?? null,
     inscriptosCandidatos,
     inscriptosEmpresas,
     inscriptosIntegrantes,
