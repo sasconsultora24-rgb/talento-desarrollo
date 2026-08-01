@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { Briefcase, Users2, Award, PlusCircle, FileText, Search, Mail, Lock, GraduationCap, Calendar, CheckCircle2, Clock, UsersRound, Copy, Trash2 } from "lucide-react";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, Field, Input, Textarea, Select, EmptyState, StatCard } from "../../components/ui.jsx";
@@ -11,6 +11,7 @@ import { mensajeError } from "../../utils/errores";
 import { accesoCapacitacion, NOMBRE_PLAN_EMPRESA, cuposEfectivos } from "../../utils/capacitaciones.js";
 import PrecioCapacitacion from "../../components/PrecioCapacitacion.jsx";
 import { formatoPesos } from "../../data/mentoriaPaquetes.js";
+import { fasesIncluidasEn } from "../../data/procesoSeleccion.js";
 
 const DIAS_PRUEBA = 14;
 
@@ -450,6 +451,33 @@ export default function EmpresaPanel() {
       {tab === "candidatos" && !acceso.activo && <Paywall />}
       {tab === "candidatos" && acceso.activo && (
         <div className="space-y-4">
+          {/* Si te llegó al menos una postulación y tu plan no trae ninguna
+              fase del servicio de selección incluida (básico/avanzado),
+              ofrecemos que lo hagamos nosotros — es el momento en que más
+              sentido tiene, porque ya tenés un candidato real enfrente. */}
+          {postulacionesConAfinidad.length > 0 && fasesIncluidasEn(empresa.plan).length === 0 && (
+            <Card className="p-4 bg-gold-50 border-gold-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="max-w-xl">
+                  <p className="text-sm font-bold text-forest-900">
+                    ¿Preferís que filtremos y evaluemos nosotros?
+                  </p>
+                  <p className="text-xs text-forest-500 mt-1 leading-relaxed">
+                    Con el servicio de Selección a medida nos encargamos de entrevistar,
+                    evaluar y presentarte solo al finalista, con informe incluido. Se
+                    contrata por fase, empezando en la que la necesites.
+                  </p>
+                </div>
+                <Link
+                  to="/pymes?ver=seleccion-a-medida"
+                  className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-sm bg-gold-500 hover:bg-gold-600 text-forest-900 shadow-sm"
+                >
+                  <Award size={16} /> Ver el servicio
+                </Link>
+              </div>
+            </Card>
+          )}
+
           {postulacionesConAfinidad.length > 0 && (
             <Card className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
