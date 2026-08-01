@@ -21,6 +21,10 @@ function mapEmpresa(row) {
     plan: row.plan,
     planVencimiento: row.plan_vencimiento,
     fechaRegistro: row.created_at ? row.created_at.slice(0, 10) : "",
+    // Programa Fundadores: primera vacante bonificada. `esFundador` lo asigna
+    // SAS a mano por SQL cuando cierra el trato; no es autoservicio.
+    esFundador: row.es_fundador ?? false,
+    vacanteFundadorUsada: row.vacante_fundador_usada ?? false,
   };
 }
 
@@ -74,6 +78,17 @@ function mapPostulacion(row) {
     estado: row.estado,
     fecha: row.fecha,
     mensaje: row.mensaje,
+  };
+}
+
+function mapInvitacion(row) {
+  return {
+    id: row.id,
+    empresaId: row.empresa_id,
+    candidatoId: row.candidato_id,
+    vacanteId: row.vacante_id,
+    mensaje: row.mensaje,
+    fecha: row.created_at,
   };
 }
 
@@ -183,6 +198,10 @@ export function AppProvider({ children }) {
   const [candidatos, setCandidatos] = useState([]);
   const [vacantes, setVacantes] = useState([]);
   const [postulaciones, setPostulaciones] = useState([]);
+  // Invitaciones desde el buscador de candidatos: RLS acota esto a las
+  // propias (empresa) o a las recibidas (candidato). Reemplaza el mailto
+  // directo que exponía el email del candidato a cualquier PYME.
+  const [invitaciones, setInvitaciones] = useState([]);
   const [capacitaciones, setCapacitaciones] = useState([]);
   const [pagos, setPagos] = useState([]);
   // RLS: cada empresa ve solo las suyas, el admin las ve todas.
@@ -219,6 +238,7 @@ export function AppProvider({ children }) {
         { data: codigoRows, error: e9 },
         { data: consultoriasRows, error: e10 },
         { data: solicitudesRows, error: e11 },
+        { data: invitacionesRows, error: e12 },
       ] = await Promise.all([
         supabase.from("empresas").select("*").order("created_at"),
         supabase.from("candidatos").select("*").order("created_at"),
@@ -235,9 +255,11 @@ export function AppProvider({ children }) {
         supabase.from("consultorias_reservadas").select("*").order("fecha_hora"),
         // RLS: el admin ve todas; una empresa ve solo las suyas; el resto, nada.
         supabase.from("solicitudes_servicio").select("*").order("created_at", { ascending: false }),
+        // RLS: la empresa ve las que mandó, el candidato las que recibió.
+        supabase.from("invitaciones").select("*").order("created_at", { ascending: false }),
       ]);
 
-      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9 || e10 || e11;
+      const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9 || e10 || e11 || e12;
       if (firstError) throw firstError;
 
       const inscriptosPorCap = {};
@@ -255,6 +277,7 @@ export function AppProvider({ children }) {
       setCapacitaciones((capacitacionesRows || []).map((r) => mapCapacitacion(r, inscriptosPorCap[r.id])));
       setPagos((pagosRows || []).map(mapPago));
       setIntegrantes((integrantesRows || []).map(mapIntegrante));
+      setInvitaciones((invitacionesRows || []).map(mapInvitacion));
       setConsultorias((consultoriasRows || []).map(mapConsultoria));
       setSolicitudes((solicitudesRows || []).map(mapSolicitud));
       // RLS acota esto a lo sumo a una fila (la de la propia empresa) para
@@ -736,6 +759,23 @@ export function AppProvider({ children }) {
     setPostulaciones((prev) => [...prev, mapPostulacion(data)]);
   }, []);
 
+  // Invitar a un candidato del buscador a postularse a una vacante propia.
+  // Reemplaza el contacto directo por mail: la empresa nunca ve el email, y
+  // la RLS del lado del servidor exige que la vacante sea suya y esté
+  // publicada (ver policy invitaciones_insert_own_vacante).
+  const invitarCandidato = useCallback(async (empresaId, candidatoId, vacanteId, mensaje = "") => {
+    const { data, error: insertError } = await supabase
+      .from("invitaciones")
+      .insert({ empresa_id: empresaId, candidato_id: candidatoId, vacante_id: vacanteId, mensaje })
+      .select()
+      .single();
+    if (insertError) {
+      if (insertError.code === "23505") return; // ya lo había invitado a esta vacante
+      throw insertError;
+    }
+    setInvitaciones((prev) => [mapInvitacion(data), ...prev]);
+  }, []);
+
   const cambiarEstadoPostulacion = useCallback(async (postulacionId, estado) => {
     const { data, error: updateError } = await supabase
       .from("postulaciones")
@@ -894,6 +934,7 @@ export function AppProvider({ children }) {
     candidatos,
     vacantes,
     postulaciones,
+    invitaciones,
     capacitaciones,
     pagos,
     session,
@@ -913,6 +954,7 @@ export function AppProvider({ children }) {
     reservarConsultoria,
     cambiarEstadoVacante,
     postular,
+    invitarCandidato,
     cambiarEstadoPostulacion,
     inscribirCapacitacion,
     crearCapacitacion,

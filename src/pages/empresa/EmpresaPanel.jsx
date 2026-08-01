@@ -88,9 +88,9 @@ const estadoBadge = {
 
 export default function EmpresaPanel() {
   const {
-    session, empresas, vacantes, candidatos, postulaciones, capacitaciones, pagos, publicarVacante,
+    session, empresas, vacantes, candidatos, postulaciones, invitaciones, invitarCandidato, capacitaciones, pagos, publicarVacante,
     publicarVacanteConPago, reservarConsultoria, cambiarEstadoPostulacion, iniciarPago, inscribirCapacitacion,
-    integrantes, codigoEmpresa, eliminarIntegrante,
+    integrantes, codigoEmpresa, eliminarIntegrante, refresh,
   } = useApp();
   const [errorEquipo, setErrorEquipo] = useState("");
   const [copiado, setCopiado] = useState(false);
@@ -108,6 +108,9 @@ export default function EmpresaPanel() {
   const [formOpen, setFormOpen] = useState(false);
   const [pagando, setPagando] = useState(null);
   const [errorPago, setErrorPago] = useState("");
+  const [vacanteParaInvitar, setVacanteParaInvitar] = useState({});
+  const [invitando, setInvitando] = useState(null);
+  const [errorInvitacion, setErrorInvitacion] = useState(null);
   const empresa = empresas.find((e) => e.id === session.userId);
 
   const [nueva, setNueva] = useState({
@@ -191,6 +194,9 @@ export default function EmpresaPanel() {
   if (!empresa) return null;
 
   const misVacantes = vacantes.filter((v) => v.empresaId === empresa.id);
+  // Solo se puede invitar a una vacante propia y publicada (coincide con la
+  // policy invitaciones_insert_own_vacante del lado del servidor).
+  const misVacantesAprobadas = misVacantes.filter((v) => v.estado === "aprobada");
   const acceso = estadoAcceso(empresa, misVacantes);
 
   async function crearVacante(e) {
@@ -201,6 +207,19 @@ export default function EmpresaPanel() {
       requisitos: nueva.requisitos.split(",").map((r) => r.trim()).filter(Boolean),
     };
     try {
+      if (empresa.plan === "basico" && empresa.esFundador && !empresa.vacanteFundadorUsada) {
+        // Programa Fundadores: la primera vacante de estas empresas va sin
+        // cargo. Se publica directo (el servidor valida el cupo y lo marca
+        // usado solo) y refrescamos para que el resto de la UI vea el cupo
+        // consumido de inmediato.
+        setPublicandoVacante(true);
+        await publicarVacante(empresa.id, payload);
+        await refresh();
+        setNueva({ titulo: "", area: "", modalidad: "Presencial", ubicacion: empresa.ubicacion, nivel: "Junior", descripcion: "", salario: "", requisitos: "" });
+        setFormOpen(false);
+        setPublicandoVacante(false);
+        return;
+      }
       if (empresa.plan === "basico") {
         // Plan Por Vacante: se paga $80.000 al publicar, la búsqueda queda
         // activa por 45 días. Se crea en "pendiente_pago" y redirige a MP;
@@ -243,6 +262,21 @@ export default function EmpresaPanel() {
     } catch (err) {
       setErrorCap(err.message || "No se pudo iniciar el pago.");
       setComprandoCap(null);
+    }
+  }
+
+  async function handleInvitar(candidatoId) {
+    const vacanteId = vacanteParaInvitar[candidatoId] ?? misVacantesAprobadas[0]?.id;
+    if (!vacanteId) return;
+    setErrorInvitacion(null);
+    setInvitando(candidatoId);
+    try {
+      await invitarCandidato(empresa.id, candidatoId, vacanteId);
+    } catch (err) {
+      console.error(err);
+      setErrorInvitacion(candidatoId);
+    } finally {
+      setInvitando(null);
     }
   }
 
@@ -310,7 +344,12 @@ export default function EmpresaPanel() {
       {tab === "vacantes" && empresa.plan !== "basico" && !acceso.activo && <Paywall />}
       {tab === "vacantes" && (empresa.plan === "basico" || acceso.activo) && (
         <div>
-          {empresa.plan === "basico" && (
+          {empresa.plan === "basico" && empresa.esFundador && !empresa.vacanteFundadorUsada && (
+            <div className="mb-4 text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-4 py-2">
+              Programa Fundadores: tu primera publicación es sin cargo. Las siguientes se pagan por separado ($80.000 cada una, 45 días activa).
+            </div>
+          )}
+          {empresa.plan === "basico" && !(empresa.esFundador && !empresa.vacanteFundadorUsada) && (
             <div className="mb-4 text-sm text-forest-600 bg-forest-50 border border-forest-100 rounded-lg px-4 py-2">
               Con el plan Por Vacante, cada búsqueda se paga por separado ($80.000) y queda activa 45 días. Al publicar te vamos a redirigir a Mercado Pago.
             </div>
@@ -350,12 +389,16 @@ export default function EmpresaPanel() {
                   <Field label="Requisitos" hint="Separados por coma"><Input value={nueva.requisitos} onChange={(e) => setNueva({ ...nueva, requisitos: e.target.value })} /></Field>
                 </div>
                 <p className="text-xs text-forest-400 mb-4">
-                  {empresa.plan === "basico"
+                  {empresa.plan === "basico" && empresa.esFundador && !empresa.vacanteFundadorUsada
+                    ? "Se publica al instante, sin cargo (Programa Fundadores)."
+                    : empresa.plan === "basico"
                     ? "Se publica una vez que se acredite el pago de $80.000, y queda activa 45 días."
                     : "La vacante quedará en estado \"pendiente\" hasta que nuestro equipo la revise y apruebe."}
                 </p>
                 <Button type="submit" disabled={publicandoVacante}>
-                  {publicandoVacante ? "Redirigiendo a Mercado Pago..." : empresa.plan === "basico" ? "Publicar y pagar" : "Publicar"}
+                  {empresa.plan === "basico" && empresa.esFundador && !empresa.vacanteFundadorUsada
+                    ? publicandoVacante ? "Publicando..." : "Publicar gratis"
+                    : publicandoVacante ? "Redirigiendo a Mercado Pago..." : empresa.plan === "basico" ? "Publicar y pagar" : "Publicar"}
                 </Button>
               </form>
             </Card>
@@ -571,18 +614,45 @@ export default function EmpresaPanel() {
                           ))}
                         </div>
                       )}
-                      <div className="flex flex-wrap gap-4 mt-2">
+                      <div className="flex flex-wrap items-center gap-4 mt-2">
                         {c.cvUrl && (
                           <a href={c.cvUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold">
                             <FileText size={15} /> Ver CV
                           </a>
                         )}
-                        {c.email && (
-                          <a href={`mailto:${c.email}`} className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold">
-                            <Mail size={15} /> Contactar
-                          </a>
+                        {invitaciones.some((i) => i.empresaId === empresa.id && i.candidatoId === c.id) ? (
+                          <span className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold">
+                            <CheckCircle2 size={15} /> Ya lo invitaste
+                          </span>
+                        ) : misVacantesAprobadas.length === 0 ? (
+                          <span className="text-xs text-forest-400">
+                            Publicá una vacante para poder invitar candidatos.
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Select
+                              className="!w-auto !py-1 !text-sm"
+                              value={vacanteParaInvitar[c.id] ?? misVacantesAprobadas[0].id}
+                              onChange={(e) => setVacanteParaInvitar((prev) => ({ ...prev, [c.id]: e.target.value }))}
+                            >
+                              {misVacantesAprobadas.map((v) => (
+                                <option key={v.id} value={v.id}>{v.titulo}</option>
+                              ))}
+                            </Select>
+                            <Button
+                              variant="ghost"
+                              className="!px-3 !py-1 !text-sm"
+                              disabled={invitando === c.id}
+                              onClick={() => handleInvitar(c.id)}
+                            >
+                              <Mail size={14} /> {invitando === c.id ? "Invitando..." : "Invitar a postularse"}
+                            </Button>
+                          </div>
                         )}
                       </div>
+                      {errorInvitacion === c.id && (
+                        <p className="text-xs text-red-600 mt-1">No pudimos enviar la invitación. Probá de nuevo.</p>
+                      )}
                     </div>
                     {candidatoPremiumActivo(c) && <Badge tone="terracotta">Perfil premium</Badge>}
                   </div>
