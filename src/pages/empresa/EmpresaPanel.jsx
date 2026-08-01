@@ -14,6 +14,27 @@ import { formatoPesos } from "../../data/mentoriaPaquetes.js";
 
 const DIAS_PRUEBA = 14;
 
+// Programa Fundadores: las primeras 30 PYMEs que se registran dentro de los
+// primeros 45 días desde el lanzamiento (2026-08-01) reciben su primera
+// vacante sin cargo. No es un flag manual: se calcula por orden de registro,
+// acá y en la función SQL `empresa_es_fundadora` (que es la que de verdad
+// habilita el insert — esto es solo la versión de UI).
+const FUNDADORES_INICIO = new Date("2026-08-01T00:00:00Z");
+const FUNDADORES_DIAS = 45;
+const FUNDADORES_CUPOS = 30;
+
+function empresaEsFundadora(empresa, todasLasEmpresas) {
+  if (!empresa?.creadoEn) return false;
+  const creado = new Date(empresa.creadoEn);
+  const fin = new Date(FUNDADORES_INICIO.getTime() + FUNDADORES_DIAS * 24 * 60 * 60 * 1000);
+  if (creado < FUNDADORES_INICIO || creado >= fin) return false;
+  const enVentana = todasLasEmpresas
+    .filter((e) => e.creadoEn && new Date(e.creadoEn) >= FUNDADORES_INICIO && new Date(e.creadoEn) < fin)
+    .sort((a, b) => new Date(a.creadoEn) - new Date(b.creadoEn));
+  const puesto = enVentana.findIndex((e) => e.id === empresa.id);
+  return puesto !== -1 && puesto < FUNDADORES_CUPOS;
+}
+
 function estadoPlan(vencimientoISO) {
   if (!vencimientoISO) return { texto: "Sin pagos registrados todavía", vencido: true };
   const vence = new Date(vencimientoISO);
@@ -197,6 +218,7 @@ export default function EmpresaPanel() {
   // Solo se puede invitar a una vacante propia y publicada (coincide con la
   // policy invitaciones_insert_own_vacante del lado del servidor).
   const misVacantesAprobadas = misVacantes.filter((v) => v.estado === "aprobada");
+  const esFundadora = empresaEsFundadora(empresa, empresas);
   const acceso = estadoAcceso(empresa, misVacantes);
 
   async function crearVacante(e) {
@@ -207,7 +229,7 @@ export default function EmpresaPanel() {
       requisitos: nueva.requisitos.split(",").map((r) => r.trim()).filter(Boolean),
     };
     try {
-      if (empresa.plan === "basico" && empresa.esFundador && !empresa.vacanteFundadorUsada) {
+      if (empresa.plan === "basico" && esFundadora && !empresa.vacanteFundadorUsada) {
         // Programa Fundadores: la primera vacante de estas empresas va sin
         // cargo. Se publica directo (el servidor valida el cupo y lo marca
         // usado solo) y refrescamos para que el resto de la UI vea el cupo
@@ -344,12 +366,12 @@ export default function EmpresaPanel() {
       {tab === "vacantes" && empresa.plan !== "basico" && !acceso.activo && <Paywall />}
       {tab === "vacantes" && (empresa.plan === "basico" || acceso.activo) && (
         <div>
-          {empresa.plan === "basico" && empresa.esFundador && !empresa.vacanteFundadorUsada && (
+          {empresa.plan === "basico" && esFundadora && !empresa.vacanteFundadorUsada && (
             <div className="mb-4 text-sm text-gold-700 bg-gold-50 border border-gold-100 rounded-lg px-4 py-2">
               Programa Fundadores: tu primera publicación es sin cargo. Las siguientes se pagan por separado ($80.000 cada una, 45 días activa).
             </div>
           )}
-          {empresa.plan === "basico" && !(empresa.esFundador && !empresa.vacanteFundadorUsada) && (
+          {empresa.plan === "basico" && !(esFundadora && !empresa.vacanteFundadorUsada) && (
             <div className="mb-4 text-sm text-forest-600 bg-forest-50 border border-forest-100 rounded-lg px-4 py-2">
               Con el plan Por Vacante, cada búsqueda se paga por separado ($80.000) y queda activa 45 días. Al publicar te vamos a redirigir a Mercado Pago.
             </div>
@@ -389,14 +411,14 @@ export default function EmpresaPanel() {
                   <Field label="Requisitos" hint="Separados por coma"><Input value={nueva.requisitos} onChange={(e) => setNueva({ ...nueva, requisitos: e.target.value })} /></Field>
                 </div>
                 <p className="text-xs text-forest-400 mb-4">
-                  {empresa.plan === "basico" && empresa.esFundador && !empresa.vacanteFundadorUsada
+                  {empresa.plan === "basico" && esFundadora && !empresa.vacanteFundadorUsada
                     ? "Se publica al instante, sin cargo (Programa Fundadores)."
                     : empresa.plan === "basico"
                     ? "Se publica una vez que se acredite el pago de $80.000, y queda activa 45 días."
                     : "La vacante quedará en estado \"pendiente\" hasta que nuestro equipo la revise y apruebe."}
                 </p>
                 <Button type="submit" disabled={publicandoVacante}>
-                  {empresa.plan === "basico" && empresa.esFundador && !empresa.vacanteFundadorUsada
+                  {empresa.plan === "basico" && esFundadora && !empresa.vacanteFundadorUsada
                     ? publicandoVacante ? "Publicando..." : "Publicar gratis"
                     : publicandoVacante ? "Redirigiendo a Mercado Pago..." : empresa.plan === "basico" ? "Publicar y pagar" : "Publicar"}
                 </Button>
@@ -509,6 +531,20 @@ export default function EmpresaPanel() {
                           <a href={cand.cvUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold">
                             <FileText size={15} /> Ver CV
                           </a>
+                        )}
+                        {/* Acá sí mostramos el contacto directo: esta persona se
+                            postuló a ESTA vacante, es una relación que ella misma
+                            inició (a diferencia del buscador, donde ahora se invita
+                            en vez de contactar directo). */}
+                        {cand?.email && (
+                          <a href={`mailto:${cand.email}`} className="inline-flex items-center gap-1.5 text-sm text-gold-600 font-semibold">
+                            <Mail size={15} /> {cand.email}
+                          </a>
+                        )}
+                        {cand?.telefono && (
+                          <span className="inline-flex items-center gap-1.5 text-sm text-forest-500">
+                            {cand.telefono}
+                          </span>
                         )}
                       </div>
                       {cand?.referencias?.length > 0 && (

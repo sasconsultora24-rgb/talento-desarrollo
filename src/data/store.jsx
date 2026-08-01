@@ -21,9 +21,10 @@ function mapEmpresa(row) {
     plan: row.plan,
     planVencimiento: row.plan_vencimiento,
     fechaRegistro: row.created_at ? row.created_at.slice(0, 10) : "",
-    // Programa Fundadores: primera vacante bonificada. `esFundador` lo asigna
-    // SAS a mano por SQL cuando cierra el trato; no es autoservicio.
-    esFundador: row.es_fundador ?? false,
+    // Timestamp completo (no solo la fecha) para calcular el orden de
+    // registro del Programa Fundadores — ver empresaEsFundadora en
+    // EmpresaPanel.jsx, que espeja la función SQL `empresa_es_fundadora`.
+    creadoEn: row.created_at,
     vacanteFundadorUsada: row.vacante_fundador_usada ?? false,
   };
 }
