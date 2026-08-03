@@ -119,10 +119,11 @@ footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;t
 
 <header>
   <div class="wrap">
-    <span class="pill">Plan de lanzamiento comercial · actualizado 30/7</span>
+    <span class="pill">Plan de lanzamiento comercial · <span id="diaPlanTexto">Día 1</span></span>
     <h1>SAS Talento &amp; Desarrollo<br/>De cero a las primeras ventas</h1>
-    <p class="sub">Del jueves 30 de julio al miércoles 30 de septiembre de 2026. Todo el documento es
-      editable: hacé clic en cualquier texto y escribí encima. Se guarda solo en este navegador.</p>
+    <p class="sub">Día 1 del plan: lunes 3 de agosto de 2026. Hasta el miércoles 30 de septiembre. Todo el
+      documento es editable: hacé clic en cualquier texto y escribí encima. Se guarda solo en este
+      navegador y, si te conectás, también en la nube.</p>
     <div class="barra-acciones">
       <button class="act primary" id="btnSync" onclick="abrirSync()">Conectar para sincronizar</button>
       <button class="act" onclick="exportar()">Descargar copia de seguridad</button>
@@ -195,9 +196,25 @@ footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;t
 <section class="panel on" id="p-ahora">
 <div class="wrap">
 
+  <div class="card destacada" id="tarjetaHoy">
+    <span class="meta" id="metaHoy">Hoy</span>
+    <h3>Tus tareas de hoy</h3>
+    <div id="hoyLista"></div>
+    <p id="hoyVacio" style="display:none;font-size:14px;color:var(--forest500)">No hay tareas puntuales
+      cargadas para hoy en el cronograma. Mirá la solapa Cronograma y adelantá algo de esta semana.</p>
+  </div>
+
+  <div class="card hoy" id="tarjetaAtrasadas" style="display:none">
+    <span class="meta" style="color:var(--terra)">Sin marcar, de días anteriores</span>
+    <h3>Atrasadas</h3>
+    <p style="font-size:13px;color:var(--forest500);margin-bottom:8px">Quedaron pendientes de un día que ya
+    pasó. Hacelas hoy o marcalas si ya las hiciste y no las habías tildado.</p>
+    <div id="hoyAtrasadas"></div>
+  </div>
+
   <div class="card listo">
     <span class="tag ok">Hecho</span><span class="meta">Jueves 30/7</span>
-    <h3>Lo que ya quedó resuelto hoy</h3>
+    <h3>Lo que ya quedó resuelto</h3>
     <p style="font-size:14px">· La plataforma está publicada y funcionando en talento.sasconsultora.com<br/>
     · Ocho materiales gratuitos cargados, con uno nuevo que se desbloquea por mes<br/>
     · Email de bienvenida automático con un ebook adjunto<br/>
@@ -206,38 +223,6 @@ footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;t
     · Los cobros configurados: planes, vacante única, mentorías y las 4 fases de selección</p>
     <p style="font-size:14px;margin-top:10px"><strong>Traducción:</strong> la máquina está lista. Lo que
     falta de acá en adelante es conseguir gente, y eso no lo hace el software.</p>
-  </div>
-
-  <div class="card hoy">
-    <span class="meta" style="color:var(--terra)">Hoy · Sábado 1 de agosto</span>
-    <h3>Todo lo de ayer, junto</h3>
-    <p style="font-size:14px;color:var(--forest500)">Ayer no llegaste a mandar nada, así que arranca hoy
-    con todo junto. No hace falta esperar a un día hábil: son WhatsApp y mail, nadie te atiende por
-    teléfono así que no depende de horario de oficina.</p>
-    <div data-tareas>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">SAB 1/8</span>Elegir 5 profesionales que colocaste en búsquedas anteriores</span><span class="detalle">Los que quedaron seleccionados y siguen contentos. Son los que mejor van a hablar de vos.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">SAB 1/8</span>Pedirles el testimonio por WhatsApp, uno por uno</span><span class="detalle">Texto listo en la solapa Testimonios. No pidas "un testimonio": hacé 3 preguntas concretas, es lo que hace que respondan.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">SAB 1/8</span>Pedirle testimonio a 2 o 3 PYMEs para las que hiciste la búsqueda</span><span class="detalle">Estos valen el doble: son los que le hablan a tu cliente que paga.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">SAB 1/8</span>Armar la lista A: profesionales que ya te conocen</span><span class="detalle">CV de búsquedas pasadas + agenda. Nombre, email, rubro. Meta: 40 a 60. Una planilla simple alcanza.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">SAB 1/8</span>Mandar las primeras 10 a 15 invitaciones, a los que más confianza te tienen</span><span class="detalle">De a 10 o 15, no más. Si el texto no funciona, lo corregís antes de quemar la lista entera.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">SAB 1/8</span>Armar la lista B: PYMEs conocidas</span><span class="detalle">Clientes actuales, ex clientes, quienes te compraron capacitación. Meta: 15 a 20.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia hoy">SAB 1/8</span>Publicar el primer posteo en LinkedIn (Post 1: el jugador que rompía el equipo)</span><span class="detalle">Se atrasó un día, no pasa nada: publicalo hoy, en el horario que puedas.</span></span></label>
-    </div>
-  </div>
-
-  <div class="card destacada">
-    <span class="meta">Mañana · Domingo 2 de agosto</span>
-    <h3>Día de producción, liviano</h3>
-    <p style="font-size:14px;color:var(--forest500)">Buen día para grabar y dejar contenido listo para
-    toda la semana, sin apuro.</p>
-    <div data-tareas>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">DOM 2/8</span>Grabar 3 videos cortos de una sentada</span><span class="detalle">Los guiones están en la solapa TikTok. Grabá los tres seguidos: cambiás de remera entre uno y otro y parecen días distintos.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">DOM 2/8</span>Subir el primero a TikTok y como Reel de Instagram</span><span class="detalle">El mismo video sirve para los dos. Vertical, con subtítulos: el 80% lo mira sin sonido.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">DOM 2/8</span>Armar en Canva el carrusel 1 para Instagram</span><span class="detalle">Las 6 placas están escritas en la solapa Instagram, solo hay que maquetarlas.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">DOM 2/8</span>Contestar y agradecer los testimonios que hayan llegado</span><span class="detalle">Contestá el mismo día. El que te hizo el favor tiene que sentir que sirvió.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">DOM 2/8</span>Dejar programados los posteos de la semana</span><span class="detalle">Media hora. Te saca el tema de encima hasta el viernes.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia finde">DOM 2/8</span>Escribir el mensaje de WhatsApp a las 5 PYMEs que vas a contactar el lunes</span><span class="detalle">Nombre y con quién vas a hablar. Cinco minutos el domingo evitan una hora de duda el lunes.</span></span></label>
-    </div>
   </div>
 
   <div class="alerta">
@@ -349,22 +334,43 @@ footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;t
         <td contenteditable="true">Meta Ads sobre una base que ya funciona.</td>
         <td contenteditable="true">3 PYMEs pagando · 1 selección vendida</td></tr>
     </table>
-    <div class="nota">Las tareas del 31/7 y del 1/8 están en la primera solapa, "Qué hago ahora".
-    Acá abajo sigue el resto.</div>
+    <div class="nota">La fase 0 (30/7 al 2/8) queda documentada acá abajo como historial. La solapa
+    "Qué hago ahora" ahora siempre muestra las tareas del día de hoy, se actualiza sola cada vez que
+    entrás.</div>
+  </div>
+
+  <div class="card">
+    <span class="meta">Fase 0</span>
+    <h3>Jueves 30/7 al domingo 2/8 — Munición</h3>
+    <div data-tareas>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-01"><span class="cuerpo"><span class="titulo"><span class="dia">SAB 1/8</span>Elegir 5 profesionales que colocaste en búsquedas anteriores</span><span class="detalle">Los que quedaron seleccionados y siguen contentos. Son los que mejor van a hablar de vos.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-01"><span class="cuerpo"><span class="titulo"><span class="dia">SAB 1/8</span>Pedirles el testimonio por WhatsApp, uno por uno</span><span class="detalle">Texto listo en la solapa Testimonios. No pidas "un testimonio": hacé 3 preguntas concretas, es lo que hace que respondan.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-01"><span class="cuerpo"><span class="titulo"><span class="dia">SAB 1/8</span>Pedirle testimonio a 2 o 3 PYMEs para las que hiciste la búsqueda</span><span class="detalle">Estos valen el doble: son los que le hablan a tu cliente que paga.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-01"><span class="cuerpo"><span class="titulo"><span class="dia">SAB 1/8</span>Armar la lista A: profesionales que ya te conocen</span><span class="detalle">CV de búsquedas pasadas + agenda. Nombre, email, rubro. Meta: 40 a 60. Una planilla simple alcanza.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-01"><span class="cuerpo"><span class="titulo"><span class="dia">SAB 1/8</span>Mandar las primeras 10 a 15 invitaciones, a los que más confianza te tienen</span><span class="detalle">De a 10 o 15, no más. Si el texto no funciona, lo corregís antes de quemar la lista entera.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-01"><span class="cuerpo"><span class="titulo"><span class="dia">SAB 1/8</span>Armar la lista B: PYMEs conocidas</span><span class="detalle">Clientes actuales, ex clientes, quienes te compraron capacitación. Meta: 15 a 20.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-01"><span class="cuerpo"><span class="titulo"><span class="dia">SAB 1/8</span>Publicar el primer posteo en LinkedIn (Post 1: el jugador que rompía el equipo)</span><span class="detalle">Se atrasó un día, no pasa nada: publicalo hoy, en el horario que puedas.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-02"><span class="cuerpo"><span class="titulo"><span class="dia">DOM 2/8</span>Grabar 3 videos cortos de una sentada</span><span class="detalle">Los guiones están en la solapa TikTok. Grabá los tres seguidos: cambiás de remera entre uno y otro y parecen días distintos.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-02"><span class="cuerpo"><span class="titulo"><span class="dia">DOM 2/8</span>Subir el primero a TikTok y como Reel de Instagram</span><span class="detalle">El mismo video sirve para los dos. Vertical, con subtítulos: el 80% lo mira sin sonido.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-02"><span class="cuerpo"><span class="titulo"><span class="dia">DOM 2/8</span>Armar en Canva el carrusel 1 para Instagram</span><span class="detalle">Las 6 placas están escritas en la solapa Instagram, solo hay que maquetarlas.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-02"><span class="cuerpo"><span class="titulo"><span class="dia">DOM 2/8</span>Contestar y agradecer los testimonios que hayan llegado</span><span class="detalle">Contestá el mismo día. El que te hizo el favor tiene que sentir que sirvió.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-02"><span class="cuerpo"><span class="titulo"><span class="dia">DOM 2/8</span>Dejar programados los posteos de la semana</span><span class="detalle">Media hora. Te saca el tema de encima hasta el viernes.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-02"><span class="cuerpo"><span class="titulo"><span class="dia">DOM 2/8</span>Escribir el mensaje de WhatsApp a las 5 PYMEs que vas a contactar el lunes</span><span class="detalle">Nombre y con quién vas a hablar. Cinco minutos el domingo evitan una hora de duda el lunes.</span></span></label>
+    </div>
   </div>
 
   <div class="card">
     <span class="meta">Fase 1</span>
     <h3>Lunes 3/8 al domingo 9/8 — Los tibios</h3>
     <div data-tareas>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 3/8</span>Escribirles por WhatsApp a las 5 PYMEs más cercanas con la oferta fundadora</span><span class="detalle">Uno por uno, nunca mail masivo. Un mail con una oferta gratis parece publicidad y se borra; el mismo texto por WhatsApp es un favor entre conocidos.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 3/8</span>Revisar cómo respondieron las primeras 20 invitaciones</span><span class="detalle">Menos de 5 registros sobre 20 significa que hay que cambiar el mensaje, no la lista.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 4/8</span>Post 2 en LinkedIn: lo que cuesta contratar mal</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 4/8</span>Mandar el resto de la lista A</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 5/8</span>Publicar el primer testimonio en LinkedIn e Instagram</span><span class="detalle">Con nombre y empresa si te dieron permiso. Es el contenido que más confianza genera de todos.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 6/8</span>Contactar a las 10 PYMEs restantes de la lista B</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 6/8</span>Segundo video en TikTok e Instagram</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">Todos los días</span>10 solicitudes de conexión en LinkedIn</span><span class="detalle">Dueños de PYME y mandos medios de Paraná y la región. Ya lo venías haciendo: ahora tenés a dónde mandarlos.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-03"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 3/8</span>Escribirles por WhatsApp a las 5 PYMEs más cercanas con la oferta fundadora</span><span class="detalle">Uno por uno, nunca mail masivo. Un mail con una oferta gratis parece publicidad y se borra; el mismo texto por WhatsApp es un favor entre conocidos.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-03"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 3/8</span>Revisar cómo respondieron las primeras 20 invitaciones</span><span class="detalle">Menos de 5 registros sobre 20 significa que hay que cambiar el mensaje, no la lista.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-04"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 4/8</span>Post 2 en LinkedIn: lo que cuesta contratar mal</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-04"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 4/8</span>Mandar el resto de la lista A</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-05"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 5/8</span>Publicar el primer testimonio en LinkedIn e Instagram</span><span class="detalle">Con nombre y empresa si te dieron permiso. Es el contenido que más confianza genera de todos.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-06"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 6/8</span>Contactar a las 10 PYMEs restantes de la lista B</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-06"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 6/8</span>Segundo video en TikTok e Instagram</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="recurrente" data-desde="2026-08-03" data-hasta="2026-08-09"><span class="cuerpo"><span class="titulo"><span class="dia">Todos los días</span>10 solicitudes de conexión en LinkedIn</span><span class="detalle">Dueños de PYME y mandos medios de Paraná y la región. Ya lo venías haciendo: ahora tenés a dónde mandarlos.</span></span></label>
     </div>
   </div>
 
@@ -372,16 +378,16 @@ footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;t
     <span class="meta">Fase 2</span>
     <h3>Lunes 10/8 al domingo 23/8 — Ruido con sentido</h3>
     <div data-tareas>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 10/8</span>Abrir la inscripción al encuentro del 27/8</span><span class="detalle">Cupo de 40 lugares. El cupo no es un truco: hace que se anoten ahora y no después.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 10/8</span>Invitación PERSONAL al encuentro a 15 dueños de PYME</span><span class="detalle">Uno por uno, por WhatsApp o llamada. Los dueños van cuando los invita una persona, no una campaña.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 11/8</span>Convocatoria masiva al encuentro por email a los profesionales</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 12/8</span>Post 3: el ebook como imán</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 14/8</span>Post 4: verdad incómoda sobre los CV</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 17/8</span>Segundo testimonio publicado</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 18/8</span>Recordatorio del encuentro a los inscriptos</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 20/8</span>Post 5: invitación abierta al encuentro</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 21/8</span>Grabar y subir videos 3, 4 y 5</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">SÁB 22/8</span>Última convocatoria al encuentro</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-10"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 10/8</span>Abrir la inscripción al encuentro del 27/8</span><span class="detalle">Cupo de 40 lugares. El cupo no es un truco: hace que se anoten ahora y no después.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-10"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 10/8</span>Invitación PERSONAL al encuentro a 15 dueños de PYME</span><span class="detalle">Uno por uno, por WhatsApp o llamada. Los dueños van cuando los invita una persona, no una campaña.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-11"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 11/8</span>Convocatoria masiva al encuentro por email a los profesionales</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-12"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 12/8</span>Post 3: el ebook como imán</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-14"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 14/8</span>Post 4: verdad incómoda sobre los CV</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-17"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 17/8</span>Segundo testimonio publicado</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-18"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 18/8</span>Recordatorio del encuentro a los inscriptos</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-20"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 20/8</span>Post 5: invitación abierta al encuentro</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-21"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 21/8</span>Grabar y subir videos 3, 4 y 5</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-22"><span class="cuerpo"><span class="titulo"><span class="dia">SÁB 22/8</span>Última convocatoria al encuentro</span></span></label>
     </div>
   </div>
 
@@ -389,12 +395,12 @@ footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;t
     <span class="meta">Fase 3</span>
     <h3>Lunes 24/8 al domingo 30/8 — El encuentro</h3>
     <div data-tareas>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 25/8</span>Ensayo: probar audio, pantalla y el link</span><span class="detalle">Cinco minutos que evitan arrancar 10 minutos tarde.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 26/8</span>Recordatorio 24 horas antes</span><span class="detalle">Sin recordatorio asiste el 25% de los inscriptos. Con recordatorio, el 45%.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 27/8</span>Encuentro en vivo, 19:00 a 19:45</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 28/8</span>Email a los que asistieron: grabación + ebook + agenda abierta</span><span class="detalle">Dentro de las 24 horas, mientras te tienen fresco.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 28/8</span>Email distinto a los que se anotaron y no fueron</span><span class="detalle">Sin reproche. Se anotaron: eso ya es interés.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">SÁB 29/8</span>Post 6: qué pasó en el encuentro</span><span class="detalle">El posteo que más conversaciones de venta genera, porque muestra que ya hay gente adentro.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-25"><span class="cuerpo"><span class="titulo"><span class="dia">MAR 25/8</span>Ensayo: probar audio, pantalla y el link</span><span class="detalle">Cinco minutos que evitan arrancar 10 minutos tarde.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-26"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 26/8</span>Recordatorio 24 horas antes</span><span class="detalle">Sin recordatorio asiste el 25% de los inscriptos. Con recordatorio, el 45%.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-27"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 27/8</span>Encuentro en vivo, 19:00 a 19:45</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-28"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 28/8</span>Email a los que asistieron: grabación + ebook + agenda abierta</span><span class="detalle">Dentro de las 24 horas, mientras te tienen fresco.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-28"><span class="cuerpo"><span class="titulo"><span class="dia">VIE 28/8</span>Email distinto a los que se anotaron y no fueron</span><span class="detalle">Sin reproche. Se anotaron: eso ya es interés.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-29"><span class="cuerpo"><span class="titulo"><span class="dia">SÁB 29/8</span>Post 6: qué pasó en el encuentro</span><span class="detalle">El posteo que más conversaciones de venta genera, porque muestra que ya hay gente adentro.</span></span></label>
     </div>
   </div>
 
@@ -402,14 +408,14 @@ footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;t
     <span class="meta">Fase 4</span>
     <h3>Lunes 31/8 al miércoles 30/9 — Escalar</h3>
     <div data-tareas>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 31/8</span>Escribirle uno por uno a los dueños que asistieron</span><span class="detalle">Acá se cierra. El encuentro no vende: abre la puerta para esta conversación por WhatsApp.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 31/8</span>Vence la oferta fundadora. Avisar a los indecisos</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 2/9</span>Lanzar campaña A (profesionales) en Meta Ads</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 7/9</span>Lanzar campaña B (PYMEs)</span><span class="detalle">Escalonadas, no juntas: así sabés cuál funciona.</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 10/9</span>Primera lectura de resultados: apagar el peor anuncio, duplicar el mejor</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 14/9</span>Activar retargeting a quienes visitaron y no se registraron</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">Todas las semanas</span>3 posteos en LinkedIn, 3 en Instagram, 2 en TikTok</span></span></label>
-      <label class="tarea"><input type="checkbox"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 30/9</span>Cierre del trimestre: revisar números y decidir el paso siguiente</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-31"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 31/8</span>Escribirle uno por uno a los dueños que asistieron</span><span class="detalle">Acá se cierra. El encuentro no vende: abre la puerta para esta conversación por WhatsApp.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-08-31"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 31/8</span>Vence la oferta fundadora. Avisar a los indecisos</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-09-02"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 2/9</span>Lanzar campaña A (profesionales) en Meta Ads</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-09-07"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 7/9</span>Lanzar campaña B (PYMEs)</span><span class="detalle">Escalonadas, no juntas: así sabés cuál funciona.</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-09-10"><span class="cuerpo"><span class="titulo"><span class="dia">JUE 10/9</span>Primera lectura de resultados: apagar el peor anuncio, duplicar el mejor</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-09-14"><span class="cuerpo"><span class="titulo"><span class="dia">LUN 14/9</span>Activar retargeting a quienes visitaron y no se registraron</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="recurrente" data-desde="2026-08-31" data-hasta="2026-09-30"><span class="cuerpo"><span class="titulo"><span class="dia">Todas las semanas</span>3 posteos en LinkedIn, 3 en Instagram, 2 en TikTok</span></span></label>
+      <label class="tarea"><input type="checkbox" data-fecha="2026-09-30"><span class="cuerpo"><span class="titulo"><span class="dia">MIE 30/9</span>Cierre del trimestre: revisar números y decidir el paso siguiente</span></span></label>
     </div>
   </div>
 
@@ -1294,7 +1300,7 @@ Somos la unidad de RRHH de SAS Consultora, en Paraná.
 
 <footer>
   <div class="wrap">
-    Plan de lanzamiento · SAS Talento &amp; Desarrollo · Actualizado el 30 de julio de 2026<br/>
+    Plan de lanzamiento · SAS Talento &amp; Desarrollo · Actualizado el 3 de agosto de 2026<br/>
     Documento editable. Se guarda automáticamente en este navegador. Descargá una copia de seguridad de vez en cuando.
   </div>
 </footer>
@@ -1440,11 +1446,96 @@ function actualizarProgreso(){
   document.getElementById("pgPct").textContent = pct+"%";
   document.getElementById("pgFill").style.width = pct+"%";
   todas.forEach(c=>c.closest(".tarea").classList.toggle("hecha", c.checked));
+  renderHoy();
+}
+
+function fechaHoyISO(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+function formatoFechaLarga(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  const f = new Date(y, m-1, d);
+  return f.toLocaleDateString("es-AR", { weekday:"long", day:"numeric", month:"long" });
+}
+
+// Clona (no mueve) una tarea del cronograma para mostrarla en "Hoy". El
+// checkbox del clon nunca se cuenta en el progreso ni en el guardado: eso lo
+// sigue haciendo siempre el checkbox original, que vive dentro de un
+// contenedor [data-tareas]. El clon solo refleja y reenvía el cambio.
+function clonarTarea(original){
+  const chkOrig = original.querySelector('input[type=checkbox]');
+  const clone = document.createElement('label');
+  clone.className = 'tarea' + (chkOrig.checked ? ' hecha' : '');
+  const chk = document.createElement('input');
+  chk.type = 'checkbox';
+  chk.checked = chkOrig.checked;
+  chk.dataset.clone = '1';
+  chk.addEventListener('change', ()=>{
+    chkOrig.checked = chk.checked;
+    chkOrig.dispatchEvent(new Event('change', { bubbles:true }));
+  });
+  const cuerpo = original.querySelector('.cuerpo').cloneNode(true);
+  clone.appendChild(chk);
+  clone.appendChild(cuerpo);
+  return clone;
+}
+
+// Arma la solapa "Qué hago ahora": tareas de hoy (por data-fecha o
+// recurrentes vigentes) + atrasadas (fecha pasada y sin marcar). Se llama
+// sola cada vez que cambia algo y una vez al cargar la página, así que
+// nunca hay que tocar el HTML a mano para que aparezca "hoy" correctamente.
+function renderHoy(){
+  const listaHoy = document.getElementById('hoyLista');
+  if(!listaHoy) return;
+  const hoy = fechaHoyISO();
+  const listaAtrasadas = document.getElementById('hoyAtrasadas');
+  const tarjetaAtrasadas = document.getElementById('tarjetaAtrasadas');
+  const vacio = document.getElementById('hoyVacio');
+
+  listaHoy.innerHTML = '';
+  listaAtrasadas.innerHTML = '';
+
+  const todas = [...document.querySelectorAll('[data-tareas] label.tarea')];
+  let nHoy = 0, nAtrasadas = 0;
+
+  todas.forEach(t=>{
+    const chk = t.querySelector('input[type=checkbox]');
+    const fecha = chk.dataset.fecha;
+    if(!fecha) return;
+    if(fecha === 'recurrente'){
+      if(hoy >= chk.dataset.desde && hoy <= chk.dataset.hasta){
+        listaHoy.appendChild(clonarTarea(t)); nHoy++;
+      }
+    } else if(fecha === hoy){
+      listaHoy.appendChild(clonarTarea(t)); nHoy++;
+    } else if(fecha < hoy && !chk.checked){
+      listaAtrasadas.appendChild(clonarTarea(t)); nAtrasadas++;
+    }
+  });
+
+  vacio.style.display = nHoy ? 'none' : 'block';
+  tarjetaAtrasadas.style.display = nAtrasadas ? 'block' : 'none';
+
+  const metaHoy = document.getElementById('metaHoy');
+  if(metaHoy) metaHoy.textContent = 'Hoy · ' + formatoFechaLarga(hoy);
+
+  const diaPlanTexto = document.getElementById('diaPlanTexto');
+  if(diaPlanTexto){
+    const inicio = new Date(2026,7,3); // 3 de agosto de 2026 = día 1 del plan
+    const hoyDate = new Date(); hoyDate.setHours(0,0,0,0);
+    const dias = Math.floor((hoyDate - inicio) / 86400000) + 1;
+    diaPlanTexto.textContent = dias >= 1 ? ('Día ' + dias + ' del plan') : 'Antes del día 1';
+  }
 }
 
 function estado(){
   return {
-    checks: [...document.querySelectorAll('input[type=checkbox]')].map(c=>c.checked),
+    // Ojo: escopado a [data-tareas] a propósito. Los clones de la solapa
+    // "Hoy" (#hoyLista/#hoyAtrasadas) no están dentro de [data-tareas], así
+    // que nunca se cuelan acá ni corren el orden de los índices guardados.
+    checks: [...document.querySelectorAll('[data-tareas] input[type=checkbox]')].map(c=>c.checked),
     inputs: [...document.querySelectorAll('td input[type=text]')].map(i=>i.value),
     editables: [...document.querySelectorAll('[contenteditable=true]')].map(e=>e.innerHTML),
     guardado: new Date().toISOString()
@@ -1467,7 +1558,7 @@ function guardar(){
 }
 function aplicar(d){
   if(!d) return;
-  const ch=[...document.querySelectorAll('input[type=checkbox]')];
+  const ch=[...document.querySelectorAll('[data-tareas] input[type=checkbox]')];
   (d.checks||[]).forEach((v,i)=>{ if(ch[i]) ch[i].checked=v; });
   const inp=[...document.querySelectorAll('td input[type=text]')];
   (d.inputs||[]).forEach((v,i)=>{ if(inp[i]) inp[i].value=v; });
@@ -1519,7 +1610,7 @@ window.copiar = copiar;
 window.guardar = guardar;
 
 document.addEventListener("change", e=>{
-  if(e.target.matches('input[type=checkbox], td input[type=text]')){ actualizarProgreso(); guardar(); }
+  if(e.target.matches('input[type=checkbox]:not([data-clone]), td input[type=text]')){ actualizarProgreso(); guardar(); }
 });
 let temporizador;
 document.addEventListener("input", e=>{
