@@ -579,6 +579,7 @@ export function AppProvider({ children }) {
     if ("nivel" in cambios) payload.nivel = cambios.nivel;
     if ("disponibilidad" in cambios) payload.disponibilidad = cambios.disponibilidad;
     if ("membresia" in cambios) payload.membresia = cambios.membresia;
+    if ("membresiaVencimiento" in cambios) payload.membresia_vencimiento = cambios.membresiaVencimiento;
     if ("cvUrl" in cambios) payload.cv_url = cambios.cvUrl;
     if ("cvNombre" in cambios) payload.cv_nombre = cambios.cvNombre;
     if ("referencias" in cambios) payload.referencias = cambios.referencias;
@@ -595,6 +596,15 @@ export function AppProvider({ children }) {
     setCandidatos((prev) => prev.map((c) => (c.id === id ? actualizado : c)));
   }, []);
 
+  // Baja de un candidato desde el panel admin. Permitido por RLS solo a admin
+  // (candidatos_delete_admin); las postulaciones/invitaciones asociadas caen
+  // por ON DELETE CASCADE en la base.
+  const eliminarCandidato = useCallback(async (id) => {
+    const { error: delError } = await supabase.from("candidatos").delete().eq("id", id);
+    if (delError) throw delError;
+    setCandidatos((prev) => prev.filter((c) => c.id !== id));
+  }, []);
+
   // ---------- Empresas ----------
   const actualizarEmpresa = useCallback(async (id, cambios) => {
     const payload = {};
@@ -606,6 +616,8 @@ export function AppProvider({ children }) {
     if ("contacto" in cambios) payload.contacto = cambios.contacto;
     if ("email" in cambios) payload.email = cambios.email;
     if ("plan" in cambios) payload.plan = cambios.plan;
+    if ("planVencimiento" in cambios) payload.plan_vencimiento = cambios.planVencimiento;
+    if ("vacanteFundadorUsada" in cambios) payload.vacante_fundador_usada = cambios.vacanteFundadorUsada;
 
     const { data, error: updateError } = await supabase
       .from("empresas")
@@ -616,6 +628,15 @@ export function AppProvider({ children }) {
     if (updateError) throw updateError;
     const actualizada = mapEmpresa(data);
     setEmpresas((prev) => prev.map((e) => (e.id === id ? actualizada : e)));
+  }, []);
+
+  // Baja de una PYME desde el panel admin. Permitido por RLS solo a admin
+  // (empresas_delete_admin); vacantes/postulaciones/pagos asociados caen por
+  // ON DELETE CASCADE en la base.
+  const eliminarEmpresa = useCallback(async (id) => {
+    const { error: delError } = await supabase.from("empresas").delete().eq("id", id);
+    if (delError) throw delError;
+    setEmpresas((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
   // ---------- Pagos (Mercado Pago) ----------
@@ -948,8 +969,10 @@ export function AppProvider({ children }) {
     iniciarPago,
     registrarCandidato,
     actualizarCandidato,
+    eliminarCandidato,
     registrarEmpresa,
     actualizarEmpresa,
+    eliminarEmpresa,
     publicarVacante,
     publicarVacanteConPago,
     reservarConsultoria,

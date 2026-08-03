@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download, CalendarClock, Inbox, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Briefcase, GraduationCap, Building2, Users, Download, CalendarClock, Inbox, BarChart3, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "../../data/supabaseClient";
 import { useApp } from "../../data/store.jsx";
 import { Card, Badge, Button, StatCard, EmptyState, Field, Input, Select, Textarea } from "../../components/ui.jsx";
@@ -48,10 +48,19 @@ export default function AdminPanel() {
     cambiarEstadoVacante, crearCapacitacion, actualizarEnlaceCapacitacion,
     consultorias, cambiarEstadoConsultoria,
     solicitudes, cambiarEstadoSolicitud,
+    actualizarEmpresa, eliminarEmpresa, actualizarCandidato, eliminarCandidato,
   } = useApp();
   const [errorConsultoria, setErrorConsultoria] = useState("");
   const [errorSolicitud, setErrorSolicitud] = useState("");
   const [filtroSolicitud, setFiltroSolicitud] = useState("abiertas");
+  const [empresaEditando, setEmpresaEditando] = useState(null);
+  const [formEmpresa, setFormEmpresa] = useState(null);
+  const [errorEmpresa, setErrorEmpresa] = useState("");
+  const [guardandoEmpresa, setGuardandoEmpresa] = useState(false);
+  const [candidatoEditando, setCandidatoEditando] = useState(null);
+  const [formCandidato, setFormCandidato] = useState(null);
+  const [errorCandidato, setErrorCandidato] = useState("");
+  const [guardandoCandidato, setGuardandoCandidato] = useState(false);
 
   // Analítica: se consulta solo al abrir la pestaña, para no cargar eventos en
   // cada render del panel (la tabla puede crecer mucho más que las demás).
@@ -216,6 +225,91 @@ export default function AdminPanel() {
     } catch (err) {
       console.error(err);
       setErrorCap(mensajeError(err, "No pudimos crear la capacitación. Probá de nuevo en unos segundos."));
+    }
+  }
+
+  function abrirEdicionEmpresa(e) {
+    setErrorEmpresa("");
+    setEmpresaEditando(e.id);
+    setFormEmpresa({
+      nombre: e.nombre || "",
+      rubro: e.rubro || "",
+      ubicacion: e.ubicacion || "",
+      contacto: e.contacto || "",
+      email: e.email || "",
+      plan: e.plan || "basico",
+      planVencimiento: e.planVencimiento ? e.planVencimiento.slice(0, 10) : "",
+    });
+  }
+
+  async function guardarEmpresa(id) {
+    setErrorEmpresa("");
+    setGuardandoEmpresa(true);
+    try {
+      await actualizarEmpresa(id, {
+        ...formEmpresa,
+        planVencimiento: formEmpresa.planVencimiento ? new Date(formEmpresa.planVencimiento).toISOString() : null,
+      });
+      setEmpresaEditando(null);
+    } catch (err) {
+      console.error(err);
+      setErrorEmpresa(mensajeError(err, "No pudimos guardar los cambios."));
+    } finally {
+      setGuardandoEmpresa(false);
+    }
+  }
+
+  async function borrarEmpresa(e) {
+    if (!window.confirm(`¿Eliminar definitivamente a "${e.nombre}"? Se borran también sus vacantes, postulaciones y pagos asociados. Esta acción no se puede deshacer.`)) return;
+    setErrorEmpresa("");
+    try {
+      await eliminarEmpresa(e.id);
+    } catch (err) {
+      console.error(err);
+      setErrorEmpresa(mensajeError(err, "No pudimos eliminar la PYME."));
+    }
+  }
+
+  function abrirEdicionCandidato(c) {
+    setErrorCandidato("");
+    setCandidatoEditando(c.id);
+    setFormCandidato({
+      nombre: c.nombre || "",
+      email: c.email || "",
+      telefono: c.telefono || "",
+      ubicacion: c.ubicacion || "",
+      titulo: c.titulo || "",
+      nivel: c.nivel || "Junior",
+      membresia: c.membresia || "free",
+      membresiaVencimiento: c.membresiaVencimiento ? c.membresiaVencimiento.slice(0, 10) : "",
+    });
+  }
+
+  async function guardarCandidato(id) {
+    setErrorCandidato("");
+    setGuardandoCandidato(true);
+    try {
+      await actualizarCandidato(id, {
+        ...formCandidato,
+        membresiaVencimiento: formCandidato.membresiaVencimiento ? new Date(formCandidato.membresiaVencimiento).toISOString() : null,
+      });
+      setCandidatoEditando(null);
+    } catch (err) {
+      console.error(err);
+      setErrorCandidato(mensajeError(err, "No pudimos guardar los cambios."));
+    } finally {
+      setGuardandoCandidato(false);
+    }
+  }
+
+  async function borrarCandidato(c) {
+    if (!window.confirm(`¿Eliminar definitivamente a "${c.nombre}"? Se borran también sus postulaciones e inscripciones asociadas. Esta acción no se puede deshacer.`)) return;
+    setErrorCandidato("");
+    try {
+      await eliminarCandidato(c.id);
+    } catch (err) {
+      console.error(err);
+      setErrorCandidato(mensajeError(err, "No pudimos eliminar el candidato."));
     }
   }
 
@@ -839,29 +933,175 @@ export default function AdminPanel() {
 
       {tab === "empresas" && (
         <div className="space-y-3">
-          {empresas.map((e) => (
-            <Card key={e.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h3 className="font-bold text-forest-900">{e.nombre}</h3>
-                <p className="text-sm text-forest-500">{e.rubro} · {e.ubicacion} · Desde {e.fechaRegistro}</p>
-              </div>
-              <Badge tone="gold">Plan {e.plan}</Badge>
-            </Card>
-          ))}
+          {errorEmpresa && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorEmpresa}</div>
+          )}
+          {empresas.length === 0 ? (
+            <EmptyState text="Todavía no hay PYMEs registradas." />
+          ) : (
+            empresas.map((e) => {
+              const editando = empresaEditando === e.id;
+              return (
+                <Card key={e.id} className="p-5">
+                  {!editando ? (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-forest-900">{e.nombre}</h3>
+                        <p className="text-sm text-forest-500">{e.rubro} · {e.ubicacion} · Desde {e.fechaRegistro}</p>
+                        <p className="text-sm text-forest-400">
+                          {e.contacto} · <a href={`mailto:${e.email}`} className="text-gold-600 font-semibold hover:underline">{e.email}</a>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge tone="gold">
+                          Plan {e.plan}{e.planVencimiento ? ` · vence ${e.planVencimiento.slice(0, 10)}` : ""}
+                        </Badge>
+                        <Button variant="outline" className="!px-3 !py-1.5" onClick={() => abrirEdicionEmpresa(e)}>
+                          <Pencil size={14} /> Editar
+                        </Button>
+                        <Button variant="ghost" className="!px-3 !py-1.5 !text-red-600" onClick={() => borrarEmpresa(e)}>
+                          <Trash2 size={14} /> Eliminar
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="grid sm:grid-cols-2 gap-x-4">
+                        <Field label="Nombre">
+                          <Input value={formEmpresa.nombre} onChange={(ev) => setFormEmpresa({ ...formEmpresa, nombre: ev.target.value })} />
+                        </Field>
+                        <Field label="Rubro">
+                          <Input value={formEmpresa.rubro} onChange={(ev) => setFormEmpresa({ ...formEmpresa, rubro: ev.target.value })} />
+                        </Field>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-x-4">
+                        <Field label="Ubicación">
+                          <Input value={formEmpresa.ubicacion} onChange={(ev) => setFormEmpresa({ ...formEmpresa, ubicacion: ev.target.value })} />
+                        </Field>
+                        <Field label="Persona de contacto">
+                          <Input value={formEmpresa.contacto} onChange={(ev) => setFormEmpresa({ ...formEmpresa, contacto: ev.target.value })} />
+                        </Field>
+                      </div>
+                      <Field label="Email">
+                        <Input type="email" value={formEmpresa.email} onChange={(ev) => setFormEmpresa({ ...formEmpresa, email: ev.target.value })} />
+                      </Field>
+                      <div className="grid sm:grid-cols-2 gap-x-4">
+                        <Field label="Plan">
+                          <Select value={formEmpresa.plan} onChange={(ev) => setFormEmpresa({ ...formEmpresa, plan: ev.target.value })}>
+                            <option value="basico">Por Vacante (básico)</option>
+                            <option value="avanzado">Avanzado</option>
+                            <option value="premium">Premium</option>
+                            <option value="platino">Platino</option>
+                          </Select>
+                        </Field>
+                        <Field label="Plan vence" hint="Vacío = sin abono mensual activo">
+                          <Input type="date" value={formEmpresa.planVencimiento} onChange={(ev) => setFormEmpresa({ ...formEmpresa, planVencimiento: ev.target.value })} />
+                        </Field>
+                      </div>
+                      {errorEmpresa && <p className="text-sm text-red-600">{errorEmpresa}</p>}
+                      <div className="flex gap-2">
+                        <Button disabled={guardandoEmpresa} onClick={() => guardarEmpresa(e.id)}>
+                          {guardandoEmpresa ? "Guardando..." : "Guardar cambios"}
+                        </Button>
+                        <Button variant="ghost" onClick={() => setEmpresaEditando(null)}>Cancelar</Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              );
+            })
+          )}
         </div>
       )}
 
       {tab === "candidatos" && (
         <div className="space-y-3">
-          {candidatos.map((c) => (
-            <Card key={c.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h3 className="font-bold text-forest-900">{c.nombre}</h3>
-                <p className="text-sm text-forest-500">{c.titulo} · {c.ubicacion} · Desde {c.fechaRegistro}</p>
-              </div>
-              <Badge tone={c.membresia === "premium" ? "terracotta" : "gray"}>{c.membresia}</Badge>
-            </Card>
-          ))}
+          {errorCandidato && (
+            <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{errorCandidato}</div>
+          )}
+          {candidatos.length === 0 ? (
+            <EmptyState text="Todavía no hay candidatos registrados." />
+          ) : (
+            candidatos.map((c) => {
+              const editando = candidatoEditando === c.id;
+              return (
+                <Card key={c.id} className="p-5">
+                  {!editando ? (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-forest-900">{c.nombre}</h3>
+                        <p className="text-sm text-forest-500">{c.titulo} · {c.ubicacion} · Desde {c.fechaRegistro}</p>
+                        <p className="text-sm text-forest-400">
+                          <a href={`mailto:${c.email}`} className="text-gold-600 font-semibold hover:underline">{c.email}</a>
+                          {c.telefono ? ` · ${c.telefono}` : ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge tone={c.membresia === "premium" ? "terracotta" : "gray"}>
+                          {c.membresia}{c.membresiaVencimiento ? ` · vence ${c.membresiaVencimiento.slice(0, 10)}` : ""}
+                        </Badge>
+                        <Button variant="outline" className="!px-3 !py-1.5" onClick={() => abrirEdicionCandidato(c)}>
+                          <Pencil size={14} /> Editar
+                        </Button>
+                        <Button variant="ghost" className="!px-3 !py-1.5 !text-red-600" onClick={() => borrarCandidato(c)}>
+                          <Trash2 size={14} /> Eliminar
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="grid sm:grid-cols-2 gap-x-4">
+                        <Field label="Nombre">
+                          <Input value={formCandidato.nombre} onChange={(ev) => setFormCandidato({ ...formCandidato, nombre: ev.target.value })} />
+                        </Field>
+                        <Field label="Título / puesto">
+                          <Input value={formCandidato.titulo} onChange={(ev) => setFormCandidato({ ...formCandidato, titulo: ev.target.value })} />
+                        </Field>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-x-4">
+                        <Field label="Email">
+                          <Input type="email" value={formCandidato.email} onChange={(ev) => setFormCandidato({ ...formCandidato, email: ev.target.value })} />
+                        </Field>
+                        <Field label="Teléfono">
+                          <Input value={formCandidato.telefono} onChange={(ev) => setFormCandidato({ ...formCandidato, telefono: ev.target.value })} />
+                        </Field>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-x-4">
+                        <Field label="Ubicación">
+                          <Input value={formCandidato.ubicacion} onChange={(ev) => setFormCandidato({ ...formCandidato, ubicacion: ev.target.value })} />
+                        </Field>
+                        <Field label="Nivel">
+                          <Select value={formCandidato.nivel} onChange={(ev) => setFormCandidato({ ...formCandidato, nivel: ev.target.value })}>
+                            <option>Junior</option>
+                            <option>Semi Senior</option>
+                            <option>Senior</option>
+                          </Select>
+                        </Field>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-x-4">
+                        <Field label="Membresía">
+                          <Select value={formCandidato.membresia} onChange={(ev) => setFormCandidato({ ...formCandidato, membresia: ev.target.value })}>
+                            <option value="free">Gratis</option>
+                            <option value="premium">Desarrollo Profesional (premium)</option>
+                          </Select>
+                        </Field>
+                        <Field label="Membresía vence" hint="Vacío = sin membresía paga activa">
+                          <Input type="date" value={formCandidato.membresiaVencimiento} onChange={(ev) => setFormCandidato({ ...formCandidato, membresiaVencimiento: ev.target.value })} />
+                        </Field>
+                      </div>
+                      {errorCandidato && <p className="text-sm text-red-600">{errorCandidato}</p>}
+                      <div className="flex gap-2">
+                        <Button disabled={guardandoCandidato} onClick={() => guardarCandidato(c.id)}>
+                          {guardandoCandidato ? "Guardando..." : "Guardar cambios"}
+                        </Button>
+                        <Button variant="ghost" onClick={() => setCandidatoEditando(null)}>Cancelar</Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              );
+            })
+          )}
         </div>
       )}
 
