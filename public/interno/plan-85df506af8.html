@@ -205,10 +205,10 @@ footer{background:var(--forest900);color:#8FB596;padding:22px 0;font-size:13px;t
   </div>
 
   <div class="card hoy" id="tarjetaAtrasadas" style="display:none">
-    <span class="meta" style="color:var(--terra)">Sin marcar, de días anteriores</span>
+    <span class="meta" style="color:var(--terra)">De días anteriores</span>
     <h3>Atrasadas</h3>
-    <p style="font-size:13px;color:var(--forest500);margin-bottom:8px">Quedaron pendientes de un día que ya
-    pasó. Hacelas hoy o marcalas si ya las hiciste y no las habías tildado.</p>
+    <p style="font-size:13px;color:var(--forest500);margin-bottom:8px">Tareas de un día que ya pasó. Las que
+    marcás quedan tachadas acá mismo, nunca desaparecen de la lista.</p>
     <div id="hoyAtrasadas"></div>
   </div>
 
@@ -1503,7 +1503,11 @@ function renderHoy(){
       }
     } else if(fecha === hoy){
       listaHoy.appendChild(clonarTarea(t)); nHoy++;
-    } else if(fecha < hoy && !chk.checked){
+    } else if(fecha < hoy){
+      // A propósito no filtramos por chk.checked: una tarea atrasada que ya
+      // marcaste tiene que quedar tachada y visible, nunca desaparecer de la
+      // lista. "Eliminar" una tarea del cronograma confunde con perder
+      // progreso; tachar dentro de la misma lista no.
       listaAtrasadas.appendChild(clonarTarea(t)); nAtrasadas++;
     }
   });
