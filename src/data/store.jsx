@@ -424,9 +424,19 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     let activo = true;
+    // El primer refresh() (arriba) dispara en paralelo con esto, antes de que
+    // el cliente de Supabase tenga el token de sesión adjunto. En una sesión
+    // fría (incógnito, primera visita) casi siempre pierde la carrera: las
+    // tablas con RLS que exige auth.uid() (candidatos, postulaciones, pagos,
+    // etc.) devuelven vacío, no error, así que se ven en 0 aunque haya datos.
+    // Por eso hay que repetir refresh() una vez que sabemos el estado real
+    // de la sesión, tanto al entrar como en cada cambio de auth.
     supabase.auth.getSession().then(({ data }) => {
       if (!activo) return;
-      resolverSesion(data.session?.user || null).finally(() => setAuthReady(true));
+      resolverSesion(data.session?.user || null).finally(() => {
+        setAuthReady(true);
+        refresh();
+      });
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (event === "PASSWORD_RECOVERY") {
@@ -434,7 +444,7 @@ export function AppProvider({ children }) {
         // de elegir nueva contraseña en vez de resolver el rol normal.
         navigate("/recuperar");
       }
-      resolverSesion(newSession?.user || null);
+      resolverSesion(newSession?.user || null).finally(() => refresh());
     });
     return () => {
       activo = false;
