@@ -16,7 +16,7 @@ import ProcesoSeleccionModular from "../components/ProcesoSeleccionModular.jsx";
 
 // Explica el circuito completo de punta a punta. Existe porque el proceso
 // estaba implementado pero en ningún lado escrito: ni la PYME ni el
-// profesional podían saber qué pasa después de registrarse, ni dónde
+// talento podían saber qué pasa después de registrarse, ni dónde
 // interviene SAS. Cada paso aclara quién hace qué.
 
 const PASOS = [
@@ -25,8 +25,8 @@ const PASOS = [
     icon: UserPlus,
     titulo: "Cada parte crea su perfil",
     pyme: "La PYME se registra, carga los datos de la empresa y elige un plan (o arranca con el pago único por vacante).",
-    profesional:
-      "El profesional crea su perfil gratis: experiencia, habilidades, nivel, ubicación, disponibilidad y CV.",
+    talento:
+      "El talento crea su perfil gratis: experiencia, habilidades, nivel, ubicación, disponibilidad y CV.",
     sas: "La plataforma exige los datos mínimos de forma automática, al instante. Un perfil a medias no compite bien: cuanto más completo, mejor puntúa después en el filtro de afinidad.",
   },
   {
@@ -35,18 +35,18 @@ const PASOS = [
     titulo: "La búsqueda se publica al instante",
     destacado: true,
     pyme: "Carga el puesto —descripción, requisitos, nivel, modalidad, ubicación y rango salarial— y queda publicada en el momento, sin esperar que nadie la apruebe. Recibe el mail de confirmación al toque.",
-    profesional:
+    talento:
       "Ve la vacante enseguida. Y si su perfil encaja con los requisitos, le llega un email avisándole de la nueva búsqueda: no depende de entrar a mirar todos los días.",
     sas: "Automático. SAS recibe un aviso de cada vacante publicada y la revisa después: si hay requisitos vagos o algo que no corresponde, la despublica y le escribe a la PYME para ajustarla. Se controla la calidad sin frenar la publicación.",
   },
   {
     n: 3,
     icon: Send,
-    titulo: "Los profesionales se postulan",
+    titulo: "Los talentos se postulan",
     pyme: "Ve entrar las postulaciones en su panel, en tiempo real.",
-    profesional:
+    talento:
       "Busca entre las vacantes activas y se postula con un click. Un solo perfil sirve para todas las búsquedas: no hay que volver a cargar nada.",
-    sas: "Automático: la plataforma avisa por email a la PYME cuando entra una postulación, y al profesional cuando cambia el estado de la suya. Nadie tiene que acordarse de mandar el aviso.",
+    sas: "Automático: la plataforma avisa por email a la PYME cuando entra una postulación, y al talento cuando cambia el estado de la suya. Nadie tiene que acordarse de mandar el aviso.",
   },
   {
     n: 4,
@@ -54,7 +54,7 @@ const PASOS = [
     titulo: "El filtro automático ordena por afinidad",
     destacado: true,
     pyme: "Cada postulación llega con un porcentaje de match contra TU vacante y las de mayor afinidad aparecen arriba. Podés filtrar y ver solo las de afinidad alta.",
-    profesional:
+    talento:
       "Cuanto más completo el perfil, mejor puntúa. Con Desarrollo Profesional, además, tenés prioridad dentro de tu franja de afinidad.",
     sas: "Automático, sin intervención de nadie: el puntaje compara el perfil contra los requisitos, el nivel, la ubicación y la modalidad de la vacante, y siempre muestra por qué dio ese número. Ordena y orienta: no descarta a nadie ni oculta postulaciones.",
   },
@@ -63,7 +63,7 @@ const PASOS = [
     icon: MessagesSquare,
     titulo: "Entrevistas y seguimiento",
     pyme: "Mueve a cada persona por los estados: nueva, en revisión, entrevista, contratado o descartado. Siempre sabe en qué punto está cada búsqueda.",
-    profesional:
+    talento:
       "Ve el estado de cada una de sus postulaciones desde su panel. No queda esperando sin novedades.",
     sas: "En los planes Premium y Platino, SAS hace las entrevistas preliminares y de fondo (según corresponda) y presenta finalistas, en vez de dejar todo el trabajo del lado de la PYME.",
   },
@@ -72,7 +72,7 @@ const PASOS = [
     icon: Handshake,
     titulo: "Contratación",
     pyme: "Marca la postulación como contratada y la vacante se cierra.",
-    profesional: "Recibe la confirmación y arranca en el nuevo puesto.",
+    talento: "Recibe la confirmación y arranca en el nuevo puesto.",
     sas: "Acompaña la negociación de la oferta si la PYME lo contrata (Fase 4 del servicio de selección).",
   },
   {
@@ -81,7 +81,7 @@ const PASOS = [
     titulo: "Lo que pasa después — acá está la diferencia",
     destacado: true,
     pyme: "Capacitaciones para el equipo, mentorías para los líderes, diagnóstico de clima y desarrollo organizacional. La relación no termina con la contratación.",
-    profesional:
+    talento:
       "Capacitaciones, mentorías de adaptación al nuevo puesto y acompañamiento de carrera, siga o no en ese trabajo.",
     sas: "Es la razón de ser de Talento & Desarrollo: la mayoría de las plataformas de empleo se despiden cuando se cierra la búsqueda. Nosotros recién ahí empezamos la otra mitad del trabajo.",
   },
@@ -102,7 +102,7 @@ export default function ComoFunciona() {
           </h1>
           <p className="mt-4 text-forest-200 max-w-2xl leading-relaxed">
             El proceso completo, paso por paso, con lo que hace cada parte: la PYME,
-            el profesional y SAS Consultora. Sin letra chica.
+            el talento y SAS Consultora. Sin letra chica.
           </p>
         </div>
       </section>
@@ -136,10 +136,10 @@ export default function ComoFunciona() {
                   </div>
                   <div className="rounded-xl bg-terracotta-50/50 border border-terracotta-100 p-4">
                     <span className="text-xs font-bold uppercase tracking-wider text-terracotta-600">
-                      El profesional
+                      El talento
                     </span>
                     <p className="text-sm text-forest-600 mt-1.5 leading-relaxed">
-                      {p.profesional}
+                      {p.talento}
                     </p>
                   </div>
                   <div className="rounded-xl bg-gold-50/60 border border-gold-200 p-4">
@@ -233,7 +233,7 @@ export default function ComoFunciona() {
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link to={esCandidato ? "/candidato" : "/registro"}>
               <Button variant="terracotta" className="px-6 py-3">
-                {esCandidato ? "Ir a mi panel" : "Soy profesional"} <ArrowRight size={18} />
+                {esCandidato ? "Ir a mi panel" : "Soy talento"} <ArrowRight size={18} />
               </Button>
             </Link>
             <Link to={esEmpresa ? "/empresa" : "/registro?tipo=empresa"}>

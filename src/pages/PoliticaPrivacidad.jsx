@@ -44,7 +44,7 @@ export default function PoliticaPrivacidad() {
       <P>Según el tipo de cuenta que crees en la Plataforma, recolectamos:</P>
       <ul className="list-disc pl-6 mb-4">
         <Li>
-          <strong>Candidatos/profesionales:</strong> nombre, email, teléfono, ubicación, título
+          <strong>Candidatos/talentos:</strong> nombre, email, teléfono, ubicación, título
           profesional, resumen, habilidades, nivel de experiencia, disponibilidad horaria,
           currículum (CV) en archivo PDF o Word, y referencias laborales que vos mismo cargues
           (nombre y contacto de terceros).
@@ -178,7 +178,7 @@ export default function PoliticaPrivacidad() {
       <P>
         De cada visita registramos únicamente: la sección visitada, el dominio desde el que
         llegaste (por ejemplo, un buscador o una red social) y si estabas navegando con una cuenta
-        de PYME, de profesional o sin cuenta. <strong>No guardamos tu dirección IP, ni tu nombre,
+        de PYME, de talento o sin cuenta. <strong>No guardamos tu dirección IP, ni tu nombre,
         ni tu email, ni ningún identificador que permita reconocerte entre una visita y otra.</strong>{" "}
         Son datos agregados y anónimos, que usamos solo para entender qué secciones resultan útiles
         y cuáles hay que mejorar.
@@ -186,7 +186,7 @@ export default function PoliticaPrivacidad() {
 
       <H2>12. Avisos de vacantes y cómo darte de baja</H2>
       <P>
-        Si tenés un perfil de profesional, podemos enviarte un email cuando se publique una
+        Si tenés un perfil de talento, podemos enviarte un email cuando se publique una
         búsqueda cuyos requisitos coincidan con tu perfil. Podés desactivar estos avisos en
         cualquier momento desde tu panel, en la solapa "Mi perfil", o con el enlace de baja que
         aparece al pie de cada uno de esos emails, sin necesidad de iniciar sesión.

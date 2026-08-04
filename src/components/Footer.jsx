@@ -13,7 +13,7 @@ export default function Footer() {
           </p>
         </div>
         <div>
-          <h4 className="text-white font-semibold text-sm mb-3">Para profesionales</h4>
+          <h4 className="text-white font-semibold text-sm mb-3">Para talentos</h4>
           <ul className="space-y-2 text-sm text-forest-400">
             <li><Link to="/vacantes" className="hover:text-gold-300">Buscar empleo</Link></li>
             <li><Link to="/capacitaciones" className="hover:text-gold-300">Capacitaciones</Link></li>

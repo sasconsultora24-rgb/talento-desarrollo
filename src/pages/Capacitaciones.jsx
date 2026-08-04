@@ -85,7 +85,7 @@ export default function Capacitaciones() {
         <SectionTitle
           eyebrow="Capacitación continua"
           title="Capacitaciones y talleres"
-          subtitle="Programas de liderazgo, comunicación, trabajo en equipo y formación técnica para PYMEs y profesionales."
+          subtitle="Programas de liderazgo, comunicación, trabajo en equipo y formación técnica para PYMEs y talentos."
         />
       </div>
 

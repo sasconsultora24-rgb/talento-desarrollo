@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import Landing from "./pages/Landing.jsx";
 import Vacantes from "./pages/Vacantes.jsx";
@@ -29,7 +29,9 @@ function App() {
         <Route path="/capacitaciones" element={<Capacitaciones />} />
         <Route path="/mentorias" element={<Mentorias />} />
         <Route path="/pymes" element={<ParaPymes />} />
-        <Route path="/profesionales" element={<ParaProfesionales />} />
+        <Route path="/talentos" element={<ParaProfesionales />} />
+        {/* /profesionales queda como alias por si hay algún link viejo dando vueltas. */}
+        <Route path="/profesionales" element={<Navigate to="/talentos" replace />} />
         <Route path="/como-funciona" element={<ComoFunciona />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/ingresar" element={<Ingresar />} />

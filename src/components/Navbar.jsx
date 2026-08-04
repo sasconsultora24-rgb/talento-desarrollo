@@ -5,12 +5,12 @@ import Logo from "./Logo";
 import { useApp } from "../data/store.jsx";
 import { Button } from "./ui.jsx";
 
-const ENLACES_PROFESIONALES = [
-  { to: "/registro?tipo=candidato", label: "Registrate como profesional" },
-  { to: "/profesionales", label: "Ver todas las áreas de servicio" },
-  { to: "/profesionales?ver=ofertas-laborales", label: "Ofertas laborales" },
-  { to: "/profesionales?ver=mentorias", label: "Mentorías y Coaching" },
-  { to: "/profesionales?ver=capacitacion-continua", label: "Capacitación continua" },
+const ENLACES_TALENTOS = [
+  { to: "/registro?tipo=candidato", label: "Registrate como talento" },
+  { to: "/talentos", label: "Ver todas las áreas de servicio" },
+  { to: "/talentos?ver=ofertas-laborales", label: "Ofertas laborales" },
+  { to: "/talentos?ver=mentorias", label: "Mentorías y Coaching" },
+  { to: "/talentos?ver=capacitacion-continua", label: "Capacitación continua" },
 ];
 
 const ENLACES_PYMES = [
@@ -23,7 +23,7 @@ const ENLACES_PYMES = [
   { to: "/pymes?ver=capital-humano", label: "Gestión del Capital Humano" },
 ];
 
-// Dropdown de navegación reutilizado para "Para Profesionales" y "Para PYMEs":
+// Dropdown de navegación reutilizado para "Para Talentos" y "Para PYMEs":
 // abre al pasar el mouse (con un pequeño delay de cierre) o al hacer click/tap.
 function NavDropdown({ label, enlaces }) {
   const [abierto, setAbierto] = useState(false);
@@ -137,7 +137,7 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-forest-600">
           <Link to="/vacantes" className="hover:text-gold-600">Vacantes</Link>
           <Link to="/capacitaciones" className="hover:text-gold-600">Capacitaciones y mentorías</Link>
-          <NavDropdown label="Para Profesionales" enlaces={ENLACES_PROFESIONALES} />
+          <NavDropdown label="Para Talentos" enlaces={ENLACES_TALENTOS} />
           <NavDropdown label="Para PYMEs" enlaces={ENLACES_PYMES} />
           <Link to="/como-funciona" className="hover:text-gold-600">Cómo funciona</Link>
         </nav>
@@ -173,7 +173,7 @@ export default function Navbar() {
         <div className="md:hidden border-t border-forest-100 px-4 py-4 space-y-4 bg-white">
           <Link to="/vacantes" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Vacantes</Link>
           <Link to="/capacitaciones" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Capacitaciones y mentorías</Link>
-          <NavDropdownMobile label="Para Profesionales" enlaces={ENLACES_PROFESIONALES} onNavigate={() => setOpen(false)} />
+          <NavDropdownMobile label="Para Talentos" enlaces={ENLACES_TALENTOS} onNavigate={() => setOpen(false)} />
           <NavDropdownMobile label="Para PYMEs" enlaces={ENLACES_PYMES} onNavigate={() => setOpen(false)} />
           <Link to="/como-funciona" onClick={() => setOpen(false)} className="block text-forest-700 font-medium">Cómo funciona</Link>
           <div className="pt-3 border-t border-forest-100 flex flex-col gap-2">

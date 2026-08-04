@@ -231,7 +231,7 @@ export default function Registro() {
             tipo === "candidato" ? "bg-white shadow-sm text-forest-900" : "text-forest-500"
           }`}
         >
-          Soy profesional
+          Soy talento
         </button>
         <button
           onClick={() => setTipo("empresa")}

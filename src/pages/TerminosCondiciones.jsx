@@ -27,7 +27,7 @@ export default function TerminosCondiciones() {
       <H2>1. Qué es la Plataforma</H2>
       <P>
         SAS Talento &amp; Desarrollo conecta a pequeñas y medianas empresas ("PYMEs") con
-        candidatos y profesionales, y ofrece publicación de vacantes, búsqueda de candidatos,
+        candidatos y talentos, y ofrece publicación de vacantes, búsqueda de candidatos,
         capacitaciones, mentorías y servicios de recursos humanos gestionados por SAS Consultora.
       </P>
 

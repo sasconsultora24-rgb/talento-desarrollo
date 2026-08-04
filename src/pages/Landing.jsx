@@ -59,14 +59,14 @@ export default function Landing() {
               Nos conectamos. <span className="text-gold-300">Te acompañamos.</span> Crecés.
             </h1>
             <p className="mt-5 text-forest-200 text-lg leading-relaxed max-w-lg">
-              Ya seas una PYME que busca a la persona correcta o un PROFESIONAL que busca crecer,
+              Ya seas una PYME que busca a la persona correcta o un TALENTO que busca crecer,
               acá todo empieza con una conexión real — y sigue con capacitación, mentorías y el
               respaldo de SAS Consultora en cada etapa. Registrate gratis y sumate al vínculo.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link to="/registro">
                 <Button variant="terracotta" className="text-base px-6 py-3">
-                  Soy profesional <ArrowRight size={18} />
+                  Soy talento <ArrowRight size={18} />
                 </Button>
               </Link>
               <Link to="/registro?tipo=empresa">
@@ -95,7 +95,7 @@ export default function Landing() {
               <div className="grid grid-cols-2 gap-4">
                 <StatCard label="Vacantes activas" value={vacantesAbiertas.length} tone="gold" />
                 <StatCard label="PYMEs registradas" value={empresas.length} tone="terracotta" />
-                <StatCard label="Profesionales en la base" value={candidatos.length} tone="forest" />
+                <StatCard label="Talentos en la base" value={candidatos.length} tone="forest" />
                 <StatCard label="Capacitaciones disponibles" value={capacitaciones.length} tone="gold" />
               </div>
             ) : (
@@ -159,11 +159,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* SERVICIOS PARA PROFESIONALES */}
+      {/* SERVICIOS PARA TALENTOS */}
       <section className="bg-white border-y border-forest-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
           <SectionTitle
-            eyebrow="Para profesionales"
+            eyebrow="Para talentos"
             title="Oportunidades reales y acompañamiento para crecer"
             subtitle="Tu perfil queda en nuestra base sin costo. Vos elegís cuánto querés potenciarlo."
           />
@@ -195,8 +195,8 @@ export default function Landing() {
             ))}
           </div>
           <div className="mt-6">
-            <Link to="/profesionales" className="text-gold-600 font-semibold text-sm inline-flex items-center gap-1 hover:gap-2 transition-all">
-              Ver todos los servicios para profesionales <ArrowRight size={16} />
+            <Link to="/talentos" className="text-gold-600 font-semibold text-sm inline-flex items-center gap-1 hover:gap-2 transition-all">
+              Ver todos los servicios para talentos <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -260,7 +260,7 @@ export default function Landing() {
         <h2 className="text-2xl md:text-3xl font-extrabold text-forest-900">
           ¿Listo para empezar?
         </h2>
-        <p className="text-forest-500 mt-2">Registrate gratis como profesional o publicá tu primera vacante como PYME.</p>
+        <p className="text-forest-500 mt-2">Registrate gratis como talento o publicá tu primera vacante como PYME.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link to="/registro"><Button variant="primary" className="px-6 py-3">Crear mi perfil</Button></Link>
           <Link to="/registro?tipo=empresa"><Button variant="secondary" className="px-6 py-3">Registrar mi PYME</Button></Link>

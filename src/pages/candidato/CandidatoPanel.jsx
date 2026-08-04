@@ -143,7 +143,7 @@ export default function CandidatoPanel() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <div className="mb-8">
-        <Badge tone="gold">Panel del profesional</Badge>
+        <Badge tone="gold">Panel del talento</Badge>
         <h1 className="text-2xl md:text-3xl font-extrabold text-forest-900 mt-2">Hola, {candidato.nombre.split(" ")[0]}</h1>
       </div>
 

@@ -69,7 +69,7 @@ export default function ParaProfesionales() {
     <div>
       <section className="bg-gradient-to-br from-forest-900 to-forest-700 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-          <Badge tone="gold">Servicio para profesionales</Badge>
+          <Badge tone="gold">Servicio para talentos</Badge>
           <h1 className="text-3xl md:text-4xl font-extrabold font-display mt-4 max-w-2xl">
             Oportunidades reales y acompañamiento para crecer, no solo un currículum en una base de datos.
           </h1>
@@ -79,7 +79,7 @@ export default function ParaProfesionales() {
           </p>
           <Link to={esCandidatoLogueado ? "/candidato?tab=plan" : "/registro?tipo=candidato"}>
             <Button variant="terracotta" className="mt-6 px-6 py-3">
-              {esCandidatoLogueado ? "Ir a mi panel" : "Registrarme como profesional"}
+              {esCandidatoLogueado ? "Ir a mi panel" : "Registrarme como talento"}
             </Button>
           </Link>
         </div>
